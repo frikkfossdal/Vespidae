@@ -17,9 +17,9 @@ namespace Vespidae
         /// new tabs/panels will automatically be created.
         /// </summary>
         public OffsetComponent()
-          : base("Offset", "Nickname",
-            "Offset description",
-            "Category", "Subcategory")
+          : base("Offset", "Offset",
+            "Offsets polylines",
+            "Vespidae", "ClipperTools")
         {
         }
 
@@ -28,6 +28,8 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddCurveParameter("Curve", "C", "Curve or curves to offset", GH_ParamAccess.list); 
+            pManager.AddNumberParameter("Distance", "D", "Distance to offset", GH_ParamAccess.item); 
         }
 
         /// <summary>
@@ -35,6 +37,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("result1", "r1", "", GH_ParamAccess.list);
         }
 
         /// <summary>
