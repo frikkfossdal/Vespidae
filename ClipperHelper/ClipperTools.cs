@@ -63,6 +63,7 @@ namespace ClipperHelper
 
         public static List<Polyline> boolean(IEnumerable<Polyline> A, IEnumerable<Polyline> B) {
             List<Polyline> result = new List<Polyline>();
+
             var clip = new Clipper();
             var polyfilltype = PolyFillType.pftEvenOdd;
 
@@ -80,6 +81,7 @@ namespace ClipperHelper
 
             if (polytree.Childs.Count > 0)
             {
+                
                 var output = twoDtothreeD.toPolyline(polytree.Childs[0].Contour);
                 result.Add(output);
             }
@@ -87,9 +89,21 @@ namespace ClipperHelper
             return result;
         }
 
-        public static List<Polyline> offset(IEnumerable<Polyline> A) {
-            List<Polyline> result = new List<Polyline>();
-            return result;
+        public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance) {
+            List<Polyline> output = new List<Polyline>();
+            List<List<IntPoint>> input = new List<List<IntPoint>>(); 
+
+            foreach (Polyline poly in polysToOffset) {
+                input.Add(ToPath2d(poly)); 
+            }
+
+            List<List<IntPoint>> result = Clipper.OffsetPolygons(input, distance);
+
+            foreach (List<IntPoint> path in result) {
+                output.Add(twoDtothreeD.toPolyline(path));
+            }
+
+            return output;
         }
 
         public static List<IntPoint> ToPath2d(this Polyline pl) {
