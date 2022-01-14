@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Version>1.0</Version>
+    <Title>Vespidae</Title>
+    <Description>Description of Vespidae</Description>
+    <TargetExt>.gha</TargetExt>
+    <RhinoPluginType>gha</RhinoPluginType>
+    <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
+    <Configurations>Debug</Configurations>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="7.14.22010.17001" IncludeAssets="compile;build" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ClipperHelper\ClipperHelper.csproj" />
+    <ProjectReference Include="..\GMaker\GMaker.csproj" />
+  </ItemGroup>
+  <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
+    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartArguments></StartArguments>
+    <StartAction>Program</StartAction>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+</Project>
