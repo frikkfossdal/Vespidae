@@ -1,9 +1,9 @@
 ﻿using System;
 namespace GMaker
 {
-    public class MyClass
+    public class GTools
     {
-        public MyClass()
+        public GTools()
         {
         }
     }
