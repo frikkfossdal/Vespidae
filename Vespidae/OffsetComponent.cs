@@ -31,7 +31,7 @@ namespace Vespidae
         {
             pManager.AddCurveParameter("Curve", "C", "Curve or curves to offset", GH_ParamAccess.list); 
             pManager.AddNumberParameter("Distance", "D", "Distance to offset", GH_ParamAccess.item);
-     
+            pManager.AddNumberParameter("Number of offsets", "NO", "Number of times to offset curve. Default 1", GH_ParamAccess.item, 1); 
         }
 
         /// <summary>
@@ -60,7 +60,6 @@ namespace Vespidae
             var result = ClipperTools.offset(offsetPolylines, distance);
 
             DA.SetDataList("result", result); 
-
         }
 
         /// <summary>

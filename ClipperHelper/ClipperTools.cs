@@ -8,10 +8,6 @@ namespace ClipperHelper
 {
     public static class ClipperTools
     {
-        public static Point3d test() {
-            return new Point3d(5, 5, 0);
-
-        }
 
         public static IEnumerable<PolyNode> Iterate(this PolyNode node)
         {
@@ -61,6 +57,7 @@ namespace ClipperHelper
             return polys;
         }
 
+        //perform boolean operation on curves 
         public static List<Polyline> boolean(IEnumerable<Polyline> A, IEnumerable<Polyline> B) {
             List<Polyline> result = new List<Polyline>();
 
@@ -89,6 +86,7 @@ namespace ClipperHelper
             return result;
         }
 
+        //perform offset operation on curve 
         public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance) {
             List<Polyline> output = new List<Polyline>();
             List<List<IntPoint>> input = new List<List<IntPoint>>(); 
@@ -105,6 +103,9 @@ namespace ClipperHelper
 
             return output;
         }
+
+        //perform series of offset operation on curve
+
 
         public static List<IntPoint> ToPath2d(this Polyline pl) {
             var path = new List<IntPoint>();

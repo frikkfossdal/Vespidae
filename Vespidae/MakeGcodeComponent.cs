@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using ClipperHelper;
+using GMaker; 
+
 
 namespace Vespidae
 {
@@ -17,9 +20,9 @@ namespace Vespidae
         /// new tabs/panels will automatically be created.
         /// </summary>
         public MakeGcodeComponent()
-          : base("MakeGcodeComponent", "Nickname",
-            "MakeGcodeComponent description",
-            "Category", "Subcategory")
+          : base("MakeGcodeComponent", "Make Gcode",
+            "Converts polylines to gcode and visualizes machine operation",
+            "Vespidae", "Gcode Tools")
         {
         }
 
@@ -28,6 +31,11 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddCurveParameter("Polylines", "P", "polylines to convert", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("TravelSpeed", "TS", "speed of travels between operations m/s", GH_ParamAccess.item, 4000);
+            pManager.AddIntegerParameter("WorkSpeed", "WS", "speed of operation itself m/s", GH_ParamAccess.item, 3000);
+            pManager.AddNumberParameter("RetractHeight", "RH", "retraction height between operations", GH_ParamAccess.item, 50);
+            
         }
 
         /// <summary>
@@ -35,6 +43,8 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("gcode", "G", "Output gcode", GH_ParamAccess.list);
+            pManager.AddGenericParameter("toolpaths", "TP", "Output toolpaths for visualization", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -44,6 +54,24 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            var curves = new List<Curve>();
+            int ts = 0;
+            int ws = 0;
+            double rh = 0;
+            GTools gtools = new GTools();
+
+            if (!DA.GetDataList("Polylines", curves)) return;
+            DA.GetData("TravelSpeed", ref ts);
+            DA.GetData("WorkSpeed", ref ws);
+            DA.GetData<double>("RetractHeight", ref rh);
+
+
+            List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(curves);
+            gtools.MakeGcode(polys, ts, ws, rh);
+
+            DA.SetDataList("gcode", gtools.outputG);
+            DA.SetDataList("toolpaths", gtools.outputPaths);
+
         }
 
         /// <summary>

@@ -46,8 +46,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MyClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="GTools.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
