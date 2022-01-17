@@ -1,9 +1,4 @@
----
-type: project
-title: Vespidae - Interactive Fabrication
-entryDate: 13/07/2021
-subtitle: Vespidae is a Grasshopper plugin that aims to enable interactive Fabrication and direct machine control from a CAD environment 
----
+# Vespidae
 
 Vespidae is a set of components that allows real-time interaction with a machine controller directly from the Rhino Grasshopper canvas. It includes a component that mimics the controller itself and a set of components for creating and visualizing toolpaths and machine programs that can run on the physical controller.
 
