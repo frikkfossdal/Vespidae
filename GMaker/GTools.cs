@@ -21,6 +21,16 @@ namespace GMaker
 
             foreach (Polyline poly in polys) {
                 //add travel
+
+                //set travel speed
+                //up
+                //move to first point
+                //down
+                //execute work package
+                //travelMove(firstPoint, workspeed, retract, 
+
+                output.Add(";Work move");
+                output.Add($"G0 F{ws}"); 
                 foreach (Point3d p in poly) {
                     outputG.Add($"G0 X{p.X} Y{p.Y} Z{p.Z}"); 
                 }
@@ -28,6 +38,18 @@ namespace GMaker
             }
 
             return output;   
+        }
+
+        private List<String> makeTravelCode(Point3d fp, int ws, double rh) {
+            List<String> output = new List<string>();
+            output.Add(";Travel move");
+            output.Add($"G0 Z{rh} F{ws}");
+            output.Add()
+            return output; 
+        }
+
+        private Polyline makeTravelMove() {
+
         }
 
 
