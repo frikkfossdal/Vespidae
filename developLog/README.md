@@ -1,10 +1,7 @@
-# Vespidae
 
-Vespidae is a set of components that allows real-time interaction with a machine controller directly from the Rhino Grasshopper canvas. It includes a component that mimics the controller itself and a set of components for creating and visualizing toolpaths and machine programs that can run on the physical controller.
+# Vespidae Develop Log
 
-The main motivation for the system is to facilitate rapid prototyping and exploration of toolpaths on machines with different end-effectors and tools. This interactive workflow was explored together with local glass artist and friend [Patrica Šichmanová](http://www.sichmanova.sk). For more details read the [white paper](https://dl.acm.org/doi/10.1145/3485114.3485120). 
-
-# Develop Log
+## Prior log lost in time 
 
 Today is all about simple toolpaths and visualization. I need scripts that takes curves as input and translates this into usable machine code. Simultaneously it needs to visualize the machine movement (retract moves, travel moves, etc). I'm not sure if these should be separated or how the data should be formmated, but I figure this will become clear if I work with the data for a while. Here goes. 
 
@@ -45,7 +42,7 @@ Simple exercise. Use Grasshopper's Contour component to "slice" 3D surface. Feed
 ![Dynamic 3D toolpahts](./img/3D_surface_toolpaths.gif)
 
 
-# Vinh Battery Printing
+## Vinh Battery Printing
 
 Ok so we are printing batteries. This is quite a unique workflow and will be a good showcase for dynamic CAM tools. There is lots of challenges that needs to be addressed. I think I finally need to get a proper-ish slicer up and running in Grasshopper. I'm thinking clipper makes sense here to generate infill toolpaths. I also need a way to test this in real world. I'm thinking I will use my good ol' Ultimaker as it has two extruders (this compliment nicely with Vinh and his tool-changing Jubilee. 
 
@@ -60,7 +57,7 @@ Note to self: investigate how objects can be tagged with metadata using *setUser
 
 This now includes Clipper. Look [here](http://angusj.com/delphi/clipper.php) for examples and documentation. 
 
-## 14.10.2022
+## 1310_2022
 
 Starting (b)logging a bit late in the game here but I spent some time getting comfortable with the whole Visual Studio experience again. I've had a hard time setting everything up to run and compile properly, but I'm at a better place now. A highlight from this is how to create solutions that consists of multiple projects in one solution (think one project that holds all the Grasshopper components combined with projects that holds all the supporting code and libraries, for example the logic for Clipper). Following includes a short recipe for setting things up. I'm linking documentation for osx, but equivalent documentation exists for windows on McNeels developer sites. Here goes: 
 
@@ -88,9 +85,14 @@ Now comes the weird part. If you want to include Rhino or Grasshopper namespaces
 
 ### Back to logging 
 
-Some short notes on implementation philosophy. 
-
-
-offsetting 
-
 ![Offset tool in all its glory ](./img/vespidae_offset.gif)
+
+## 1701_2022
+
+Started updating the offset component to prepare it for slicing. As of now it only offsets a curve once, but I think it is more useful to enable it to offset a curve multiple times based on a given input number. I added the structure to do this component wise, but It's missing the logic to actually compute this. I'll wrap this up next session. 
+
+Today I'm also implementing tools for converting polylines into gcode. Initially I'm doing this bruteforce and separating the "toolpahts" into two separate structures; one with raw gcode and one with polylines that represents the travel moves between each individual operation. I'm thinking that I really should make a better data structure here, where both gcode and polylines are linked in a single data structure / class. A cool thing this could be used for is to visualize the gcode commands in context of the toolpaths they represents in Rhino. I'm returning to this point in the future when I know more about what I'm after. For now, brute force is the way. 
+
+
+
+
