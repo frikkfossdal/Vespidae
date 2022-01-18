@@ -93,6 +93,5 @@ Started updating the offset component to prepare it for slicing. As of now it on
 
 Today I'm also implementing tools for converting polylines into gcode. Initially I'm doing this bruteforce and separating the "toolpahts" into two separate structures; one with raw gcode and one with polylines that represents the travel moves between each individual operation. I'm thinking that I really should make a better data structure here, where both gcode and polylines are linked in a single data structure / class. A cool thing this could be used for is to visualize the gcode commands in context of the toolpaths they represents in Rhino. I'm returning to this point in the future when I know more about what I'm after. For now, brute force is the way. 
 
-
-
+I've also added a separate sorting component to the GcodeTool-shelf. Right now it only sorts in Y-direction but it should include some sort options (x,y,z, or combination). I'm also thinking that the Gcode generator should include a sort option. 
 

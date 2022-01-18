@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using ClipperHelper;
-using GMaker; 
-
+using GMaker;
+using ClipperHelper; 
 
 namespace Vespidae
 {
-    public class MakeGcodeComponent : GH_Component
+    public class SortPolysComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -19,9 +18,9 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public MakeGcodeComponent()
-          : base("MakeGcodeComponent", "Make Gcode",
-            "Converts polylines to gcode and visualizes machine operation",
+        public SortPolysComponent()
+          : base("SortPolysComponent", "SortPolys",
+            "Sorts polys based on sort criteria",
             "Vespidae", "Gcode Tools")
         {
         }
@@ -31,11 +30,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polylines", "P", "polylines to convert", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("TravelSpeed", "TS", "speed of travels between operations m/s", GH_ParamAccess.item, 4000);
-            pManager.AddIntegerParameter("WorkSpeed", "WS", "speed of operation itself m/s", GH_ParamAccess.item, 3000);
-            pManager.AddNumberParameter("RetractHeight", "RH", "retraction height between operations", GH_ParamAccess.item, 50);
-            
+            pManager.AddCurveParameter("Polys", "P", "Polys to be sorted", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -43,8 +38,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("gcode", "G", "Output gcode", GH_ParamAccess.list);
-            pManager.AddGenericParameter("toolpaths", "TP", "Output toolpaths for visualization", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("SortedPolys", "SP", "sorted polys", GH_ParamAccess.list);  ; 
         }
 
         /// <summary>
@@ -55,22 +49,13 @@ namespace Vespidae
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             var curves = new List<Curve>();
-            int ts = 0;
-            int ws = 0;
-            double rh = 0;
-            GTools gtools = new GTools();
 
-            if (!DA.GetDataList("Polylines", curves)) return;
-            DA.GetData("TravelSpeed", ref ts);
-            DA.GetData("WorkSpeed", ref ws);
-            DA.GetData<double>("RetractHeight", ref rh);
+            if (!DA.GetDataList("Polys", curves))return ;
 
-            List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(curves);
-            List<String> outputGcode = gtools.MakeGcode(polys, ts, ws, rh);
+            var polys = ClipperTools.ConvertCurvesToPolylines(curves);
 
-            DA.SetDataList("gcode", outputGcode);
-            DA.SetDataList("toolpaths", gtools.outputPaths);
-
+            var newPolyList = GTools.sortPolys(polys);
+            DA.SetDataList("SortedPolys", newPolyList); 
         }
 
         /// <summary>
@@ -94,7 +79,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("8b5cccb4-2352-4a10-a862-3757f188d64e"); }
+            get { return new Guid("4af20d7d-35b2-4a1a-9175-f2166a2ac2eb"); }
         }
     }
 }
