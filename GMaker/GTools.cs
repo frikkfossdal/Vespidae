@@ -15,7 +15,6 @@ namespace GMaker
             outputPaths = new List<Polyline>();
         }
 
-
         public List<String> MakeGcode(List<Polyline> polys, int ts, int ws, double rh) {
             List<String> output = new List<string>();
             Point3d lastPoint = new Point3d();

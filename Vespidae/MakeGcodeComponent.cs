@@ -5,7 +5,7 @@ using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using ClipperHelper;
-using GMaker; 
+using GMaker;
 
 
 namespace Vespidae

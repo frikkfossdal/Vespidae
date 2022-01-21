@@ -95,3 +95,22 @@ Today I'm also implementing tools for converting polylines into gcode. Initially
 
 I've also added a separate sorting component to the GcodeTool-shelf. Right now it only sorts in Y-direction but it should include some sort options (x,y,z, or combination). I'm also thinking that the Gcode generator should include a sort option. 
 
+# 1801_2022
+
+Working on adding infill algorithms to the slicer component. I'm starting out with low complexity for infill patterns. My strategy is to use the bounding box of a Brep, rotate it 45 degrees in regards to the brep to be sliced and use the edges to compute infill lines. I did a short test with Cura and it seems they are using the same strategy. 
+
+Puh(!) I have to return to this. After some prototyping I've decided to initially create infill lines in x direction. This is a point I can totally return to, but I'm not so sure how important it really is. Method is extract bounding box of brep, find the min and max points of the bounding box and use these bounds to generate lines with given interval through a for-loop. Here is what it looks like: 
+
+![Generating infill](./img/infill_lines.gif)
+
+Next thing to do is to find the intersection between the contour of the Brep and the infill pattern and convert this into a toolpath. I scripted a prototype of this in Grasshopper for a single layer. First I extract the contour of the Brep at layer height 0. I then use clipper to compute the intersection between the contour and the infill lines. This gives me a list of polylines that look like this: 
+
+![clipped polys](./img/clipped_polys.png)
+
+For toolpaths I first sort every polyline in x-direction (I totally need to return to this point and create some kind of vector-based sorting but bare with me). I then flip every second curve (to make the path go "front-and-back"). Finally I iterate over all the points in the list of polylines and connect them. I will need tons of more logic here. This setup will fail if the direction of the infill is too angled in regards to x (because sorting fails). Returning soon. Result looks like this: 
+
+![infill toolpath](./img/infill_toolpath.png)
+
+I think I'm ready to put this into my code. First thing to do is to clean up my Clipper implementation. I'm trying to create a one-function-serves-them-all function that can handle any clip type (intersection, boolean, etc). I might need a more specialized function to handle slicing when my contour consists of more then just an outer contour (think pockets in the Brep), but I will return to this. Right now my "boolean" function only does just this, a boolean operation. I'm changing this to giving the intersection type as argument and running this through a switch-case. The function also only return a single polyline. Changing this to return as many polylines as Clipper computes. 
+
+Another problem! I'm using wrong clipper. NuGet only provides Clipper 6.4.0(?). Manually adding clipper and changing the version to 6.4.2.

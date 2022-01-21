@@ -13,11 +13,19 @@
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="7.14.22010.17001" IncludeAssets="compile;build" />
+    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\ClipperHelper\ClipperHelper.csproj" />
     <ProjectReference Include="..\GMaker\GMaker.csproj" />
+    <ProjectReference Include="..\SlicerTool\SlicerTool.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="GrasshopperAsyncComponent" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="OffsetComponent.cs" />
   </ItemGroup>
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>

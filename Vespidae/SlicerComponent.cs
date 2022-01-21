@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using ClipperHelper;
+using SlicerTool;
 
 namespace Vespidae
 {
@@ -19,7 +20,7 @@ namespace Vespidae
         public SlicerComponent()
           : base("SlicerComponent", "Nickname",
             "SlicerComponent description",
-            "Category", "Subcategory")
+            "Vespidae", "Slicing Tools")
         {
         }
 
@@ -28,6 +29,8 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddBrepParameter("Brep", "G", "Brep geometry to be sliced", GH_ParamAccess.item);
+            pManager.AddNumberParameter("LayerHeight", "LH", "Slicing layer height", GH_ParamAccess.item,0.4); 
         }
 
         /// <summary>
@@ -35,6 +38,9 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("SlicedPolys", "P", "sliced polys as list", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Debug1", "Deb1", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Debug2", "Deb2", "", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -44,6 +50,37 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            Slicer slc = new Slicer();
+            
+
+            Brep geo = new Brep();
+            Plane pl = new Plane();
+            double lh = 0.4;
+
+            if (!DA.GetData("Brep", ref geo)) return;
+            DA.GetData("LayerHeight", ref lh);
+            
+            List<Curve> lst = new List<Curve>();
+            lst.AddRange(Brep.CreateContourCurves(geo, new Point3d(0, 0, 0), new Point3d(0, 0, 30), 1));
+
+            List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(lst);
+
+            var bound = geo.GetBoundingBox(true);
+
+            var infill = brepTools.createInfillLines(geo, 0.3);
+
+            infill = brepTools.sortPolys(infill);
+
+
+            slc.layerHeight = lh;
+            slc.model = geo;
+            slc.slice();
+
+
+            DA.SetDataList("Debug1", slc.exposeShells());  ;
+            DA.SetDataList("Debug2", brepTools.createInfillLines(geo,0.3));
+
+            DA.SetDataList("SlicedPolys", polys); 
         }
 
         /// <summary>

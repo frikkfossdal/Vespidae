@@ -19,7 +19,7 @@ namespace Vespidae
         /// new tabs/panels will automatically be created.
         /// </summary>
         public BooleanComponent()
-          : base("ClipperTest", "Vespidae",
+          : base("Boolean", "Vespidae",
             "Test of clipper library",
             "Vespidae", "ClipperTools")
         {
@@ -32,6 +32,7 @@ namespace Vespidae
         {
             pManager.AddCurveParameter("A", "A", "", GH_ParamAccess.list);
             pManager.AddCurveParameter("B", "B", "", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("ClipType", "CT", "Clipping type. 0 : difference, 1: intersection, 2: union, 3: xor", GH_ParamAccess.item,0); 
         }
 
         /// <summary>
@@ -52,14 +53,16 @@ namespace Vespidae
 
             List<Curve> curvesA = new List<Curve>();
             List<Curve> curvesB = new List<Curve>();
+            int clipNumber = 0; 
 
             if (!DA.GetDataList("A", curvesA)) return;
             if (!DA.GetDataList("B", curvesB))return;
+            DA.GetData("ClipType", ref clipNumber);
 
             List<Polyline> test1 = ClipperTools.ConvertCurvesToPolylines(curvesA);
             List<Polyline> test2 = ClipperTools.ConvertCurvesToPolylines(curvesB);
 
-            var result = ClipperTools.boolean(test1, test2); 
+            var result = ClipperTools.intersection(test1, test2,clipNumber); 
 
             DA.SetDataList(0, result);
         }

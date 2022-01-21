@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vespidae", "Vespidae\Vespid
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GMaker", "GMaker\GMaker.csproj", "{F51D5898-19EC-41DE-AE56-1AE9604DA01D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlicerTool", "SlicerTool\SlicerTool.csproj", "{6D04FD31-31A1-4F84-B3CC-1BB22390DABE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{F51D5898-19EC-41DE-AE56-1AE9604DA01D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F51D5898-19EC-41DE-AE56-1AE9604DA01D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F51D5898-19EC-41DE-AE56-1AE9604DA01D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D04FD31-31A1-4F84-B3CC-1BB22390DABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D04FD31-31A1-4F84-B3CC-1BB22390DABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D04FD31-31A1-4F84-B3CC-1BB22390DABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D04FD31-31A1-4F84-B3CC-1BB22390DABE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
