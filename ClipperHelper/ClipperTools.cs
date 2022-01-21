@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Rhino; 
 using Rhino.Geometry;
 using ClipperLib;
+using System.Linq; 
 
 namespace ClipperHelper
 {
@@ -58,51 +59,69 @@ namespace ClipperHelper
         }
 
         //perform boolean operation on curves 
-        public static List<Polyline> boolean(IEnumerable<Polyline> A, IEnumerable<Polyline> B) {
+        public static List<Polyline> intersection(IEnumerable<Polyline> A, IEnumerable<Polyline> B, int type) {
             List<Polyline> result = new List<Polyline>();
 
             var clip = new Clipper();
+            
             var polyfilltype = PolyFillType.pftEvenOdd;
 
             foreach (var plA in A) {
-                clip.AddPolygon(ToPath2d(plA), PolyType.ptSubject);
+                clip.AddPath(ToPath2d(plA), PolyType.ptSubject,plA.IsClosed);
             }
 
             foreach (var plB in B) {
-                clip.AddPolygon(ToPath2d(plB), PolyType.ptClip);
+                clip.AddPath(ToPath2d(plB), PolyType.ptClip,plB.IsClosed);
             }
 
             PolyTree polytree = new PolyTree();
+            var ctype = new ClipType();
 
-            clip.Execute(ClipType.ctUnion, polytree, polyfilltype, polyfilltype);
+            switch (type) {
+                case 0:
+                    ctype = ClipType.ctDifference;
+                    break;
+                case 1:
+                    ctype = ClipType.ctIntersection;
+                    break;
+                case 2:
+                    ctype = ClipType.ctUnion;
+                    break; 
+                case 3:
+                    ctype = ClipType.ctXor;
+                    break; 
+            }
 
+            clip.Execute(ctype, polytree, polyfilltype, polyfilltype);
+
+            var output = new List<Polyline>();
             if (polytree.Childs.Count > 0)
             {
-                
-                var output = twoDtothreeD.toPolyline(polytree.Childs[0].Contour);
-                result.Add(output);
+                foreach (var c in polytree.Childs) {
+                    output.Add(twoDtothreeD.toPolyline(c.Contour));
+                }
             }
             
-            return result;
+            return output;
         }
 
         //perform offset operation on curve 
-        public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance) {
-            List<Polyline> output = new List<Polyline>();
-            List<List<IntPoint>> input = new List<List<IntPoint>>(); 
+        //public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance) {
+        //    List<Polyline> output = new List<Polyline>();
+        //    List<List<IntPoint>> input = new List<List<IntPoint>>(); 
 
-            foreach (Polyline poly in polysToOffset) {
-                input.Add(ToPath2d(poly)); 
-            }
+        //    foreach (Polyline poly in polysToOffset) {
+        //        input.Add(ToPath2d(poly)); 
+        //    }
+        //    off
+        //    List<List<IntPoint>> result = Clipper.OffsetPolygons(input, distance);
 
-            List<List<IntPoint>> result = Clipper.OffsetPolygons(input, distance);
+        //    foreach (List<IntPoint> path in result) {
+        //        output.Add(twoDtothreeD.toPolyline(path));
+        //    }
 
-            foreach (List<IntPoint> path in result) {
-                output.Add(twoDtothreeD.toPolyline(path));
-            }
-
-            return output;
-        }
+        //    return output;
+        //}
 
         //perform series of offset operation on curve
 
@@ -131,5 +150,65 @@ namespace ClipperHelper
             }
             return result; 
         }
+    }
+
+    public static class brepTools {
+
+        private static double checkAngle(Vector3d check, Vector3d refVector) {
+            check.IsPerpendicularTo(refVector);
+            check.IsParallelTo(refVector);
+            return 3;
+        }
+
+        //Creates infill in x direction 
+        public static List<Polyline> createInfillLines(Brep b, double gap){
+
+            var output = new List<Polyline>(); 
+            var bound = b.GetBoundingBox(true);
+            var min = bound.Min;
+            var max = bound.Max;
+
+            for (double i = min.X; i <= max.X+gap; i+=gap) {
+                var poly = new Polyline();
+                poly.Add(i, min.Y, 0);
+                poly.Add(i, max.Y, 0);
+                output.Add(poly); 
+            }
+            return output; 
+        }
+
+        //flips every second polyline in list
+        public static List<Polyline> flipInfillLines(List<Polyline> polys) {
+            var shouldFlip = false;
+
+            foreach (var poly in polys) {
+                if (shouldFlip)
+                {
+                    poly.Reverse();
+                    shouldFlip = false;
+                }
+                else {
+                    shouldFlip = true; 
+                }
+            }
+            return polys; 
+        }
+
+        public static List<Polyline> sortPolys(List<Polyline> polys) {
+            return polys.OrderBy(p => p[0].X).ToList(); 
+        }
+
+        //connects infillPolys. Needs more logic. I think...
+        public static Polyline connectPolys(List<Polyline> polys)
+        {
+            var output = new Polyline(); 
+            foreach (var poly in polys) {
+                foreach (var p in poly) {
+                    output.Add(p); 
+                }
+            }
+            return output; 
+        }
+            
     }
 }
