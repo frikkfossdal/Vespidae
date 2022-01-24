@@ -16,7 +16,6 @@ namespace SlicerTool
         public Slicer()
         {
             layers = new List<Layer>(); 
-
         }
 
         public void slice() {
@@ -46,6 +45,7 @@ namespace SlicerTool
                 layers.Add(nl);
             }
         }
+
 
         public void createInfill() {
 
