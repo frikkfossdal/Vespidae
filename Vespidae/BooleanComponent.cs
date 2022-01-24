@@ -62,7 +62,7 @@ namespace Vespidae
             List<Polyline> test1 = ClipperTools.ConvertCurvesToPolylines(curvesA);
             List<Polyline> test2 = ClipperTools.ConvertCurvesToPolylines(curvesB);
 
-            var result = ClipperTools.intersection(test1, test2,clipNumber); 
+            var result = ClipperTools.intersection(test1, test2,RhinoDoc.ActiveDoc.ModelAbsoluteTolerance,clipNumber); 
 
             DA.SetDataList(0, result);
         }
@@ -82,4 +82,5 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid => new Guid("AB869523-12EB-43C6-A313-C989C29E929A");
     }
+
 }
