@@ -59,7 +59,7 @@ namespace ClipperHelper
         }
 
         //perform boolean operation on curves 
-        public static List<Polyline> intersection(IEnumerable<Polyline> A, IEnumerable<Polyline> B, int type) {
+        public static List<Polyline> intersection(IEnumerable<Polyline> A, IEnumerable<Polyline> B, double tolerance, int type) {
             List<Polyline> result = new List<Polyline>();
 
             var clip = new Clipper();
@@ -67,11 +67,11 @@ namespace ClipperHelper
             var polyfilltype = PolyFillType.pftEvenOdd;
 
             foreach (var plA in A) {
-                clip.AddPath(ToPath2d(plA), PolyType.ptSubject,plA.IsClosed);
+                clip.AddPath(ToPath2d(plA,tolerance), PolyType.ptSubject,plA.IsClosed);
             }
 
             foreach (var plB in B) {
-                clip.AddPath(ToPath2d(plB), PolyType.ptClip,plB.IsClosed);
+                clip.AddPath(ToPath2d(plB,tolerance), PolyType.ptClip,true);
             }
 
             PolyTree polytree = new PolyTree();
@@ -95,28 +95,39 @@ namespace ClipperHelper
             clip.Execute(ctype, polytree, polyfilltype, polyfilltype);
 
             var output = new List<Polyline>();
-            if (polytree.Childs.Count > 0)
-            {
-                foreach (var c in polytree.Childs) {
-                    output.Add(twoDtothreeD.toPolyline(c.Contour));
+
+            foreach (var pn in polytree.Iterate()) {
+                if (pn.Contour.Count > 1) {
+                    output.Add(twoDtothreeD.toPolyline(pn.Contour, tolerance, !pn.IsOpen));
                 }
             }
+
+
+            //if (polytree.Childs.Count > 0)
+            //{
+            //    foreach (var c in polytree.Childs) {
+            //        output.Add(twoDtothreeD.toPolyline(c.Contour,tolerance,!c.IsOpen));
+            //    }
+            //}
             
             return output;
         }
 
         //perform offset operation on curve 
-        //public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance) {
+        //public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance)
+        //{
         //    List<Polyline> output = new List<Polyline>();
-        //    List<List<IntPoint>> input = new List<List<IntPoint>>(); 
+        //    List<List<IntPoint>> input = new List<List<IntPoint>>();
 
-        //    foreach (Polyline poly in polysToOffset) {
-        //        input.Add(ToPath2d(poly)); 
+        //    foreach (Polyline poly in polysToOffset)
+        //    {
+        //        input.Add(ToPath2d(poly));
         //    }
-        //    off
-        //    List<List<IntPoint>> result = Clipper.OffsetPolygons(input, distance);
+            
+        //    List<List<IntPoint>> result = ClipperOffset OffsetPolygons(input, distance);
 
-        //    foreach (List<IntPoint> path in result) {
+        //    foreach (List<IntPoint> path in result)
+        //    {
         //        output.Add(twoDtothreeD.toPolyline(path));
         //    }
 
@@ -126,29 +137,35 @@ namespace ClipperHelper
         //perform series of offset operation on curve
 
 
-        public static List<IntPoint> ToPath2d(this Polyline pl) {
+        public static List<IntPoint> ToPath2d(this Polyline pl, double tolerance) {
             var path = new List<IntPoint>();
             foreach (var pt in pl) {
-                path.Add(ToIntPoint2d(pt));
+                path.Add(ToIntPoint2d(pt,tolerance));
             }
             return path;
         }
 
-        private static IntPoint ToIntPoint2d(this Point3d pt)
+        private static IntPoint ToIntPoint2d(Point3d pt, double tolerance)
         {
-            var point = new IntPoint(((long)(pt.X/0.01)), ((long)(pt.Y/0.01)));
+            var point = new IntPoint(((long)(pt.X/tolerance)), ((long)(pt.Y/tolerance)));
             return point;
         }
     }
 
     public static class twoDtothreeD{
-        public static Polyline toPolyline(List<IntPoint> path) {
-            var result = new Polyline();
+        public static Polyline toPolyline(List<IntPoint> path, double tolerance, bool closed) {
+            var polylinepts = new List<Point3d>();
 
             foreach (var pt in path) {
-                result.Add(new Point3d(((float)(pt.X*0.01)), ((float)(pt.Y*0.01)), 0));
+                polylinepts.Add(new Point3d(((float)(pt.X*tolerance)), ((float)(pt.Y* tolerance)), 0));
             }
-            return result; 
+
+            if (closed && path.Count > 0) {
+                polylinepts.Add(polylinepts[0]); 
+            }
+            var poly = new Polyline(polylinepts); 
+
+            return poly; 
         }
     }
 
