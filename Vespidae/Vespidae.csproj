@@ -24,9 +24,6 @@
   <ItemGroup>
     <None Remove="GrasshopperAsyncComponent" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="OffsetComponent.cs" />
-  </ItemGroup>
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
     <StartArguments></StartArguments>

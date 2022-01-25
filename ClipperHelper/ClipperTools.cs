@@ -114,25 +114,46 @@ namespace ClipperHelper
         }
 
         //perform offset operation on curve 
-        //public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance)
-        //{
-        //    List<Polyline> output = new List<Polyline>();
-        //    List<List<IntPoint>> input = new List<List<IntPoint>>();
+        public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance, double tolerance)
+        {
+            /*
+                    How do we handle not-closed polygons?
 
-        //    foreach (Polyline poly in polysToOffset)
-        //    {
-        //        input.Add(ToPath2d(poly));
-        //    }
-            
-        //    List<List<IntPoint>> result = ClipperOffset OffsetPolygons(input, distance);
+                    see: http://www.angusj.com/delphi/clipper/documentation/Docs/Units/ClipperLib/Types/EndType.htm
 
-        //    foreach (List<IntPoint> path in result)
-        //    {
-        //        output.Add(twoDtothreeD.toPolyline(path));
-        //    }
+                    etClosedPolygon: Ends are joined using the JoinType value and the path filled as a polygon
+                    etClosedLine: Ends are joined using the JoinType value and the path filled as a polyline
+                    etOpenSquare: Ends are squared off and extended delta units
+                    etOpenRound: Ends are rounded off and extended delta units
+                    etOpenButt: Ends are squared off with no extension.
 
-        //    return output;
-        //}
+            */
+
+            List<Polyline> output = new List<Polyline>();
+            ClipperOffset clipOfs = new ClipperOffset();
+
+            foreach (Polyline poly in polysToOffset)
+            {
+                if (poly.IsClosed) {
+                    clipOfs.AddPath(ToPath2d(poly, tolerance), JoinType.jtRound, EndType.etClosedLine);
+                }
+                else {
+                    clipOfs.AddPath(ToPath2d(poly, tolerance), JoinType.jtRound, EndType.etOpenRound);
+                }
+            }
+
+            PolyTree polytree = new PolyTree();
+            clipOfs.Execute(ref polytree, distance);
+
+            //total hack. Needs revision
+            foreach (var path in polytree.Iterate()) {
+                if (path.Contour.Count > 1){
+                    output.Add(twoDtothreeD.toPolyline(path.Contour, tolerance, !path.IsOpen));
+                }
+            }
+          
+            return output;
+        }
 
         //perform series of offset operation on curve
 

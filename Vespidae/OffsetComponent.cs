@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Grasshopper;
 using Grasshopper.Kernel;
+using Rhino;
 using Rhino.Geometry;
 using ClipperHelper;
 
@@ -56,10 +57,9 @@ namespace Vespidae
             if (!DA.GetData("Distance", ref distance))return;
 
             List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
+            List<Polyline> result = ClipperTools.offset(offsetPolylines, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
 
-            var result = ClipperTools.offset(offsetPolylines, distance);
-
-            DA.SetDataList("result", result); 
+            DA.SetDataList(0, result); 
         }
 
         /// <summary>
