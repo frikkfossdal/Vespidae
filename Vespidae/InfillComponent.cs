@@ -30,8 +30,8 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Vespidae_Operations", "VESO", "Prior Vespidae operations", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("density", "D", "infill density", GH_ParamAccess.item, 25); 
+            pManager.AddGenericParameter("Vespidae_Operations", "VESPO", "Prior Vespidae operations", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("density", "D", "infill density", GH_ParamAccess.item, 1); 
         }
 
         /// <summary>
@@ -57,10 +57,8 @@ namespace Vespidae
 
             DA.GetData("density", ref density);
 
-            vespo.createInfill(1, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            vespo.createInfill(density, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
             DA.SetDataList("InfillPoly", vespo.exposeInfill());
-
-
         }
 
         /// <summary>
