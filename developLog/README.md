@@ -116,3 +116,23 @@ I think I'm ready to put this into my code. First thing to do is to clean up my 
 Another problem! I'm using wrong clipper. NuGet only provides Clipper 6.4.0(?). Manually adding clipper and changing the version to 6.4.2.
 
 **Things I need to figure out with Clipper:** When I perform a clipping operation, for example difference, the resulting polytree keeps track of outer and inner polygons by nesting them as childs in the polytree. It does this by using a winding number algorithm as documented [here](http://www.angusj.com/delphi/clipper/documentation/Docs/Units/ClipperLib/Types/PolyFillType.htm). Does the same happen with the offset operation?
+
+# 2401-2022
+
+Logging fast today since I'm already behind. Clipper core functionality should now be properly implemented for doing both boolean operations and offsetting. There still are some minor things that should be addressed here. Most importantly I need to keep track on height. Clipper computes everything in 2D. When I convert into "clipper-points" I need to keep track of the height and re-apply it when I convert back from clipper to rhino polylines. I'll add this when I need it. 
+
+# 2501-2022
+
+I need to think about how I want to structure the data and what a real case user journey looks like. A big goal I'm aiming for is to expose all the steps of a CAM processor and give provide simple entry points where a user can modify and customize its output. For 3D printing this would entail exposure of the shells and the infill on a layer basis. I'm thinking more and more that I want to create my own data object that contains all the data, and different components that allows step-wise manipulation of this object. I made a quick doodle for reference: 
+
+![doodle of data structure](./img/philosophy_sketch.jpg)
+
+A quick thought on this point: I could go at this from a higher abstraction point. Rather then segmenting the data into *layers*, as in layers in 3d printing, I could segment everything into operations or actions. These would represent any action that I want the machine to perform. I could then create a class that holds all of these actions, and this class would be shared between each Vespidae Component. I would also need a component that translate the class into Rhino-compatible stuff like lines and gcode and so on. I need to think more about this, but since I already created a slicer class that contains all layers I will move forward with a similar structure and see how that feels. 
+
+As for slicing I'm thinking I want the complete slicer operation to consist of several separate components in Grasshopper; one for contouring the brep, one for creating infill, etc. This both exposes the data that each of these component generates and enables us to manipulate this data as it is flowing through the slicing pipeline. 
+
+I've implemented a slicing component and a infill component according to this philosophy. Now we return to the problem of my clipping tool not factoring in height of the polylines its working on. The infill component uses clipping to calculate the intersection between the generated infill lines and the contours of the brep. This all works fine, but the calculated infill lines are all outputted on the same height (z=0). Fixing this is a big todo tomorrow! 
+
+![Preview of infill clipping working. Layer is manually moved as the clipper height is wrong.](./img/infill_preview.png)
+
+I'm getting close and I'm starting to like the feel of this. Hopefully shooting for a physical test on the ultimaker this week! 
