@@ -1,7 +1,7 @@
 
 # Vespidae Develop Log
 
-## Prior log lost in time 
+# Prior log lost in time 
 
 Today is all about simple toolpaths and visualization. I need scripts that takes curves as input and translates this into usable machine code. Simultaneously it needs to visualize the machine movement (retract moves, travel moves, etc). I'm not sure if these should be separated or how the data should be formmated, but I figure this will become clear if I work with the data for a while. Here goes. 
 
@@ -42,7 +42,7 @@ Simple exercise. Use Grasshopper's Contour component to "slice" 3D surface. Feed
 ![Dynamic 3D toolpahts](./img/3D_surface_toolpaths.gif)
 
 
-## Vinh Battery Printing
+# Vinh Battery Printing
 
 Ok so we are printing batteries. This is quite a unique workflow and will be a good showcase for dynamic CAM tools. There are lots of challenges that needs to be addressed. I think I finally need to get a proper-ish slicer up and running in Grasshopper. I'm thinking clipper makes sense here to generate infill toolpaths. I also need a way to test this in real world. For this I will use my trusty Ultimaker as it has two extruders (this compliment nicely with Vinh and his tool-changing Jubilee. 
 
@@ -57,21 +57,21 @@ Note to self: investigate how objects can be tagged with metadata using *setUser
 
 
 
-## 1310_2022
+# 1310_2022
 
 Starting (b)logging a bit late in the game here but I spent some time getting comfortable with the whole Visual Studio experience again. I've had a hard time setting everything up to run and compile properly, but I'm at a better place now. A highlight from this is how to create solutions that consists of multiple projects in one solution (think one project that holds all the Grasshopper components combined with projects that holds all the supporting code and libraries, for example the logic for Clipper). Following includes a short recipe for setting things up. I'm linking documentation for osx, but equivalent documentation exists for windows on McNeels developer sites. Here goes: 
 
-### **Guide for setting things up in Visual Studio**
+## **Guide for setting things up in Visual Studio**
 
-### *Install McNeel tools in Visual Studio*
+## *Install McNeel tools in Visual Studio*
 
 First of all install the template tools from McNeel as documented [here](https://developer.rhino3d.com/guides/rhinocommon/installing-tools-mac/).
 
-### *Create Solution*
+## *Create Solution*
 
 Follow this guide to create first Grasshopper (or Rhino) component and to understand how they should be set up. 
 
-### *Creating Custom Libraries / Projects*
+## *Creating Custom Libraries / Projects*
 
 To create class libraries for supporting code right click solution and add new project *(Add->New Project)*. In the following dialog select Library *(.NET->Library)*. After library folder has been generated and added to the solution right click top library folder and select options. Check that build settings are set to Library *(Build->General->Compile Target*. 
 
@@ -83,13 +83,13 @@ Now comes the weird part. If you want to include Rhino or Grasshopper namespaces
 	4. Thats it. Library should be ready for use. Final thing to do is to add a reference to this project from the main Project (again, the one that Rhino/Grasshopper-template generated for you). Right click Rhino/Grasshopper-project/Add Reference. Your new project should be under the Projects-tab. Add it. 
 	5. Build everything and hopefully you will be ok! 
 
-### Back to logging 
+## Back to logging 
 
 This now includes Clipper. Look [here](http://angusj.com/delphi/clipper.php) for examples and documentation. 
 
 ![Offset tool in all its glory ](./img/vespidae_offset.gif)
 
-## 1701_2022
+# 1701_2022
 
 Started updating the offset component to prepare it for slicing. As of now it only offsets a curve once, but I think it is more useful to enable it to offset a curve multiple times based on a given input number. I added the structure to do this component wise, but It's missing the logic to actually compute this. I'll wrap this up next session. 
 
@@ -121,17 +121,17 @@ Another problem! I'm using wrong clipper. NuGet only provides Clipper 6.4.0(?). 
 
 # 2401-2022
 
-Logging fast today since I'm already behind. Clipper core functionality should now be properly implemented for doing both boolean operations and offsetting. There still are some minor things that should be addressed here. Most importantly I need to keep track on height. Clipper computes everything in 2D. When I convert into "clipper-points" I need to keep track of the height and re-apply it when I convert back from clipper to rhino polylines. I'll add this when I need it. 
+Logging fast today since I'm already behind. Clipper core functionality should now be properly implemented for doing both boolean operations and offsetting. Still, there are some minor things that should be addressed. Most important I need to keep track on height. Clipper computes everything in 2D. When I convert into "clipper-points" I need to keep track of the height and re-apply it when I convert back from clipper to rhino polylines. I'll add this when I need it. 
 
 # 2501-2022
 
-I need to think about how I want to structure the data and what a real case user journey looks like. A big goal I'm aiming for is to expose all the steps of a CAM processor and give provide simple entry points where a user can modify and customize its output. For 3D printing this would entail exposure of the shells and the infill on a layer basis. I'm thinking more and more that I want to create my own data object that contains all the data, and different components that allows step-wise manipulation of this object. I made a quick doodle for reference: 
+I need to think about how I want to structure the data and what a real case user journey looks like. A big goal I'm aiming for is to expose all the steps of a CAM processor and provide simple entry points where we can modify and customize its output and behaviour. For 3D printing for exampel this would entail exposure of the computing of the shells and infills. I'm thinking more and more that I want to create my own data object that contains all the data, and different components that allows step-wise manipulation of this object. I made a quick doodle for reference: 
 
 ![doodle of data structure](./img/philosophy_sketch.jpg)
 
-A quick thought on this point: I could go at this from a higher abstraction point. Rather then segmenting the data into *layers*, as in layers in 3d printing, I could segment everything into operations or actions. These would represent any action that I want the machine to perform. I could then create a class that holds all of these actions, and this class would be shared between each Vespidae Component. I would also need a component that translate the class into Rhino-compatible stuff like lines and gcode and so on. I need to think more about this, but since I already created a slicer class that contains all layers I will move forward with a similar structure and see how that feels. 
+A quick thought on this point: I could go at this from a higher abstraction point. Rather then segmenting the data into *layers*, as in layers in 3d printing, I could segment everything into operations or actions. These would represent any action that I want the machine to perform. I could then create a class that holds all of these actions, and this class would be shared between each Vespidae Component. I would also need a component that translate the class into Rhino-compatible stuff like lines and gcode and so on. I need to think more about this, but since I already created a slicer class that contains all layers I will move forward with a similar structure and see how it feels. 
 
-As for slicing I'm thinking I want the complete slicer operation to consist of several separate components in Grasshopper; one for contouring the brep, one for creating infill, etc. This both exposes the data that each of these component generates and enables us to manipulate this data as it is flowing through the slicing pipeline. 
+As for slicing I think I want the complete slicer operation to consist of several separate components in Grasshopper; one for contouring the brep, one for creating infill, etc. This both exposes the data that each of these component generates and enables us to manipulate this data as it is flowing through the slicing pipeline. 
 
 I've implemented a slicing component and a infill component according to this philosophy. Now we return to the problem of my clipping tool not factoring in height of the polylines its working on. The infill component uses clipping to calculate the intersection between the generated infill lines and the contours of the brep. This all works fine, but the calculated infill lines are all outputted on the same height (z=0). Fixing this is a big todo tomorrow! 
 
