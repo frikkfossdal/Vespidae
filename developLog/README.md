@@ -44,9 +44,9 @@ Simple exercise. Use Grasshopper's Contour component to "slice" 3D surface. Feed
 
 ## Vinh Battery Printing
 
-Ok so we are printing batteries. This is quite a unique workflow and will be a good showcase for dynamic CAM tools. There is lots of challenges that needs to be addressed. I think I finally need to get a proper-ish slicer up and running in Grasshopper. I'm thinking clipper makes sense here to generate infill toolpaths. I also need a way to test this in real world. I'm thinking I will use my good ol' Ultimaker as it has two extruders (this compliment nicely with Vinh and his tool-changing Jubilee. 
+Ok so we are printing batteries. This is quite a unique workflow and will be a good showcase for dynamic CAM tools. There are lots of challenges that needs to be addressed. I think I finally need to get a proper-ish slicer up and running in Grasshopper. I'm thinking clipper makes sense here to generate infill toolpaths. I also need a way to test this in real world. For this I will use my trusty Ultimaker as it has two extruders (this compliment nicely with Vinh and his tool-changing Jubilee. 
 
-As I understand it Vinh wants to print the base geometry of the battery (a box-geometry full of holes) and park the nozzle over each whole and simply fill it with plastic using the extruder. The geometry looks like this. 
+As I understand it Vinh wants to print the base geometry of the battery (a box-geometry full of holes) and park the nozzle over each whole and fill it with plastic using the extruder. The geometry looks like this. 
 
 ![3D printed battery exploded view](./img/battery_geometry.png)
 
