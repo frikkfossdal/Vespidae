@@ -55,7 +55,7 @@ As I understand it Vinh wants to print the base geometry of the battery (a box-g
 
 Note to self: investigate how objects can be tagged with metadata using *setUserText* in Rhino. 
 
-This now includes Clipper. Look [here](http://angusj.com/delphi/clipper.php) for examples and documentation. 
+
 
 ## 1310_2022
 
@@ -84,6 +84,8 @@ Now comes the weird part. If you want to include Rhino or Grasshopper namespaces
 	5. Build everything and hopefully you will be ok! 
 
 ### Back to logging 
+
+This now includes Clipper. Look [here](http://angusj.com/delphi/clipper.php) for examples and documentation. 
 
 ![Offset tool in all its glory ](./img/vespidae_offset.gif)
 
