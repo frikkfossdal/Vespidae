@@ -15,7 +15,7 @@ Todays CAM tools and slicer relieves the user of this complexity by automating t
 
 ## How do I use it? 
 
-# Curated Examples
+# Curated Examples (will move to separe page)
 
 ## Spiral vase on the Ultimaker 
 
@@ -26,7 +26,6 @@ I made a simple script that uses the uv-coordinates to wrap a spiral around a su
 ![Spirals. Visualized with 0.4 radius for the nozzle diameter. Spiral needs adjustment.](./img/spiral1.png)
 
 Next challenge is calculating extrusion rate. Main train of though coming into this is that I need to check the length between each point that is translated to gcode and use this to determine how much material that should be extruded between these two points. 
-
 
 
 ## Probing script on Clank 
