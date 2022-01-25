@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Grasshopper;
 using Grasshopper.Kernel;
+using Rhino; 
 using Rhino.Geometry;
-using ClipperHelper;
-using SlicerTool;
+using SlicerTool; 
 
 namespace Vespidae
 {
-    public class SlicerComponent : GH_Component
+    public class InfillComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -17,9 +18,9 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public SlicerComponent()
-          : base("SlicerComponent", "Slice",
-            "SlicerComponent description",
+        public InfillComponent()
+          : base("InfillComponent", "Infill",
+            "Create infill operations on top of slice",
             "Vespidae", "Slicing Tools")
         {
         }
@@ -29,8 +30,8 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddBrepParameter("Brep", "G", "Brep geometry to be sliced", GH_ParamAccess.item);
-            pManager.AddNumberParameter("LayerHeight", "LH", "Slicing layer height", GH_ParamAccess.item,1);
+            pManager.AddGenericParameter("Vespidae_Operations", "VESO", "Prior Vespidae operations", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("density", "D", "infill density", GH_ParamAccess.item, 25); 
         }
 
         /// <summary>
@@ -38,8 +39,8 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Vespidae_Object_out", "VESPO", "Prior Vespidae operations", GH_ParamAccess.item);
-            pManager.AddGenericParameter("SlicedPolys", "P", "sliced polys as list", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Vespidae_Object_out", "VESO", "Prior Vespidae operations", GH_ParamAccess.item);
+            pManager.AddGenericParameter("InfillPoly", "Inf", "Preview infill", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -49,32 +50,17 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Slicer slc = new Slicer();
+            var vespo = new Slicer(); 
+            int density = 0; 
 
-            Brep geo = new Brep();
-            Plane pl = new Plane();
-            double lh = 0.4;
+            if (!DA.GetData("Vespidae_Operations", ref vespo)) return;
 
-            if (!DA.GetData("Brep", ref geo)) return;
-            DA.GetData("LayerHeight", ref lh);
-            
-            List<Curve> lst = new List<Curve>();
-            lst.AddRange(Brep.CreateContourCurves(geo, new Point3d(0, 0, 0), new Point3d(0, 0, 30), 1));
+            DA.GetData("density", ref density);
 
-            //List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(lst);
+            vespo.createInfill(1, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            DA.SetDataList("InfillPoly", vespo.exposeInfill());
 
-            var bound = geo.GetBoundingBox(true);
 
-            var infill = brepTools.createInfillLines(geo, 0.3);
-
-            infill = brepTools.sortPolys(infill);
-
-            slc.layerHeight = lh;
-            slc.model = geo;
-            slc.slice();
-
-            DA.SetData("Vespidae_Object_out", slc);
-            DA.SetDataList("SlicedPolys", slc.exposeShells()); 
         }
 
         /// <summary>
@@ -98,7 +84,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("30c8db20-681c-472d-90a0-845347998b8e"); }
+            get { return new Guid("ef5e632d-bdec-4094-92b7-d11d73c53198"); }
         }
     }
 }
