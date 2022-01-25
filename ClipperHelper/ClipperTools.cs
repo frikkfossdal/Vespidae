@@ -102,14 +102,6 @@ namespace ClipperHelper
                 }
             }
 
-
-            //if (polytree.Childs.Count > 0)
-            //{
-            //    foreach (var c in polytree.Childs) {
-            //        output.Add(twoDtothreeD.toPolyline(c.Contour,tolerance,!c.IsOpen));
-            //    }
-            //}
-            
             return output;
         }
 
