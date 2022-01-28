@@ -31,8 +31,9 @@ namespace Vespidae
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("Curve", "C", "Curve or curves to offset", GH_ParamAccess.list); 
-            pManager.AddNumberParameter("Distance", "D", "Distance to offset", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Number of offsets", "NO", "Number of times to offset curve. Default 1", GH_ParamAccess.item, 1); 
+            pManager.AddNumberParameter("Distance", "D", "Distance to offset", GH_ParamAccess.item, 1);
+            pManager.AddNumberParameter("Number of offsets", "NO", "Number of times to offset curve. Default 1", GH_ParamAccess.item, 1);
+            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, new Plane());
         }
 
         /// <summary>
@@ -52,12 +53,14 @@ namespace Vespidae
         {
             List<Curve> offsetCurves = new List<Curve>();
             double distance = 0;
+            Plane pln = new Plane();
 
             if (!DA.GetDataList("Curve", offsetCurves))return;
-            if (!DA.GetData("Distance", ref distance))return;
+            DA.GetData("Distance", ref distance);
+            DA.GetData("OutputPlane", ref pln);
 
             List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
-            List<Polyline> result = ClipperTools.offset(offsetPolylines, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            List<Polyline> result = ClipperTools.offset(offsetPolylines, pln, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
 
             DA.SetDataList(0, result); 
         }

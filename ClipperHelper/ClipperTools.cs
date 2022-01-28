@@ -9,7 +9,7 @@ namespace ClipperHelper
 {
     public static class ClipperTools
     {
-
+        //borrowed from original grasshopper clipper lib 
         public static IEnumerable<PolyNode> Iterate(this PolyNode node)
         {
             yield return node;
@@ -59,11 +59,10 @@ namespace ClipperHelper
         }
 
         //perform boolean operation on curves 
-        public static List<Polyline> intersection(IEnumerable<Polyline> A, IEnumerable<Polyline> B, double tolerance, int type) {
+        public static List<Polyline> intersection(IEnumerable<Polyline> A,  IEnumerable<Polyline> B, Plane pln, double tolerance, int type) {
             List<Polyline> result = new List<Polyline>();
 
             var clip = new Clipper();
-            
             var polyfilltype = PolyFillType.pftEvenOdd;
 
             foreach (var plA in A) {
@@ -98,7 +97,7 @@ namespace ClipperHelper
 
             foreach (var pn in polytree.Iterate()) {
                 if (pn.Contour.Count > 1) {
-                    output.Add(twoDtothreeD.toPolyline(pn.Contour, tolerance, !pn.IsOpen));
+                    output.Add(ToPolyline(pn.Contour, pln, tolerance, !pn.IsOpen));
                 }
             }
 
@@ -106,7 +105,7 @@ namespace ClipperHelper
         }
 
         //perform offset operation on curve 
-        public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, double distance, double tolerance)
+        public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, Plane pln, double distance, double tolerance)
         {
             /*
                     How do we handle not-closed polygons?
@@ -124,6 +123,9 @@ namespace ClipperHelper
             List<Polyline> output = new List<Polyline>();
             ClipperOffset clipOfs = new ClipperOffset();
 
+            //keep height hack. Needs better logic
+          
+
             foreach (Polyline poly in polysToOffset)
             {
                 if (poly.IsClosed) {
@@ -137,10 +139,10 @@ namespace ClipperHelper
             PolyTree polytree = new PolyTree();
             clipOfs.Execute(ref polytree, distance);
 
-            //total hack. Needs revision
+            //potential hack. Needs revision
             foreach (var path in polytree.Iterate()) {
                 if (path.Contour.Count > 1){
-                    output.Add(twoDtothreeD.toPolyline(path.Contour, tolerance, !path.IsOpen));
+                    output.Add(ToPolyline(path.Contour, pln, tolerance, !path.IsOpen));
                 }
             }
           
@@ -163,22 +165,24 @@ namespace ClipperHelper
             var point = new IntPoint(((long)(pt.X/tolerance)), ((long)(pt.Y/tolerance)));
             return point;
         }
-    }
 
-    public static class twoDtothreeD{
-        public static Polyline toPolyline(List<IntPoint> path, double tolerance, bool closed) {
+        public static Polyline ToPolyline(List<IntPoint> path, Plane pln, double tolerance,  bool closed)
+        {
             var polylinepts = new List<Point3d>();
 
-            foreach (var pt in path) {
-                polylinepts.Add(new Point3d(((float)(pt.X*tolerance)), ((float)(pt.Y* tolerance)), 0));
+            foreach (var pt in path)
+            {
+                polylinepts.Add(pln.PointAt(pt.X*tolerance, pt.Y*tolerance));
+                //polylinepts.Add(new Point3d(((float)(pt.X * tolerance)), ((float)(pt.Y * tolerance)),0));
             }
 
-            if (closed && path.Count > 0) {
-                polylinepts.Add(polylinepts[0]); 
+            if (closed && path.Count > 0)
+            {
+                polylinepts.Add(polylinepts[0]);
             }
-            var poly = new Polyline(polylinepts); 
+            var poly = new Polyline(polylinepts);
 
-            return poly; 
+            return poly;
         }
     }
 

@@ -12,6 +12,7 @@ namespace SlicerTool
         public double layerHeight;
         double nozzleDiam;
         int numberOfLayers;
+       
 
         public Slicer()
         {
@@ -45,11 +46,19 @@ namespace SlicerTool
                 nl.height = i;
 
                 List<Polyline> converted = ClipperTools.ConvertCurvesToPolylines(contours);
-                foreach (var p in converted) {
+
+                //calculate additional shells and add all shell polys to layer
+
+                converted.AddRange(ClipperTools.offset(converted, new Plane(new Point3d(0, 0, i), new Vector3d(0, 0, 1)), 5, 0.01));
+
+                foreach (Polyline p in converted) {
+                    
                     nl.shells.Add(p);
                 }
+                nl.pln = new Plane(new Point3d(0,0,i), new Vector3d(0,0,1));
                 layers.Add(nl);
             }
+            
         }
 
 
@@ -57,7 +66,7 @@ namespace SlicerTool
             List<Polyline> infillLines =  brepTools.createInfillLines(model, density);
 
             foreach (Layer l in this.layers) {
-                List<Polyline> inf =  ClipperTools.intersection(infillLines, l.shells, tolerance, 1);
+                List<Polyline> inf =  ClipperTools.intersection(infillLines, l.shells, l.pln, tolerance, 1);
                 l.infill.AddRange(inf);
             }
         }
@@ -84,17 +93,27 @@ namespace SlicerTool
             }
             return output;
         }
+
+        public List<Plane> exposePlanes() {
+            var output = new List<Plane>();
+            foreach (var l in layers) {
+                output.Add(l.pln);
+            }
+            return output; 
+        }
     }
 
     public class Layer {
         public List<Polyline> shells;
         public List<Polyline> infill;
         public double height;
+        public Plane pln;
 
         public Layer() {
             shells = new List<Polyline>();
             infill = new List<Polyline>(); 
-            height = 0; 
+            height = 0;
+            pln = new Plane(); 
         }
     }
 }

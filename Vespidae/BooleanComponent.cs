@@ -32,7 +32,8 @@ namespace Vespidae
         {
             pManager.AddCurveParameter("A", "A", "", GH_ParamAccess.list);
             pManager.AddCurveParameter("B", "B", "", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("ClipType", "CT", "Clipping type. 0 : difference, 1: intersection, 2: union, 3: xor", GH_ParamAccess.item,0); 
+            pManager.AddIntegerParameter("ClipType", "CT", "Clipping type. 0 : difference, 1: intersection, 2: union, 3: xor", GH_ParamAccess.item,0);
+            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, new Plane()); 
         }
 
         /// <summary>
@@ -53,16 +54,18 @@ namespace Vespidae
 
             List<Curve> curvesA = new List<Curve>();
             List<Curve> curvesB = new List<Curve>();
-            int clipNumber = 0; 
+            int clipNumber = 0;
+            Plane pln = new Plane(); 
 
             if (!DA.GetDataList("A", curvesA)) return;
             if (!DA.GetDataList("B", curvesB))return;
             DA.GetData("ClipType", ref clipNumber);
+            DA.GetData("OutputPlane", ref pln); 
 
             List<Polyline> test1 = ClipperTools.ConvertCurvesToPolylines(curvesA);
             List<Polyline> test2 = ClipperTools.ConvertCurvesToPolylines(curvesB);
 
-            var result = ClipperTools.intersection(test1, test2,RhinoDoc.ActiveDoc.ModelAbsoluteTolerance,clipNumber); 
+            var result = ClipperTools.intersection(test1, test2, pln,RhinoDoc.ActiveDoc.ModelAbsoluteTolerance,clipNumber); 
 
             DA.SetDataList(0, result);
         }

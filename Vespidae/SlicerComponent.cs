@@ -40,6 +40,7 @@ namespace Vespidae
         {
             pManager.AddGenericParameter("Vespidae_Object_out", "VESPO", "Prior Vespidae operations", GH_ParamAccess.item);
             pManager.AddGenericParameter("SlicedPolys", "P", "sliced polys as list", GH_ParamAccess.list);
+            pManager.AddGenericParameter("SlicingPlanes", "pln", "slicing planes", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -74,7 +75,8 @@ namespace Vespidae
             slc.slice();
 
             DA.SetData("Vespidae_Object_out", slc);
-            DA.SetDataList("SlicedPolys", slc.exposeShells()); 
+            DA.SetDataList("SlicedPolys", slc.exposeShells());
+            DA.SetDataList("SlicingPlanes", slc.exposePlanes());
         }
 
         /// <summary>
