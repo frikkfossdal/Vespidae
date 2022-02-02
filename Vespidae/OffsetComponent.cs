@@ -33,7 +33,7 @@ namespace Vespidae
             pManager.AddCurveParameter("Curve", "C", "Curve or curves to offset", GH_ParamAccess.list); 
             pManager.AddNumberParameter("Distance", "D", "Distance to offset", GH_ParamAccess.item, 1);
             pManager.AddNumberParameter("Number of offsets", "NO", "Number of times to offset curve. Default 1", GH_ParamAccess.item, 1);
-            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, new Plane());
+            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, Plane.WorldXY);
         }
 
         /// <summary>

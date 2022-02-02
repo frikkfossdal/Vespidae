@@ -116,8 +116,7 @@ namespace ClipperHelper
                     etClosedLine: Ends are joined using the JoinType value and the path filled as a polyline
                     etOpenSquare: Ends are squared off and extended delta units
                     etOpenRound: Ends are rounded off and extended delta units
-                    etOpenButt: Ends are squared off with no extension.
-
+                    etOpenButt: Ends are squared off with no extension
             */
 
             List<Polyline> output = new List<Polyline>();
@@ -137,13 +136,22 @@ namespace ClipperHelper
             }
 
             PolyTree polytree = new PolyTree();
-            clipOfs.Execute(ref polytree, distance);
+            clipOfs.Execute(ref polytree, distance/tolerance);
 
             //potential hack. Needs revision
             foreach (var path in polytree.Iterate()) {
-                if (path.Contour.Count > 1){
-                    output.Add(ToPolyline(path.Contour, pln, tolerance, !path.IsOpen));
+                
+                if (path.IsHole)
+                {
+                    if (path.Contour.Count > 1)
+                    {
+                        output.Add(ToPolyline(path.Contour, pln, tolerance, !path.IsOpen));
+                    }
                 }
+                else {
+
+                }
+       
             }
           
             return output;
