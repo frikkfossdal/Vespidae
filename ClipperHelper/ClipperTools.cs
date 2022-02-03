@@ -59,18 +59,18 @@ namespace ClipperHelper
         }
 
         //perform boolean operation on curves 
-        public static List<Polyline> intersection(IEnumerable<Polyline> A,  IEnumerable<Polyline> B, Plane pln, double tolerance, int type) {
+        public static List<Polyline> intersection(IEnumerable<Polyline> A, IEnumerable<Polyline> B, Plane pln, double tolerance, int type) {
             List<Polyline> result = new List<Polyline>();
 
             var clip = new Clipper();
             var polyfilltype = PolyFillType.pftEvenOdd;
 
             foreach (var plA in A) {
-                clip.AddPath(ToPath2d(plA,tolerance), PolyType.ptSubject,plA.IsClosed);
+                clip.AddPath(ToPath2d(plA, tolerance), PolyType.ptSubject, plA.IsClosed);
             }
 
             foreach (var plB in B) {
-                clip.AddPath(ToPath2d(plB,tolerance), PolyType.ptClip,true);
+                clip.AddPath(ToPath2d(plB, tolerance), PolyType.ptClip, true);
             }
 
             PolyTree polytree = new PolyTree();
@@ -85,10 +85,10 @@ namespace ClipperHelper
                     break;
                 case 2:
                     ctype = ClipType.ctUnion;
-                    break; 
+                    break;
                 case 3:
                     ctype = ClipType.ctXor;
-                    break; 
+                    break;
             }
 
             clip.Execute(ctype, polytree, polyfilltype, polyfilltype);
@@ -105,7 +105,7 @@ namespace ClipperHelper
         }
 
         //perform offset operation on curve 
-        public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, Plane pln, double distance, double tolerance)
+        public static List<Polyline> offset(IEnumerable<Polyline> polysToOffset, int amount, Plane pln, double distance, double tolerance)
         {
             /*
                     How do we handle not-closed polygons?
@@ -123,7 +123,7 @@ namespace ClipperHelper
             ClipperOffset clipOfs = new ClipperOffset();
 
             //keep height hack. Needs better logic
-          
+
 
             foreach (Polyline poly in polysToOffset)
             {
@@ -136,29 +136,63 @@ namespace ClipperHelper
             }
 
             PolyTree polytree = new PolyTree();
-            clipOfs.Execute(ref polytree, distance/tolerance);
+
+            double delta = distance;
+            for (int i = 0; i < amount; i++) {
+                clipOfs.Execute(ref polytree, delta / tolerance);
+                output.AddRange(extractSolution(polytree, pln, tolerance)); 
+                delta += distance;
+            }
+
+
+            //PolyNode test = polytree.GetFirst();
+
+            //while (test != null) {
+
+            //    if (test.IsHole)
+            //    {
+            //        output.Add(ToPolyline(test.Contour, pln, tolerance, !test.IsOpen));
+            //    }
+
+
+            //    test = test.GetNext();
+            //}
 
             //potential hack. Needs revision
-            foreach (var path in polytree.Iterate()) {
-                
-                if (path.IsHole)
-                {
-                    if (path.Contour.Count > 1)
-                    {
-                        output.Add(ToPolyline(path.Contour, pln, tolerance, !path.IsOpen));
-                    }
-                }
-                else {
+            //foreach (var path in polytree.Iterate()) {
 
-                }
-       
-            }
-          
+            //    if (path.IsHole)
+            //    {
+            //        if (path.Contour.Count > 1)
+            //        {
+            //            output.Add(ToPolyline(path.Contour, pln, tolerance, !path.IsOpen));
+            //        }
+            //    }
+            //    else {
+
+            //    }
+
+            //}
+
             return output;
         }
 
-        //perform series of offset operation on curve
+        private static  List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance) {
+            List<Polyline> output = new List<Polyline>();
 
+            PolyNode cur = sol.GetFirst();
+
+            while(cur != null)
+            {
+                if (cur.IsHole)
+                {
+                    output.Add(ToPolyline(cur.Contour, pln, tolerance, !cur.IsOpen));
+                }
+               
+                cur = cur.GetNext();
+            }
+            return output; 
+        }
 
         public static List<IntPoint> ToPath2d(this Polyline pl, double tolerance) {
             var path = new List<IntPoint>();

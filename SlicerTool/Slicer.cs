@@ -49,7 +49,7 @@ namespace SlicerTool
 
                 //calculate additional shells and add all shell polys to layer
 
-                converted.AddRange(ClipperTools.offset(converted, new Plane(new Point3d(0, 0, i), new Vector3d(0, 0, 1)), 5, 0.01));
+                converted.AddRange(ClipperTools.offset(converted,1, new Plane(new Point3d(0, 0, i), new Vector3d(0, 0, 1)), 5, 0.01));
 
                 foreach (Polyline p in converted) {
                     
