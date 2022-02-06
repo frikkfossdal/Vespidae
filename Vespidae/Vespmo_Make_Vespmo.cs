@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using ClipperHelper;
 using GMaker;
-
+using ClipperHelper; 
 
 namespace Vespidae
 {
-    public class MakeGcodeComponent : GH_Component
+    public class Vespmo_Make_Vespmo : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -19,9 +18,9 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public MakeGcodeComponent()
-          : base("MakeGcodeComponent", "Make Gcode",
-            "Converts polylines to gcode and visualizes machine operation (deleteMe)",
+        public Vespmo_Make_Vespmo()
+          : base("Vespmo_Make_Vespmo", "Nickname",
+            "Vespmo_Make_Vespmo description",
             "Vespidae", "Gcode Tools")
         {
         }
@@ -31,10 +30,9 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polylines", "P", "polylines to convert", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("TravelSpeed", "TS", "speed of travels between operations m/s", GH_ParamAccess.item, 4000);
-            pManager.AddIntegerParameter("WorkSpeed", "WS", "speed of operation itself m/s", GH_ParamAccess.item, 3000);
-            pManager.AddNumberParameter("RetractHeight", "RH", "retraction height between operations", GH_ParamAccess.item, 50);
+            pManager.AddCurveParameter("Curve", "crv", "polyline to convert", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("Type", "t", "type of move 0 = travel, 1 = work", GH_ParamAccess.item, 0);
+            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item,1000); 
         }
 
         /// <summary>
@@ -42,8 +40,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("gcode", "G", "Output gcode", GH_ParamAccess.list);
-            pManager.AddGenericParameter("toolpaths", "TP", "Output toolpaths for visualization", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("move", "VESPMO", "Vespidae Moves", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -53,23 +50,25 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var curves = new List<Curve>();
-            int ts = 0;
-            int ws = 0;
-            double rh = 0;
-            GTools gtools = new GTools();
+            Curve crv = new PolyCurve();
+            int type = 0;
+            int speed = 0; 
 
-            if (!DA.GetDataList("Polylines", curves)) return;
-            DA.GetData("TravelSpeed", ref ts);
-            DA.GetData("WorkSpeed", ref ws);
-            DA.GetData<double>("RetractHeight", ref rh);
+            if (!DA.GetData("Curve", ref crv)) return;
+            DA.GetData("Type", ref type);
+            DA.GetData("Speed", ref speed); 
 
-            List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(curves);
-            List<String> outputGcode = gtools.MakeGcode(polys, ts, ws, rh);
+            Polyline pol = new Polyline(); 
+            ClipperTools.ConvertCurveToPolyline(crv, out pol); 
 
-            DA.SetDataList("gcode", outputGcode);
-            DA.SetDataList("toolpaths", gtools.outputPaths);
+            Move mv = new Move();
+            mv.path = pol;
+            mv.speed = speed;
 
+            //come back and fix this 
+            mv.type = "travel"; 
+
+            DA.SetData("move", mv); 
         }
 
         /// <summary>
@@ -93,7 +92,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("8b5cccb4-2352-4a10-a862-3757f188d64e"); }
+            get { return new Guid("a10d1ea2-cd5f-4e31-8f35-ac77d5fa7b33"); }
         }
     }
 }

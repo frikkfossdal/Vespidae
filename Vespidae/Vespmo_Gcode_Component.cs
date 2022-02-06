@@ -4,13 +4,11 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using ClipperHelper;
-using GMaker;
-
+using GMaker; 
 
 namespace Vespidae
 {
-    public class MakeGcodeComponent : GH_Component
+    public class Vespmo_Gcode_Component : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -19,9 +17,9 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public MakeGcodeComponent()
-          : base("MakeGcodeComponent", "Make Gcode",
-            "Converts polylines to gcode and visualizes machine operation (deleteMe)",
+        public Vespmo_Gcode_Component()
+          : base("Vespmo_Gcode_Component", "VespMoGcode",
+            "Converts VESPMO object to gcode files",
             "Vespidae", "Gcode Tools")
         {
         }
@@ -31,10 +29,9 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polylines", "P", "polylines to convert", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("TravelSpeed", "TS", "speed of travels between operations m/s", GH_ParamAccess.item, 4000);
-            pManager.AddIntegerParameter("WorkSpeed", "WS", "speed of operation itself m/s", GH_ParamAccess.item, 3000);
-            pManager.AddNumberParameter("RetractHeight", "RH", "retraction height between operations", GH_ParamAccess.item, 50);
+            pManager.AddGenericParameter("VESPMO", "VESPMO", "Vespida Move objects", GH_ParamAccess.list);
+            pManager.AddTextParameter("header", "h", "optional gcode header", GH_ParamAccess.list);
+            pManager.AddTextParameter("footer", "f", "optional gcode footer", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -42,8 +39,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("gcode", "G", "Output gcode", GH_ParamAccess.list);
-            pManager.AddGenericParameter("toolpaths", "TP", "Output toolpaths for visualization", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("gcode", "Gcode", "output gcode", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -53,23 +49,25 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var curves = new List<Curve>();
-            int ts = 0;
-            int ws = 0;
-            double rh = 0;
-            GTools gtools = new GTools();
+            List<Move> moves = new List<Move>();
+            List<String> gcode = new List<string>();
+            List<String> header = new List<string>();
+            List<String> footer = new List<string>();
 
-            if (!DA.GetDataList("Polylines", curves)) return;
-            DA.GetData("TravelSpeed", ref ts);
-            DA.GetData("WorkSpeed", ref ws);
-            DA.GetData<double>("RetractHeight", ref rh);
+            if (!DA.GetDataList("VESPMO", moves)) return;
+            DA.GetDataList("header", header);
+            DA.GetDataList("footer", footer);
 
-            List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(curves);
-            List<String> outputGcode = gtools.MakeGcode(polys, ts, ws, rh);
+            if (header.Count > 0) {
+                gcode.AddRange(header);
+            }
 
-            DA.SetDataList("gcode", outputGcode);
-            DA.SetDataList("toolpaths", gtools.outputPaths);
+            gcode = GConvert.convertOperation(moves);
 
+            if (footer.Count > 0) {
+                gcode.AddRange(footer); 
+            }
+            DA.SetDataList("gcode", gcode);
         }
 
         /// <summary>
@@ -93,7 +91,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("8b5cccb4-2352-4a10-a862-3757f188d64e"); }
+            get { return new Guid("7b2fa908-e881-4bf6-96bd-68d5ef549b09"); }
         }
     }
 }

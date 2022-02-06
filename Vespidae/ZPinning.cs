@@ -4,13 +4,11 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using ClipperHelper;
-using GMaker;
-
+using GMaker; 
 
 namespace Vespidae
 {
-    public class MakeGcodeComponent : GH_Component
+    public class ZPinning : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -19,10 +17,10 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public MakeGcodeComponent()
-          : base("MakeGcodeComponent", "Make Gcode",
-            "Converts polylines to gcode and visualizes machine operation (deleteMe)",
-            "Vespidae", "Gcode Tools")
+        public ZPinning()
+          : base("ZPinning", "ZPin",
+            "ZPinning description",
+            "Vespidae", "Operations")
         {
         }
 
@@ -31,10 +29,12 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polylines", "P", "polylines to convert", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("TravelSpeed", "TS", "speed of travels between operations m/s", GH_ParamAccess.item, 4000);
-            pManager.AddIntegerParameter("WorkSpeed", "WS", "speed of operation itself m/s", GH_ParamAccess.item, 3000);
-            pManager.AddNumberParameter("RetractHeight", "RH", "retraction height between operations", GH_ParamAccess.item, 50);
+            pManager.AddPointParameter("inputPoints", "pnts", "point to zpin", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("startHeight", "start", "start extrusion height", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("stopHeight", "stop", "stop extrusion height", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("amount", "a", "extrusion amount", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("retract", "rh", "retract height", GH_ParamAccess.item);
+
         }
 
         /// <summary>
@@ -42,8 +42,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("gcode", "G", "Output gcode", GH_ParamAccess.list);
-            pManager.AddGenericParameter("toolpaths", "TP", "Output toolpaths for visualization", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("moves", "VESPMO", "Vespidae Moves", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -53,22 +52,22 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var curves = new List<Curve>();
-            int ts = 0;
-            int ws = 0;
-            double rh = 0;
-            GTools gtools = new GTools();
+            List<Move> output = new List<Move>(); 
 
-            if (!DA.GetDataList("Polylines", curves)) return;
-            DA.GetData("TravelSpeed", ref ts);
-            DA.GetData("WorkSpeed", ref ws);
-            DA.GetData<double>("RetractHeight", ref rh);
+            List<Point3d> inpPoints = new List<Point3d>();
+            int start = 0;
+            int stop = 0;
+            int rh = 0;
+            int amount = 0; 
 
-            List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(curves);
-            List<String> outputGcode = gtools.MakeGcode(polys, ts, ws, rh);
+            if (!DA.GetDataList("inputPoints", inpPoints)) return;
+            DA.GetData("startHeight", ref start);
+            DA.GetData("stopHeight", ref stop);
+            DA.GetData("amount", ref amount);
+            DA.GetData("retract", ref rh);
 
-            DA.SetDataList("gcode", outputGcode);
-            DA.SetDataList("toolpaths", gtools.outputPaths);
+            output = Operations.zPinning(inpPoints, start, stop, amount, rh, new Point3d());
+            DA.SetDataList("moves", output); 
 
         }
 
@@ -93,7 +92,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("8b5cccb4-2352-4a10-a862-3757f188d64e"); }
+            get { return new Guid("e507b6c8-ad82-4cdb-90c9-440f2f8e7195"); }
         }
     }
 }
