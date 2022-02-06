@@ -150,3 +150,9 @@ Spent some time today to try to figure out how to connect clipped infill lines i
 I think there are several ways to go about this, but utlimately this is a np-hard problem and I have to go through some kind of search tree. I tried to develop a couple of different strategies here, namely creating a dictionary of points with connected point in polyline and using this to search and check for intersections. I think this could work but I need to define better logic. This is not critical for my slicer to work, the printing will just be a bit slower since I have to lift the nozzle between each line. I'll return to this point when I'm ready to optimize. 
 
 Write about plans for top / bottom shells and infill density. 
+
+# 0402_2022
+
+Been bad at logging progress. I've shifted a lot of stuff around this week and I think I'm finally arriving at a structure I feel good about. 
+
+**Clipper offset:** I revisited my offset component after a talk with Jens. Jens is missing two features: ability to offset multiple times and better / more logical sorting of inside / outside polygons in context of slicing. This is also something I totally need in terms of my own slicer. I've modified the Offset-component with a new input that lets us set number of offsets in addition to the offset delta. What would be neat to add on this note is an option that just offsets until it cant offset anymore (think generating infill). 
