@@ -162,3 +162,10 @@ Been bad at logging progress. I've shifted a lot of stuff around this week and I
 ~~Extracting extrusion values for z pinning from Cura. By default Cura gcode moves to a corner and extrudes a set amount of plastic to clean the extruder before printing starts (prime blob). The code for this looks like this:~~ 
 
 The code for prime blob is not included in the gcode as this is done through firmware. 
+
+Did first round of "real" testing on Ultimaker and exposed several problems. 
+
+- How does a move object extrude? How do I add extrusion to a path? It might make sense to create a class for each move type. If not, I need to add some new parameters and logic. 
+- How should the machine be set up intitally before all the Vespidae operations are performed? For now I think this can be handled manually using headers. 
+- Creating moves between operations: Do I need to do this? It is totally necassary for visualization. When should I compute travel moves? Should I wait till all Vespidae operations are generated and then generate? Or should I generate on each operation? 
+- 
