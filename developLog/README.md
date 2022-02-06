@@ -156,3 +156,9 @@ Write about plans for top / bottom shells and infill density.
 Been bad at logging progress. I've shifted a lot of stuff around this week and I think I'm finally arriving at a structure I feel good about. 
 
 **Clipper offset:** I revisited my offset component after a talk with Jens. Jens is missing two features: ability to offset multiple times and better / more logical sorting of inside / outside polygons in context of slicing. This is also something I totally need in terms of my own slicer. I've modified the Offset-component with a new input that lets us set number of offsets in addition to the offset delta. What would be neat to add on this note is an option that just offsets until it cant offset anymore (think generating infill). 
+
+# 0602_2022
+
+~~Extracting extrusion values for z pinning from Cura. By default Cura gcode moves to a corner and extrudes a set amount of plastic to clean the extruder before printing starts (prime blob). The code for this looks like this:~~ 
+
+The code for prime blob is not included in the gcode as this is done through firmware. 

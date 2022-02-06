@@ -30,8 +30,8 @@ namespace Vespidae
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("VESPMO", "VESPMO", "Vespida Move objects", GH_ParamAccess.list);
-            pManager.AddTextParameter("header", "h", "optional gcode header", GH_ParamAccess.list);
-            pManager.AddTextParameter("footer", "f", "optional gcode footer", GH_ParamAccess.list); 
+            pManager.AddTextParameter("header", "h", "optional gcode header", GH_ParamAccess.list, "");
+            pManager.AddTextParameter("footer", "f", "optional gcode footer", GH_ParamAccess.list, ""); 
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Vespidae
                 gcode.AddRange(header);
             }
 
-            gcode = GConvert.convertOperation(moves);
+            gcode.AddRange(GConvert.convertOperation(moves));
 
             if (footer.Count > 0) {
                 gcode.AddRange(footer); 

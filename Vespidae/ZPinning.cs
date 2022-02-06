@@ -30,10 +30,11 @@ namespace Vespidae
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddPointParameter("inputPoints", "pnts", "point to zpin", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("startHeight", "start", "start extrusion height", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("stopHeight", "stop", "stop extrusion height", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("amount", "a", "extrusion amount", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("retract", "rh", "retract height", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("startHeight", "start", "start extrusion height", GH_ParamAccess.item,5);
+            pManager.AddIntegerParameter("stopHeight", "stop", "stop extrusion height", GH_ParamAccess.item,10);
+            pManager.AddIntegerParameter("amount", "a", "extrusion amount", GH_ParamAccess.item, 15);
+            pManager.AddIntegerParameter("retract", "rh", "retract height", GH_ParamAccess.item, 20);
+            pManager.AddIntegerParameter("speed", "s", "pin speed", GH_ParamAccess.item, 50);
 
         }
 
@@ -58,17 +59,18 @@ namespace Vespidae
             int start = 0;
             int stop = 0;
             int rh = 0;
-            int amount = 0; 
+            int amount = 0;
+            int speed = 0; 
 
             if (!DA.GetDataList("inputPoints", inpPoints)) return;
             DA.GetData("startHeight", ref start);
             DA.GetData("stopHeight", ref stop);
             DA.GetData("amount", ref amount);
             DA.GetData("retract", ref rh);
+            DA.GetData("speed", ref speed);
 
-            output = Operations.zPinning(inpPoints, start, stop, amount, rh, new Point3d());
+            output = Operations.zPinning(inpPoints, start, stop, amount, rh,speed,  new Point3d(0,0,3));
             DA.SetDataList("moves", output); 
-
         }
 
         /// <summary>

@@ -86,10 +86,15 @@ namespace GMaker
     }
 
     public static class Operations {
-        public static List<Move> zPinning(List<Point3d> pnts, int start, int stop, int amount, int rh, Point3d initPoint) {
+        public static List<Move> zPinning(List<Point3d> pnts, int start, int stop, int amount, int rh, int speed, Point3d initPoint) {
             List<Move> output = new List<Move>();
 
-            Point3d prev = initPoint; 
+            Point3d prev = initPoint;
+
+            //sort points in x
+
+            pnts.OrderBy(p => p.X);
+
             foreach (Point3d p in pnts) {
                 //travel
                 Move travel = new Move("travel", 4000);
@@ -102,7 +107,7 @@ namespace GMaker
                 output.Add(travel);
 
                 //pinning
-                Move pinOp = new Move("work", 1200);
+                Move pinOp = new Move("work", speed);
                 pinOp.val = amount; 
                 pinOp.path.Add(p.X, p.Y, start);
                 pinOp.path.Add(p.X, p.Y, stop);
