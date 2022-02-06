@@ -58,15 +58,82 @@ namespace GMaker
         public static List<Polyline> sortPolys(List<Polyline> polys) {
             //A = polylines.OrderBy(c => c.ElementAt(0).Y).ToList();
             return polys.OrderBy(p => p[0].Y).ToList();
-            
+        }
+    }
+
+    //temporary class for handling VESPMO objects
+    public static class GConvert {
+
+        public static List<String> convertMoveObject(Move move) {
+            List<String> gcode = new List<string>();
+            gcode.Add($";type: {move.type}");
+            gcode.Add($"G0 F{move.speed}");
+
+            foreach (var m in move.path) {
+                gcode.Add($"G0 X{m.X} Y{m.Y} Z{m.Z}"); 
+            }
+            return gcode; 
         }
 
+        public static List<String> convertOperation(List<Move> moves) {
+            List<string> gcode = new List<string>();
+            gcode.Add(";new operation");
+            foreach (var m in moves) {
+                gcode.AddRange(convertMoveObject(m));
+            }
+            return gcode; 
+        }
+    }
 
+    public static class Operations {
+        public static List<Move> zPinning(List<Point3d> pnts, int start, int stop, int amount, int rh, Point3d initPoint) {
+            List<Move> output = new List<Move>();
 
-        //sort polylines
-        //public static List<Polylines> sortPolys(List<Polyline> polys) {
+            Point3d prev = initPoint; 
+            foreach (Point3d p in pnts) {
+                //travel
+                Move travel = new Move("travel", 4000);
+                travel.type = "travel";
+                travel.speed = 4000; 
+                travel.path.Add(prev);
+                travel.path.Add(prev.X, prev.Y, rh);
+                travel.path.Add(p.X, p.Y, rh);
+                travel.path.Add(p.X, p.Y, start);
+                output.Add(travel);
 
-        //    return polys.OrderBy(c => c.ElementAt(0).Y).ToList());
-        //}
+                //pinning
+                Move pinOp = new Move("work", 1200);
+                pinOp.val = amount; 
+                pinOp.path.Add(p.X, p.Y, start);
+                pinOp.path.Add(p.X, p.Y, stop);
+                output.Add(pinOp);
+
+                prev = pinOp.path.Last; 
+            }
+
+            return output; 
+        }
+    } 
+
+    public class Move {
+        public string type;
+        public Polyline path;
+        public int speed;
+        public double val;
+
+        public Move() {
+            //todo: enumerate type
+            type = "";
+            path = new Polyline();
+            speed = 100;
+            val = 0; 
+        }
+
+        public Move(string t, int s) {
+            type = t;
+            speed = s;
+            path = new Polyline();
+            val = 0;
+        }
     }
 }
