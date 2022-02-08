@@ -63,15 +63,31 @@ namespace GMaker
 
     //temporary class for handling VESPMO objects
     public static class GConvert {
-
         public static List<String> convertMoveObject(Move move) {
+
             List<String> gcode = new List<string>();
             gcode.Add($";type: {move.type}");
             gcode.Add($"G0 F{move.speed}");
 
-            foreach (var m in move.path) {
-                gcode.Add($"G0 X{m.X} Y{m.Y} Z{m.Z}"); 
+            switch (move.type) {
+                case "extrusion":
+                    Point3d lastPoint = move.path.First;
+
+                    foreach (var p in move.path) {
+                        double distance = p.DistanceTo(lastPoint);
+                        double extrude = distance * 0.010973 * move.val; 
+                        gcode.Add($"G0 X{p.X} Y{p.Y} Z{p.Z} E{extrude}");
+                        lastPoint = p; 
+                    }
+                    break;
+                default:
+                    foreach (var m in move.path)
+                    {
+                        gcode.Add($"G0 X{m.X} Y{m.Y} Z{m.Z}");
+                    }
+                    break; 
             }
+
             return gcode; 
         }
 
@@ -86,14 +102,43 @@ namespace GMaker
     }
 
     public static class Operations {
+
+        public static List<Move> normalOps(List<Polyline> polys, int rh, string type, int speed,int val) {
+
+            List<Move> output = new List<Move>();
+
+            //set first point in operation 
+            Point3d prev = new Point3d(polys[0].First.X, polys[0].First.Y, rh);
+
+            foreach (var pol in polys) {
+                //Check for first point 
+                //move to ops -> Move.type = travel
+                Move tr = new Move();
+                tr.type = "travel";
+                tr.speed = 4000;
+                tr.path.Add(prev);
+                tr.path.Add(pol.First);
+
+                //add ops -> Move.type = extrusion / cut / etc
+                Move wo = new Move();
+                wo.type = type;
+                wo.val = val;
+                wo.speed = speed; 
+                wo.path = pol;
+                output.Add(wo);
+
+                prev = wo.path.Last; 
+            }
+
+            return output; 
+        }
+
+
+
         public static List<Move> zPinning(List<Point3d> pnts, int start, int stop, int amount, int rh, int speed, Point3d initPoint) {
             List<Move> output = new List<Move>();
 
             Point3d prev = initPoint;
-
-            //sort points in x
-
-            pnts.OrderBy(p => p.X);
 
             foreach (Point3d p in pnts) {
                 //travel
@@ -107,7 +152,7 @@ namespace GMaker
                 output.Add(travel);
 
                 //pinning
-                Move pinOp = new Move("work", speed);
+                Move pinOp = new Move("extrusion", speed);
                 pinOp.val = amount; 
                 pinOp.path.Add(p.X, p.Y, start);
                 pinOp.path.Add(p.X, p.Y, stop);

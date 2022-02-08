@@ -168,4 +168,17 @@ Did first round of "real" testing on Ultimaker and exposed several problems.
 - How does a move object extrude? How do I add extrusion to a path? It might make sense to create a class for each move type. If not, I need to add some new parameters and logic. 
 - How should the machine be set up intitally before all the Vespidae operations are performed? For now I think this can be handled manually using headers. 
 - Creating moves between operations: Do I need to do this? It is totally necassary for visualization. When should I compute travel moves? Should I wait till all Vespidae operations are generated and then generate? Or should I generate on each operation? 
-- 
+
+
+0802_2022
+
+Adding extrusion. From Cura: 
+
+	G1 X112.282 Y103.215 E25.98213
+	G1 X120.852 Y103.215 E26.07617
+
+From this: \
+$120.852 - 112.282 = 8.57$\
+$26.07617 - 25.98213 = 0.09404$
+
+So per unit this is: $0.09404 / 8.57 = 0.010973$ 

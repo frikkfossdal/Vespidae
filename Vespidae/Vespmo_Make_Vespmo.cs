@@ -19,7 +19,7 @@ namespace Vespidae
         /// new tabs/panels will automatically be created.
         /// </summary>
         public Vespmo_Make_Vespmo()
-          : base("Vespmo_Make_Vespmo", "Nickname",
+          : base("Vespmo_Make_Vespmo", "Create Vespmo",
             "Vespmo_Make_Vespmo description",
             "Vespidae", "Gcode Tools")
         {
@@ -30,9 +30,10 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "crv", "polyline to convert", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("Type", "t", "type of move 0 = travel, 1 = work", GH_ParamAccess.item, 0);
-            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item,1000); 
+            pManager.AddCurveParameter("Curve", "crv", "polyline to convert", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Type", "type", "type of move 0 = travel, 1 = extrusion", GH_ParamAccess.item, 0);
+            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item,1000);
+            pManager.AddIntegerParameter("Value", "val", "value to manipulate operation", GH_ParamAccess.item, 1);
         }
 
         /// <summary>
@@ -50,25 +51,37 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Curve crv = new PolyCurve();
+            List<Curve> crv = new List<Curve>();
             int type = 0;
-            int speed = 0; 
+            int speed = 0;
+            int val = 0; 
 
             if (!DA.GetData("Curve", ref crv)) return;
             DA.GetData("Type", ref type);
-            DA.GetData("Speed", ref speed); 
+            DA.GetData("Speed", ref speed);
+            DA.GetData("Value", ref val);
 
-            Polyline pol = new Polyline(); 
-            ClipperTools.ConvertCurveToPolyline(crv, out pol); 
+            //this should be a enumeration. Fix that in future
+            string t = ""; 
+            switch (type)
+            {
+                case 0:
+                    t = "move";
+                    break;
+                case 1:
+                    t = "extrusion";
+                    break;
+                default:
+                    break;
+            }
 
-            Move mv = new Move();
-            mv.path = pol;
-            mv.speed = speed;
 
-            //come back and fix this 
-            mv.type = "travel"; 
+            var pol = ClipperTools.ConvertCurvesToPolylines(crv); 
 
-            DA.SetData("move", mv); 
+            List<Move> output = GMaker.Operations.normalOps(pol, 50, t, speed, val); 
+       
+
+            DA.SetData("move", output); 
         }
 
         /// <summary>

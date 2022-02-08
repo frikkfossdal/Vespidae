@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using GMaker; 
+using GMaker;
+using System.Linq; 
 
 namespace Vespidae
 {
@@ -68,6 +69,7 @@ namespace Vespidae
             DA.GetData("amount", ref amount);
             DA.GetData("retract", ref rh);
             DA.GetData("speed", ref speed);
+            inpPoints = inpPoints.OrderBy(p => p.X).ToList(); 
 
             output = Operations.zPinning(inpPoints, start, stop, amount, rh,speed,  new Point3d(0,0,3));
             DA.SetDataList("moves", output); 
