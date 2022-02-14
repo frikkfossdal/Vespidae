@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using ClipperHelper;
 using GMaker;
-
+using System.Linq; 
 
 namespace Vespidae
 {
-    public class MakeGcodeComponent : GH_Component
+    public class ExposePaths : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -19,9 +17,9 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public MakeGcodeComponent()
-          : base("MakeGcodeComponent", "Make Gcode",
-            "Converts polylines to gcode and visualizes machine operation (deleteMe)",
+        public ExposePaths()
+          : base("ExposePaths", "Expose Paths",
+            "ExposePaths description",
             "Vespidae", "undefined")
         {
         }
@@ -31,10 +29,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polylines", "P", "polylines to convert", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("TravelSpeed", "TS", "speed of travels between operations m/s", GH_ParamAccess.item, 4000);
-            pManager.AddIntegerParameter("WorkSpeed", "WS", "speed of operation itself m/s", GH_ParamAccess.item, 3000);
-            pManager.AddNumberParameter("RetractHeight", "RH", "retraction height between operations", GH_ParamAccess.item, 50);
+            pManager.AddGenericParameter("vespmo", "VObj", "Vespidae action objects", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -42,8 +37,10 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("gcode", "G", "Output gcode", GH_ParamAccess.list);
-            pManager.AddGenericParameter("toolpaths", "TP", "Output toolpaths for visualization", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("AllMoves", "allPaths", "all paths of Vespidae object", GH_ParamAccess.list);
+            pManager.AddGenericParameter("TravelMoves", "allTravel", "filtered travel paths of Vespidae object", GH_ParamAccess.list);
+            pManager.AddGenericParameter("WorkMoves", "allWork", "filtered work paths of Vespidae object", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Speed", "sp", "list of speeds", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -53,23 +50,32 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var curves = new List<Curve>();
-            int ts = 0;
-            int ws = 0;
-            double rh = 0;
-            GTools gtools = new GTools();
+            List<GMaker.Action> actions = new List<GMaker.Action>();
+            List<Polyline> allPaths = new List<Polyline>(); 
 
-            if (!DA.GetDataList("Polylines", curves)) return;
-            DA.GetData("TravelSpeed", ref ts);
-            DA.GetData("WorkSpeed", ref ws);
-            DA.GetData<double>("RetractHeight", ref rh);
+            if (!DA.GetDataList("vespmo", actions)) return;
 
-            List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(curves);
-            List<String> outputGcode = gtools.MakeGcode(polys, ts, ws, rh);
+            //get all paths
+            var allMoves = new List<Polyline>();
+            foreach (var move in actions) {
+                allMoves.Add(move.path); 
+            }
 
-            DA.SetDataList("gcode", outputGcode);
-            DA.SetDataList("toolpaths", gtools.outputPaths);
+            var work = actions.Where(m => m.actionType == GMaker.opTypes.extrusion);
+            var workMoves = new List<Polyline>();
+            foreach (var move in work) {
+                workMoves.Add(move.path); 
+            }
 
+            var travel = actions.Where(m => m.actionType == GMaker.opTypes.move);
+            var travelMoves = new List<Polyline>(); 
+            foreach (var move in travel) {
+                travelMoves.Add(move.path); 
+            }
+
+            DA.SetDataList("AllMoves", allMoves); 
+            DA.SetDataList("WorkMoves", workMoves);
+            DA.SetDataList("TravelMoves", travelMoves);
         }
 
         /// <summary>
@@ -93,7 +99,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("8b5cccb4-2352-4a10-a862-3757f188d64e"); }
+            get { return new Guid("89e70fcb-f60f-4d8b-a8b3-0160992003cc"); }
         }
     }
 }

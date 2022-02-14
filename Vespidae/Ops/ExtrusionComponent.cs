@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using ClipperHelper;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using GMaker;
-using ClipperHelper; 
 
-namespace Vespidae
+namespace Vespidae.Ops
 {
-    public class Vespmo_Make_Vespmo : GH_Component
+    public class ExtrusionComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -18,10 +16,10 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public Vespmo_Make_Vespmo()
-          : base("Vespmo_Make_Vespmo", "Create Vespmo",
-            "Vespmo_Make_Vespmo description",
-            "Vespidae", "undefined")
+        public ExtrusionComponent()
+          : base("ExtrusionComponent", "VespExtrusion",
+            "ExtrusionComponent description",
+            "Vespidae", "Ops")
         {
         }
 
@@ -30,11 +28,11 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "crv", "polyline to convert", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("Type", "type", "type of move 0 = travel, 1 = extrusion", GH_ParamAccess.item, 0);
+            pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
+            pManager.AddNumberParameter("Extrusion", "ex", "extrusion flowrate", GH_ParamAccess.item,.6);
+            pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
             pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
-            pManager.AddIntegerParameter("Value", "val", "value to manipulate operation", GH_ParamAccess.item, 1);
-            pManager.AddIntegerParameter("RetractHeight", "RH", "retract height between moves", GH_ParamAccess.item, 15);
+            pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205); 
         }
 
         /// <summary>
@@ -42,7 +40,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("move", "VESPMO", "Vespidae Moves", GH_ParamAccess.list);
+            pManager.AddGenericParameter("VespObj", "VObj", "Vespidae action objects", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -53,37 +51,26 @@ namespace Vespidae
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             List<Curve> crv = new List<Curve>();
-            int type = 0;
             int speed = 0;
-            int val = 0;
-            int rh = 0; 
+            double ext = 0;
+            int rh = 0;
+            double temp = 0; 
 
-            if (!DA.GetDataList("Curve",  crv)) return;
-            DA.GetData("Type", ref type);
-            DA.GetData("Speed", ref speed);
-            DA.GetData("Value", ref val);
+            if (!DA.GetDataList("Curve", crv)) return;
+
+            DA.GetData("Extrusion", ref ext);
             DA.GetData("RetractHeight", ref rh);
+            DA.GetData("Speed", ref speed);
+            DA.GetData("Temperature", ref temp);
 
-            //this should be a enumeration. Fix that in future
-            GMaker.opTypes t = opTypes.move; 
-            switch (type)
-            {
-                case 0:
-                    t = opTypes.move;
-                    break;
-                case 1:
-                    t = opTypes.extrusion;
-                    break;
-                default:
-                    break;
-            }
+            var pol = ClipperTools.ConvertCurvesToPolylines(crv);
 
+            var actions = GMaker.Operation.createExtrudeOps(pol, rh, speed, ext, temp, "t0");
 
-            var pol = ClipperTools.ConvertCurvesToPolylines(crv); 
+            DA.SetDataList("VespObj", actions); 
+            //ops.createActions();
+            //
 
-            List<Move> output = GMaker.Operations.normalOps(pol, rh, t, speed, val); 
-
-            DA.SetDataList("move", output); 
         }
 
         /// <summary>
@@ -107,7 +94,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("a10d1ea2-cd5f-4e31-8f35-ac77d5fa7b33"); }
+            get { return new Guid("a8615386-e873-4790-bbf9-7aed568e318f"); }
         }
     }
 }

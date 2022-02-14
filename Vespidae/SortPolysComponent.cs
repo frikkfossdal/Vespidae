@@ -54,7 +54,7 @@ namespace Vespidae
 
             var polys = ClipperTools.ConvertCurvesToPolylines(curves);
 
-            var newPolyList = GTools.sortPolys(polys);
+            var newPolyList = Operation.sortPolys(polys);
             DA.SetDataList("SortedPolys", newPolyList); 
         }
 

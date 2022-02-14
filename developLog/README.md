@@ -155,7 +155,7 @@ Write about plans for top / bottom shells and infill density.
 
 Been bad at logging progress. I've shifted a lot of stuff around this week and I think I'm finally arriving at a structure I feel good about. 
 
-**Clipper offset:** I revisited my offset component after a talk with Jens. Jens is missing two features: ability to offset multiple times and better / more logical sorting of inside / outside polygons in context of slicing. This is also something I totally need in terms of my own slicer. I've modified the Offset-component with a new input that lets us set number of offsets in addition to the offset delta. What would be neat to add on this note is an option that just offsets until it cant offset anymore (think generating infill). 
+**Clipper offset:** I revisited my offset component after a talk with Jens. Jens is missing two features: ability to offset multiple times and better / more logical sorting of inside / outside polygons in context of slicing. This is also something I totally need for slicing. I've modified the Offset-component with a new input that lets us set number of offsets in addition to the offset delta. What would be neat to add on this note is an option that just offsets until it cant offset anymore (think generating infill). 
 
 # 0602_2022
 
@@ -170,7 +170,7 @@ Did first round of "real" testing on Ultimaker and exposed several problems.
 - Creating moves between operations: Do I need to do this? It is totally necassary for visualization. When should I compute travel moves? Should I wait till all Vespidae operations are generated and then generate? Or should I generate on each operation? 
 
 
-0802_2022
+# 0802_2022
 
 Adding extrusion. From Cura: 
 
@@ -182,3 +182,16 @@ $120.852 - 112.282 = 8.57$\
 $26.07617 - 25.98213 = 0.09404$
 
 So per unit this is: $0.09404 / 8.57 = 0.010973$ 
+
+# 1402_2022 
+
+Restructure for toolpathing philosophy. I know call everything **Actions**, and I've implemented this as an abstract class. We can have different Actions like Move, Extrude, Cut, and these actions all inherit from the Base class but can have additional special parameters. The cool thing about this is that I can chain all Actions into one List which makes everything pretty and understandable. 
+
+**Missing and todo next time:** 
+- I need a good way to keep track on extrusion. Either I can reset extrusion value for each action by sending a G92 E, or I need to define a better logic to keep track on this.  What I should think about here is if gcode is generated as Actions are created or if gcode is created one time running over all actions (makes more sense?)
+- Fix categories 
+- Modify sorting component to take vector input. 
+- Start thinking about toolpath texture. Think about how displacement and bump maps are used in texturing. 
+
+Finally I need to start about creating some tutorials / documentation for how this can be used and what a user journey might look like. 
+

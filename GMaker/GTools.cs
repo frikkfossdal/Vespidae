@@ -11,7 +11,6 @@ namespace GMaker
         extrusion
     }
 
-
     public class GTools
     {
         public List<String> outputG;
@@ -68,6 +67,85 @@ namespace GMaker
         }
 
         //sort polys. Needs flexible sort direction 
+
+    }
+    //UPDATE TO NEW ABSTRACT CLASS STRUCTURE OR REMOVE 
+    //    public static List<Move> zPinning(List<Point3d> pnts, int start, int stop, int amount, int rh, int speed, Point3d initPoint)
+    //    {
+    //        List<Move> output = new List<Move>();
+
+    //        Point3d prev = initPoint;
+
+    //        foreach (Point3d p in pnts)
+    //        {
+    //            //travel
+    //            Move travel = new Move(opTypes.move, 4000);
+    //            travel.speed = 4000;
+    //            travel.path.Add(prev);
+    //            travel.path.Add(prev.X, prev.Y, rh);
+    //            travel.path.Add(p.X, p.Y, rh);
+    //            travel.path.Add(p.X, p.Y, start);
+    //            output.Add(travel);
+
+    //            //pinning
+    //            Move pinOp = new Move(opTypes.extrusion, speed);
+    //            pinOp.val = amount;
+    //            pinOp.path.Add(p.X, p.Y, start);
+    //            pinOp.path.Add(p.X, p.Y, stop);
+    //            output.Add(pinOp);
+
+    //            prev = pinOp.path.Last;
+    //        }
+
+    //        return output;
+    //    }
+    //}
+
+    //NEW STRUCTURE
+
+    public static class Operation {
+
+        //static functino for creating simple extrusion operation. Could be modified with enumeration of tool 
+        public static List<Action> createExtrudeOps(List<Polyline> paths, int rh, int speed, double ext, double temp, string tool) {
+            List<Action> actions = new List<Action>();
+            bool first = true;
+            var prev = paths.First().First;
+
+            //loop through all paths
+            foreach (var p in paths) {
+                var mv = new Move2();
+                if (first)
+                {
+                    mv.path.Add(prev.X, prev.Y, rh);
+                    mv.path.Add(prev);
+                    first = false;
+                }
+                else {
+                    mv.path.Add(prev);
+                    mv.path.Add(prev.X, prev.Y, rh);
+                    mv.path.Add(p.First.X, p.First.Y, rh);
+                    mv.path.Add(p.First); 
+                }
+                actions.Add(mv); 
+                
+                actions.Add(new Extrude(p, temp, 1, tool));
+                prev = p.Last; 
+            }
+
+            //create end move 
+            return actions; 
+        }
+
+        public static List<string> translateToGcode(List<Action> actions) {
+            var output = new List<string>();
+
+            foreach (var ac in actions) {
+                output.AddRange(ac.translate());
+            }
+
+            return output; 
+        }
+
         public static List<Polyline> sortPolys(List<Polyline> polys)
         {
             //A = polylines.OrderBy(c => c.ElementAt(0).Y).ToList();
@@ -75,184 +153,75 @@ namespace GMaker
         }
     }
 
-    //temporary class for handling VESPMO objects
-    public static class GConvert
-    {
-        public static List<String> convertMoveObject(Move move)
-        {
-
-            List<String> gcode = new List<string>();
-            gcode.Add($";type: {move.type}");
-            gcode.Add($"G0 F{move.speed}");
-
-            foreach (var m in move.path)
-            {
-                gcode.Add($"G0 X{m.X} Y{m.Y} Z{m.Z}");
-            }
-
-
-            return gcode;
-        }
-
-        public static List<string> convertExtrusionObject(Move move, ref double ext)
-        {
-            List<String> gcode = new List<string>();
-            Point3d lastPoint = move.path.First;
-
-            gcode.Add($";type: {move.type}");
-            gcode.Add($"G0 F{move.speed}");
-
-            foreach (var p in move.path)
-            {
-                double distance = p.DistanceTo(lastPoint);
-                ext = ext + distance * 0.010973 * move.val;
-                gcode.Add($"G0 X{p.X} Y{p.Y} Z{p.Z} E{ext}");
-                lastPoint = p;
-            }
-
-            return gcode;
-        }
-
-        public static List<String> convertOperation(List<Move> moves)
-        {
-            List<string> gcode = new List<string>();
-            double ext = 0;
-
-            //value to keep track on extrusion amount 
-
-            gcode.Add(";new operation");
-
-            if (moves.Any(p => p.type == opTypes.extrusion))
-            {
-                gcode.Add(";hack! resets extrusion for each operation");
-                gcode.Add("G92 E0");
-            }
-
-            foreach (var move in moves)
-            {
-                if (move.type == opTypes.extrusion)
-                {
-                    gcode.AddRange(convertExtrusionObject(move, ref ext));
-                }
-                else {
-                    gcode.AddRange(convertMoveObject(move));
-                }
-            }
-            return gcode;
-        }
-    }
-
-    public static class Operations
-    {
-
-        public static List<Move> normalOps(List<Polyline> polys, int rh, opTypes type, int speed, int val)
-        {
-
-            List<Move> output = new List<Move>();
-
-            //set first point in operation 
-            Point3d prev = new Point3d(polys[0].First.X, polys[0].First.Y, rh);
-            bool first = true;
-            int travelSpeed = 5000;
-
-            foreach (var pol in polys)
-            {
-                //Something is wrong here. Check output gcode 
-                Move tr = new Move(opTypes.move, travelSpeed);
-
-                //first point
-                if (first)
-                {
-
-                    tr.path.Add(prev);
-                    tr.path.Add(pol.First);
-                    first = false;
-                }
-
-                else
-                {
-                    tr.path.Add(prev);
-                    tr.path.Add(prev.X, prev.Y, rh);
-                    tr.path.Add(pol.First.X, pol.First.Y, rh);
-                    tr.path.Add(pol.First);
-                }
-
-                output.Add(tr);
-
-                //add ops -> Move.type = extrusion / cut / etc
-                Move wo = new Move();
-                wo.type = type;
-                wo.val = val;
-                wo.speed = speed;
-                wo.path = pol;
-                output.Add(wo);
-
-                prev = wo.path.Last;
-            }
-
-            //add exit move
-            Point3d lp = polys.Last().Last;
-            Move exit = new Move(opTypes.move, 5000);
-            exit.path.Add(lp);
-            exit.path.Add(lp.X, lp.Y, rh);
-            output.Add(exit);
-
-            return output;
-        }
-
-        public static List<Move> zPinning(List<Point3d> pnts, int start, int stop, int amount, int rh, int speed, Point3d initPoint)
-        {
-            List<Move> output = new List<Move>();
-
-            Point3d prev = initPoint;
-
-            foreach (Point3d p in pnts)
-            {
-                //travel
-                Move travel = new Move(opTypes.move, 4000);
-                travel.speed = 4000;
-                travel.path.Add(prev);
-                travel.path.Add(prev.X, prev.Y, rh);
-                travel.path.Add(p.X, p.Y, rh);
-                travel.path.Add(p.X, p.Y, start);
-                output.Add(travel);
-
-                //pinning
-                Move pinOp = new Move(opTypes.extrusion, speed);
-                pinOp.val = amount;
-                pinOp.path.Add(p.X, p.Y, start);
-                pinOp.path.Add(p.X, p.Y, stop);
-                output.Add(pinOp);
-
-                prev = pinOp.path.Last;
-            }
-
-            return output;
-        }
-    }
-
-    public class Move
-    { 
-        public opTypes type;
+    public abstract class Action {
         public Polyline path;
         public int speed;
-        public double val;
+        public opTypes actionType;
+        public Action() {
 
-        public Move()
-        {
-            //todo: enumerate type
-            type = opTypes.move;
-            path = new Polyline();
-            speed = 100;
-            val = 0;
         }
 
-        public Move(opTypes t, int s)
-        {
-            type = t;
-            speed = s;
+        public abstract List<string> translate(); 
+}
+
+    public class Move2 : Action {
+        public Move2() {
             path = new Polyline();
-            val = 0;
+            speed = 5000;
+            actionType = opTypes.move; 
+        }
+
+        public override List<string> translate()
+        {
+            var translation = new List<string>();
+            translation.Add($";{actionType}");
+
+            foreach (var p in path) {
+                translation.Add($"G0 X{p.X} Y{p.Y} Z{p.Z}");
+            }
+
+            return translation; 
         }
     }
+
+    public class Extrude : Action {
+        public int amount;
+        public double temperature;
+        string tool; 
+
+        public Extrude(Polyline p, double t, int a, string to) {
+            path = p;
+            amount = a;
+            temperature = t;
+            tool = to; 
+
+            actionType = opTypes.extrusion;
+        }
+
+        public override List<string> translate() {
+            var translation = new List<string>();
+
+            //inital code
+            translation.Add($";{actionType}");
+            translation.Add(tool);
+            translation.Add($"M109 {temperature}");
+
+            //add something to detect change in Z
+            foreach (var p in path) {
+                translation.Add($"G0 X{p.X} Y{p.Y}, Z{p.Z}");  
+            }
+            return translation; 
+        }
+    }
+
+    //public class Cut : Action {
+    //    public int spindleSpeed;
+
+    //    public override void translate()
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+
+    //}
+
 }

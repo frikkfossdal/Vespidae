@@ -19,8 +19,8 @@ namespace Vespidae
         /// </summary>
         public Vespmo_Gcode_Component()
           : base("Vespmo_Gcode_Component", "VespMoGcode",
-            "Converts VESPMO object to gcode files",
-            "Vespidae", "undefined")
+            "Converts VESPMO object to gcode",
+            "Vespidae", "gcode")
         {
         }
 
@@ -29,7 +29,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("VESPMO", "VESPMO", "Vespida Move objects", GH_ParamAccess.list);
+            pManager.AddGenericParameter("VESPMO", "VObj", "Vespidae action objects", GH_ParamAccess.list);
             pManager.AddTextParameter("header", "h", "optional gcode header", GH_ParamAccess.list, "");
             pManager.AddTextParameter("footer", "f", "optional gcode footer", GH_ParamAccess.list, ""); 
         }
@@ -49,12 +49,12 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Move> moves = new List<Move>();
+            List<GMaker.Action> actions = new List<GMaker.Action>();
             List<String> gcode = new List<string>();
             List<String> header = new List<string>();
             List<String> footer = new List<string>();
 
-            if (!DA.GetDataList("VESPMO", moves)) return;
+            if (!DA.GetDataList("VESPMO", actions)) return;
             DA.GetDataList("header", header);
             DA.GetDataList("footer", footer);
 
@@ -62,7 +62,8 @@ namespace Vespidae
                 gcode.AddRange(header);
             }
 
-            gcode.AddRange(GConvert.convertOperation(moves));
+            
+            gcode.AddRange(GMaker.Operation.translateToGcode(actions));
 
             if (footer.Count > 0) {
                 gcode.AddRange(footer); 
