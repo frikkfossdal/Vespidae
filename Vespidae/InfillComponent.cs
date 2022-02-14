@@ -21,7 +21,7 @@ namespace Vespidae
         public InfillComponent()
           : base("InfillComponent", "Infill",
             "Create infill operations on top of slice",
-            "Vespidae", "Slicing Tools")
+            "Vespidae", "Toolpath")
         {
         }
 

@@ -21,7 +21,7 @@ namespace Vespidae
         public ZPinning()
           : base("ZPinning", "ZPin",
             "ZPinning description",
-            "Vespidae", "Operations")
+            "Vespidae", "Ops")
         {
         }
 

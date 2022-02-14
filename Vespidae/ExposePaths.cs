@@ -20,7 +20,7 @@ namespace Vespidae
         public ExposePaths()
           : base("ExposePaths", "Expose Paths",
             "ExposePaths description",
-            "Vespidae", "Operations")
+            "Vespidae", "undefined")
         {
         }
 
@@ -61,14 +61,14 @@ namespace Vespidae
                 allMoves.Add(move.path); 
             }
 
-            var work = moves.Where(m => m.type == "work");
+            var work = moves.Where(m => m.type == GMaker.opTypes.extrusion);
             var workMoves = new List<Polyline>();
             foreach (var move in work) {
                 workMoves.Add(move.path); 
             }
            
 
-            var travel = moves.Where(m => m.type == "travel");
+            var travel = moves.Where(m => m.type == GMaker.opTypes.move);
             var travelMoves = new List<Polyline>(); 
             foreach (var move in travel) {
                 travelMoves.Add(move.path); 

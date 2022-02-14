@@ -21,7 +21,7 @@ namespace Vespidae
         public OffsetComponent()
           : base("Offset", "Offset",
             "Offsets polylines",
-            "Vespidae", "ClipperTools")
+            "Vespidae", "Tools")
         {
         }
 

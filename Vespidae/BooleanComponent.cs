@@ -21,7 +21,7 @@ namespace Vespidae
         public BooleanComponent()
           : base("Boolean", "Vespidae",
             "Test of clipper library",
-            "Vespidae", "ClipperTools")
+            "Vespidae", "Tools")
         {
         }
 

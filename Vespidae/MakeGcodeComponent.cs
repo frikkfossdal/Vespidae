@@ -22,7 +22,7 @@ namespace Vespidae
         public MakeGcodeComponent()
           : base("MakeGcodeComponent", "Make Gcode",
             "Converts polylines to gcode and visualizes machine operation (deleteMe)",
-            "Vespidae", "Gcode Tools")
+            "Vespidae", "undefined")
         {
         }
 

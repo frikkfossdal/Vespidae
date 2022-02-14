@@ -21,7 +21,7 @@ namespace Vespidae
         public SortPolysComponent()
           : base("SortPolysComponent", "SortPolys",
             "Sorts polys based on sort criteria",
-            "Vespidae", "Gcode Tools")
+            "Vespidae", "Tools")
         {
         }
 

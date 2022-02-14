@@ -21,7 +21,7 @@ namespace Vespidae
         public Vespmo_Make_Vespmo()
           : base("Vespmo_Make_Vespmo", "Create Vespmo",
             "Vespmo_Make_Vespmo description",
-            "Vespidae", "Gcode Tools")
+            "Vespidae", "undefined")
         {
         }
 
@@ -32,8 +32,9 @@ namespace Vespidae
         {
             pManager.AddCurveParameter("Curve", "crv", "polyline to convert", GH_ParamAccess.list);
             pManager.AddIntegerParameter("Type", "type", "type of move 0 = travel, 1 = extrusion", GH_ParamAccess.item, 0);
-            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item,1000);
+            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
             pManager.AddIntegerParameter("Value", "val", "value to manipulate operation", GH_ParamAccess.item, 1);
+            pManager.AddIntegerParameter("RetractHeight", "RH", "retract height between moves", GH_ParamAccess.item, 15);
         }
 
         /// <summary>
@@ -54,22 +55,24 @@ namespace Vespidae
             List<Curve> crv = new List<Curve>();
             int type = 0;
             int speed = 0;
-            int val = 0; 
+            int val = 0;
+            int rh = 0; 
 
-            if (!DA.GetData("Curve", ref crv)) return;
+            if (!DA.GetDataList("Curve",  crv)) return;
             DA.GetData("Type", ref type);
             DA.GetData("Speed", ref speed);
             DA.GetData("Value", ref val);
+            DA.GetData("RetractHeight", ref rh);
 
             //this should be a enumeration. Fix that in future
-            string t = ""; 
+            GMaker.opTypes t = opTypes.move; 
             switch (type)
             {
                 case 0:
-                    t = "move";
+                    t = opTypes.move;
                     break;
                 case 1:
-                    t = "extrusion";
+                    t = opTypes.extrusion;
                     break;
                 default:
                     break;
@@ -78,10 +81,9 @@ namespace Vespidae
 
             var pol = ClipperTools.ConvertCurvesToPolylines(crv); 
 
-            List<Move> output = GMaker.Operations.normalOps(pol, 50, t, speed, val); 
-       
+            List<Move> output = GMaker.Operations.normalOps(pol, rh, t, speed, val); 
 
-            DA.SetData("move", output); 
+            DA.SetDataList("move", output); 
         }
 
         /// <summary>

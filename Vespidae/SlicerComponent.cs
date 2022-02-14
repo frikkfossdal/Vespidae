@@ -20,7 +20,7 @@ namespace Vespidae
         public SlicerComponent()
           : base("SlicerComponent", "Slice",
             "SlicerComponent description",
-            "Vespidae", "Slicing Tools")
+            "Vespidae", "Toolpath")
         {
         }
 
@@ -76,7 +76,7 @@ namespace Vespidae
 
             DA.SetData("Vespidae_Object_out", slc);
             DA.SetDataList("SlicedPolys", slc.exposeShells());
-            DA.SetDataList("SlicingPlanes", slc.exposePlanes());
+            //DA.SetDataList("SlicingPlanes", slc.exposePlanes());
         }
 
         /// <summary>
