@@ -195,3 +195,11 @@ Restructure for toolpathing philosophy. I know call everything **Actions**, and 
 
 Finally I need to start about creating some tutorials / documentation for how this can be used and what a user journey might look like. 
 
+# 1502_2022
+
+Added proper extrusion like discussed in last entry. Gcode is not computed before all actions are ready chained together. This means I can keep track of extrusion across different sets of Actions. I also cleaned up the categories a bit. 
+
+Vinh shared his [project page](https://github.com/invinhtory/GrasshopperPrinting) where he is using Xylinus for creating code a Aerotech machine. Aerotech uses a different flavour of gcode - for example moves are defined as Linear X Y Z instead of G0. How can you adapt your translation components to handle this and what does this interaction look like in Grasshopper? 
+
+Apart from that I think I'm good to go to start testing. I've set up a Rhino document with 3 different tests - 1. A simple test that just print some 2D lines, 2. Z-pinning, 3. Spiral-vase which will be first testing ground for texture component. 
+

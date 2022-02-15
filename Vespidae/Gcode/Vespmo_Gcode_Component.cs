@@ -20,7 +20,7 @@ namespace Vespidae
         public Vespmo_Gcode_Component()
           : base("Vespmo_Gcode_Component", "VespMoGcode",
             "Converts VESPMO object to gcode",
-            "Vespidae", "gcode")
+            "Vespidae", "Ops")
         {
         }
 

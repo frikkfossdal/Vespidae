@@ -19,7 +19,7 @@ namespace Vespidae
         /// new tabs/panels will automatically be created.
         /// </summary>
         public OffsetComponent()
-          : base("Offset", "Offset",
+          : base("SlicerFriendlyOffset", "SlicerOffset",
             "Offsets polylines",
             "Vespidae", "Tools")
         {
