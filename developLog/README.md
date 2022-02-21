@@ -203,3 +203,23 @@ Vinh shared his [project page](https://github.com/invinhtory/GrasshopperPrinting
 
 Apart from that I think I'm good to go to start testing. I've set up a Rhino document with 3 different tests - 1. A simple test that just print some 2D lines, 2. Z-pinning, 3. Spiral-vase which will be first testing ground for texture component. 
 
+# 1702_2022
+
+- How can I visualize order of actions? 
+- Should I offset .2 in z direction or is this a user action? 
+- Visualization of move in and move out is important 
+
+# 2102_2022
+
+***Mix-G***: 
+
+pattern small gcode programs. For example use points to define center points of gcode and then pattern in direction. 
+
+Add converter from gcode to VObj. Gcode visualized as its typed and injected into program. 
+
+
+**z-pinning solver problem**
+
+operation solver does not handle zpinning in a good way. Rethink z-height ifelse in code. Right now it compares first z-height of each path. Should compare last z-height to first z-height as it is iterating. **I added this in code but did not have time to verify / check if it is working.**
+
+![z-pinning problem. Should generate moves between each pin](./img/zPin_solver_problem.png)

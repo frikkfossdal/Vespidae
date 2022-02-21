@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using GMaker;
-using ClipperHelper; 
 
-namespace Vespidae
+namespace Vespidae.Ops
 {
-    public class SortPolysComponent : GH_Component
+    public class zPinComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -18,10 +16,10 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public SortPolysComponent()
-          : base("SortPolysComponent", "SortPolys",
-            "Sorts polys based on sort criteria",
-            "Vespidae", "Tools")
+        public zPinComponent()
+          : base("zPinComponent", "Nickname",
+            "zPinComponent description",
+            "Category", "Subcategory")
         {
         }
 
@@ -30,7 +28,6 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Polys", "P", "Polys to be sorted", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -38,7 +35,6 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("SortedPolys", "SP", "sorted polys", GH_ParamAccess.list);  ; 
         }
 
         /// <summary>
@@ -48,14 +44,6 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var curves = new List<Curve>();
-
-            if (!DA.GetDataList("Polys", curves))return ;
-
-            var polys = ClipperTools.ConvertCurvesToPolylines(curves);
-
-            var newPolyList = Operation.sortPolys(polys);
-            DA.SetDataList("SortedPolys", newPolyList); 
         }
 
         /// <summary>
@@ -79,7 +67,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("4af20d7d-35b2-4a1a-9175-f2166a2ac2eb"); }
+            get { return new Guid("acbfc3d4-d6c4-4f87-b590-ce9dbbda7fcf"); }
         }
     }
 }
