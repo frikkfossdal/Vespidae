@@ -66,7 +66,7 @@ namespace SlicerTool
             List<Polyline> infillLines =  brepTools.createInfillLines(model, density);
 
             foreach (Layer l in this.layers) {
-                List<Polyline> inf =  ClipperTools.intersection(infillLines, l.shells, l.pln, tolerance, 1);
+                List<Polyline> inf =  ClipperTools.boolean(infillLines, l.shells, l.pln, tolerance, 1);
                 l.infill.AddRange(inf);
             }
         }

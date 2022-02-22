@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using GMaker; 
 
 namespace Vespidae.Solve
 {
@@ -17,9 +18,9 @@ namespace Vespidae.Solve
         /// new tabs/panels will automatically be created.
         /// </summary>
         public SolveActionsComponent()
-          : base("SolveActionsComponent", "Nickname",
+          : base("SolveActionsComponent", "Solve",
             "SolveActionsComponent description",
-            "Category", "Subcategory")
+            "Vespidae", "3.Solver")
         {
         }
 
@@ -28,6 +29,9 @@ namespace Vespidae.Solve
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddGenericParameter("Actions", "VObj", "Actions to be solved", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
+
         }
 
         /// <summary>
@@ -35,6 +39,7 @@ namespace Vespidae.Solve
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("OutputActions", "VObj", "New list of actions", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -44,6 +49,15 @@ namespace Vespidae.Solve
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            List<GMaker.Action> actions = new List<GMaker.Action>();
+            int rh = 0;
+
+            if (!DA.GetDataList("Actions", actions))return ;
+            DA.GetData("RetractHeight", ref rh);
+
+            var output = GMaker.Solve.GenerateProgram(actions, rh);
+
+            DA.SetDataList("OutputActions", output); 
         }
 
         /// <summary>

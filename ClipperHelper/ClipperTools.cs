@@ -32,12 +32,12 @@ namespace ClipperHelper
             var polylineCurve = crv.ToPolyline(0, 0, 0.1, 0, 0, 0, 0, 0, true);
             if (polylineCurve == null)
             {
-
                 return false;
             }
             if (!polylineCurve.TryGetPolyline(out pl)) {
                 return false;
             }
+
             return pl.IsValid && !(pl.Length < RhinoMath.ZeroTolerance);
         }
 
@@ -59,7 +59,7 @@ namespace ClipperHelper
         }
 
         //perform boolean operation on curves 
-        public static List<Polyline> intersection(IEnumerable<Polyline> A, IEnumerable<Polyline> B, Plane pln, double tolerance, int type) {
+        public static List<Polyline> boolean(IEnumerable<Polyline> A, IEnumerable<Polyline> B, Plane pln, double tolerance, int type) {
             List<Polyline> result = new List<Polyline>();
 
             var clip = new Clipper();

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using ClipperHelper; 
 
 namespace Vespidae.Ops
 {
@@ -17,9 +17,9 @@ namespace Vespidae.Ops
         /// new tabs/panels will automatically be created.
         /// </summary>
         public zPinComponent()
-          : base("zPinComponent", "Nickname",
+          : base("zPinComponent", "zPin",
             "zPinComponent description",
-            "Category", "Subcategory")
+            "Vespidae", "2.Actions")
         {
         }
 
@@ -28,6 +28,11 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
+            pManager.AddNumberParameter("Amount", "am", "extrusion flowrate", GH_ParamAccess.item, .6);
+            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
+            pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205);
+            pManager.AddTextParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, "t0");
         }
 
         /// <summary>
@@ -35,6 +40,7 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("VespObj", "VObj", "Vespidae action objects", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -44,6 +50,24 @@ namespace Vespidae.Ops
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            List<Curve> crv = new List<Curve>();
+            int speed = 0;
+            double amount = 0;
+            int rh = 0;
+            double temp = 0;
+            string tool = "";
+
+            if (!DA.GetDataList("Curve", crv)) return;
+
+            DA.GetData("Amount", ref amount);
+            DA.GetData("Speed", ref speed);
+            DA.GetData("Temperature", ref temp);
+            DA.GetData("ToolId", ref tool);
+
+            var pol = ClipperTools.ConvertCurvesToPolylines(crv);
+            var actions = GMaker.Operation.createZpinOps(pol, amount, temp, tool);
+
+            DA.SetData("VespObj", actions); 
         }
 
         /// <summary>

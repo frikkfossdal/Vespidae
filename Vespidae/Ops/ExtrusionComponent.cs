@@ -19,7 +19,8 @@ namespace Vespidae.Ops
         public ExtrusionComponent()
           : base("ExtrusionComponent", "VespExtrusion",
             "ExtrusionComponent description",
-            "Vespidae", "Ops")
+            "Vespidae", "2.Actions")
+            
         {
         }
 
@@ -30,9 +31,9 @@ namespace Vespidae.Ops
         {
             pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
             pManager.AddNumberParameter("Extrusion", "ex", "extrusion flowrate", GH_ParamAccess.item,.6);
-            pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
             pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
-            pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205); 
+            pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205);
+            pManager.AddTextParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, "t0");
         }
 
         /// <summary>
@@ -54,23 +55,23 @@ namespace Vespidae.Ops
             int speed = 0;
             double ext = 0;
             int rh = 0;
-            double temp = 0; 
+            double temp = 0;
+            string tool = ""; 
 
             if (!DA.GetDataList("Curve", crv)) return;
 
             DA.GetData("Extrusion", ref ext);
-            DA.GetData("RetractHeight", ref rh);
             DA.GetData("Speed", ref speed);
             DA.GetData("Temperature", ref temp);
+            DA.GetData("ToolId", ref tool); 
 
             var pol = ClipperTools.ConvertCurvesToPolylines(crv);
 
-            var actions = GMaker.Operation.createExtrudeOps(pol, rh, speed, ext, temp, "t0");
+            var actions = GMaker.Operation.createExtrudeOps(pol, speed, ext, temp, tool);
 
             DA.SetDataList("VespObj", actions); 
             //ops.createActions();
             //
-
         }
 
         /// <summary>

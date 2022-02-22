@@ -12,7 +12,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.14.22010.17001" IncludeAssets="compile;build" />
+    <PackageReference Include="Grasshopper" Version="7.15.22039.13001" IncludeAssets="compile;build" />
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
   </ItemGroup>
   
@@ -24,11 +24,11 @@
   <ItemGroup>
     <None Remove="GrasshopperAsyncComponent" />
     <None Remove="Ops\" />
-    <None Remove="Gcode\" />
+    <None Remove="Solve\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Ops\" />
-    <Folder Include="Gcode\" />
+    <Folder Include="Solve\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ZPinning.cs" />

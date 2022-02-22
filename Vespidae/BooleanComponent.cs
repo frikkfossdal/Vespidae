@@ -19,9 +19,9 @@ namespace Vespidae
         /// new tabs/panels will automatically be created.
         /// </summary>
         public BooleanComponent()
-          : base("Boolean", "Vespidae",
+          : base("Boolean", "VespBoolean",
             "Test of clipper library",
-            "Vespidae", "Tools")
+            "Vespidae", "1.CurveTools")
         {
         }
 
@@ -33,7 +33,7 @@ namespace Vespidae
             pManager.AddCurveParameter("A", "A", "", GH_ParamAccess.list);
             pManager.AddCurveParameter("B", "B", "", GH_ParamAccess.list);
             pManager.AddIntegerParameter("ClipType", "CT", "Clipping type. 0 : difference, 1: intersection, 2: union, 3: xor", GH_ParamAccess.item,0);
-            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, new Plane()); 
+            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, new Plane(new Point3d(0,0,0), new Vector3d(0,0,1))); 
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Vespidae
             List<Polyline> test1 = ClipperTools.ConvertCurvesToPolylines(curvesA);
             List<Polyline> test2 = ClipperTools.ConvertCurvesToPolylines(curvesB);
 
-            var result = ClipperTools.intersection(test1, test2, pln,RhinoDoc.ActiveDoc.ModelAbsoluteTolerance,clipNumber); 
+            var result = ClipperTools.boolean(test1, test2, pln,RhinoDoc.ActiveDoc.ModelAbsoluteTolerance,clipNumber); 
 
             DA.SetDataList(0, result);
         }

@@ -20,7 +20,7 @@ namespace Vespidae
         public SlicerComponent()
           : base("SlicerComponent", "Slice",
             "SlicerComponent description",
-            "Vespidae", "Toolpath")
+            "Vespidae", "1.CurveTools")
         {
         }
 

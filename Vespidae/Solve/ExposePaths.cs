@@ -20,7 +20,7 @@ namespace Vespidae
         public ExposePaths()
           : base("ExposePaths", "Expose Paths",
             "ExposePaths description",
-            "Vespidae", "Ops")
+            "Vespidae", "3.Solver")
         {
         }
 

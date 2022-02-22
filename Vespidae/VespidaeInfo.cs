@@ -18,7 +18,7 @@ namespace Vespidae
         public override Guid Id => new Guid("3900F949-B192-47F7-9F84-8FEACB6CF387");
 
         //Return a string identifying you or your company.
-        public override string AuthorName => "";
+        public override string AuthorName => "Frikk H Fossdal";
 
         //Return a string representing your preferred contact details.
         public override string AuthorContact => "";
