@@ -20,7 +20,6 @@ namespace GMaker
 
             return $"G0 X{x} Y{y} Z{z}"; 
         }
-
 }
 
     public static class Operation
@@ -29,32 +28,11 @@ namespace GMaker
         public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double ext, double temp, string tool)
         {
             List<Action> actions = new List<Action>();
-            var first = paths.First().First;
-            var last = paths.Last().Last;
 
-            //move to firstPoint
-            var mv = new Move(6000);
-            //mv.path.Add(first.X, first.Y, rh);
-            //mv.path.Add(first);
-            //mv.speed = 5000;
-            //actions.Add(mv);
-
-            //do all paths
-
-
-            //loop through all paths
             foreach (var p in paths)
             {
                 actions.Add(new Extrude(p, temp, ext, speed, tool));
             }
-
-            //add exit move
-            //var exit = new Move(6000);
-            //exit.path.Add(last);
-            //exit.path.Add(last.X, last.Y, rh);
-            //actions.Add(exit);
-
-            //create end move 
             return actions;
         }
 
@@ -62,7 +40,7 @@ namespace GMaker
             List<Action> actions = new List<Action>();
 
             foreach (var p in paths) {
-                
+                actions.Add(new zPin(p, temp, amount, tool)); 
             }
 
             return actions; 
@@ -92,41 +70,67 @@ namespace GMaker
     }
 
     public static class Solve{
+        //generates a move between two actions 
+        private static Move moveBetweenActions(Action prev, Action cur, double rh, int speed, bool partial) {
+            var newMove = new Move(speed);
+            if (partial) {
+                newMove.path.Add(prev.path.Last);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, cur.path.First.Z + rh);
+                newMove.path.Add(cur.path.First.X, cur.path.First.Y, cur.path.First.Z + rh);
+                newMove.path.Add(cur.path.First);
+            }
+            else {
+                newMove.path.Add(prev.path.Last);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, rh);
+                newMove.path.Add(cur.path.First.X, cur.path.First.Y, rh);
+                newMove.path.Add(cur.path.First);
+            }
+                return newMove;
+        }
         public static List<Action> GenerateProgram(List<Action> actions, int rh) {
             var newProgram = new List<Action>();
 
-            var prevPo = actions.First().path.First;
-            double currentZ = prevPo.Z; //to keep track of when we should add a move. 
+            //var prevPo = actions.First().path.First;
+            var prevAct = actions.First(); 
+            double partialRh = 0.2; //partial retract height
+            int moveSpeed = 10000;
 
             //add sorting?
-            //when do we add moves between actions. We can add tons of checks here 
+            //when do we add moves between actions. We can add tons of checks here
+            //should we check for planar vs non-planar? 
 
-            //move to first action
-            var fm = new Move(6000);
-            fm.path.Add(prevPo.X, prevPo.Y,rh);
-            fm.path.Add(prevPo);
-            newProgram.Add(fm);
+            int counter = 0; 
 
             foreach (var act in actions) {
-                if (act.path.First.Z != currentZ)
-                {
-                    var newMove = new Move(6000);
-                    newMove.path.Add(prevPo);
-                    newMove.path.Add(prevPo.X, prevPo.Y, rh);
-                    newMove.path.Add(act.path.First.X, act.path.First.Y, rh);
-                    newMove.path.Add(act.path.First); 
-                    newProgram.Add(newMove);
-                    
+                //first move
+                if (counter == 0) {
+                    var fm = new Move(moveSpeed);
+                    fm.path.Add(act.path.First.X, act.path.First.Y, rh);
+                    fm.path.Add(act.path.First);
+                    newProgram.Add(fm); 
+
                 }
+                //Check if last z height is same as current z full retract
+                else if (act.path.First.Z != prevAct.path.Last.Z) {
+                    Move m = moveBetweenActions(prevAct, act, rh, moveSpeed, false);
+                    newProgram.Add(m);
+                }
+                //same z-height. Partial retract 
+                else {
+                    Move m = moveBetweenActions(prevAct, act, partialRh, moveSpeed, true);
+                    newProgram.Add(m); 
+                }
+                
+                //then add action
                 newProgram.Add(act);
-                prevPo = act.path.Last;
-                currentZ = act.path.Last.Z;
+                prevAct = act; 
+                counter++; 
             }
 
             //exit move
             var lm = new Move(6000);
-            lm.path.Add(prevPo);
-            lm.path.Add(prevPo.X, prevPo.Y, rh); 
+            lm.path.Add(prevAct.path.Last);
+            lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh); 
             newProgram.Add(lm); 
 
             return newProgram; 
@@ -170,14 +174,14 @@ namespace GMaker
 
     public class Extrude : Action
     {
-        public double amount;
+        public double ext;
         public double temperature;
         string tool;
 
-        public Extrude(Polyline p, double t, double a, int s, string to)
+        public Extrude(Polyline p, double t, double e, int s, string to)
         {
             path = p;
-            amount = a;
+            ext = e;
             temperature = t;
             tool = to;
             speed = s; 
@@ -202,9 +206,9 @@ namespace GMaker
             {
                 double distToPrev = p.DistanceTo(prev);
 
-                double extrude = distToPrev * amount;
-                p.toGcode(); 
-                translation.Add(p.toGcode() + $"E{Math.Round(extrude+ex,4)}");
+                double extrude = distToPrev * ext;
+
+                translation.Add(p.toGcode() + $" E{Math.Round(extrude+ex,4)}");
                 ex += extrude;
                 prev = p; 
             }

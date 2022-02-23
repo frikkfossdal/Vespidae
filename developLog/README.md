@@ -223,3 +223,16 @@ Add converter from gcode to VObj. Gcode visualized as its typed and injected int
 operation solver does not handle zpinning in a good way. Rethink z-height ifelse in code. Right now it compares first z-height of each path. Should compare last z-height to first z-height as it is iterating. **I added this in code but did not have time to verify / check if it is working.**
 
 ![z-pinning problem. Should generate moves between each pin](./img/zPin_solver_problem.png)
+
+# 2302_2022
+
+I need to think more about patterning. Ideally it should be possible to pattern VespActions. Either this can be done on curve-level, like using the array shelf tools in Grasshopper on the curves before we convert it to VespActions, or I need create my own patterning tools for the actions. I'm thinking that the latter will make more sense but then I also need to think more about how I visualize the Actions. I think my only choice here is to create sort of a *Action-visualizer* kind of the exposePath-tool that I have now. Note to myself on how this looks: 
+
+1. **Bundle up a set of actions** - for example 4 extrudes and one z-pin. 
+2. **Use pattern tool to pattern the actions**
+3. **Send action list to solver** - moves between the actions are added and 
+final visualization is shown. 
+4. **Convert to gcode**
+
+Quick note on this topic: What would an Action bundle look like? Would it ever make sense to bundle together a sequence of Actions. And should this have a *bundle-solver*? Also quick note on solvers in general. I can make different solvers for different objectives. For example one Solver could solve for quick printing, another solver could solve with some type of sorting (or does sorting happen before solving)? How are solvers used in for example Houdini? Or in Kangeroo? When and how could a user customize a solver? 
+
