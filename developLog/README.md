@@ -236,3 +236,15 @@ final visualization is shown.
 
 Quick note on this topic: What would an Action bundle look like? Would it ever make sense to bundle together a sequence of Actions. And should this have a *bundle-solver*? Also quick note on solvers in general. I can make different solvers for different objectives. For example one Solver could solve for quick printing, another solver could solve with some type of sorting (or does sorting happen before solving)? How are solvers used in for example Houdini? Or in Kangeroo? When and how could a user customize a solver? 
 
+# 2402_2022
+
+Talk with Jens. Jens likes what he sees. Requests & suggestions: 
+
+- Keep polytree structure when converting to gcode. Makes sense. User can just flatten if they want. 
+- Add visualization of entry and exit on toolpaths. Currently cant access coloring from C#, but can make small vectors or shapes that represents arrows. 
+
+# 2502_2022
+
+Todays todos. Finish 01_example. Main gist is to show how to pattern VespActions with variations of input data. Found some bugs in offset component - input plane translates wrong after converting back into polylines. This could also be a good point to fix inside/outside filtering. 
+
+ 

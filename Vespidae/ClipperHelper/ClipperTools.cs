@@ -177,6 +177,7 @@ namespace ClipperHelper
             return output;
         }
 
+        //extracts polylines from a polytree. This should be sensitive to inside/outside ref slicerFriendliness 
         private static  List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance) {
             List<Polyline> output = new List<Polyline>();
 
@@ -194,6 +195,25 @@ namespace ClipperHelper
             return output; 
         }
 
+        //converts list of Clipper Intpoints to Polylines
+        public static Polyline ToPolyline(List<IntPoint> path, Plane pln, double tolerance, bool closed)
+        {
+            var polyline = new Polyline(); 
+
+            foreach (var pt in path)
+            {
+                polyline.Add(pln.PointAt(pt.X * tolerance, pt.Y * tolerance,pln.OriginZ));
+                //polylinepts.Add(new Point3d(((float)(pt.X * tolerance)), ((float)(pt.Y * tolerance)),0));
+            }
+
+            if (closed && path.Count > 0)
+            {
+                polyline.Add(polyline.First);
+            }
+
+            return polyline;
+        }
+
         public static List<IntPoint> ToPath2d(this Polyline pl, double tolerance) {
             var path = new List<IntPoint>();
             foreach (var pt in pl) {
@@ -206,25 +226,6 @@ namespace ClipperHelper
         {
             var point = new IntPoint(((long)(pt.X/tolerance)), ((long)(pt.Y/tolerance)));
             return point;
-        }
-
-        public static Polyline ToPolyline(List<IntPoint> path, Plane pln, double tolerance,  bool closed)
-        {
-            var polylinepts = new List<Point3d>();
-
-            foreach (var pt in path)
-            {
-                polylinepts.Add(pln.PointAt(pt.X*tolerance, pt.Y*tolerance));
-                //polylinepts.Add(new Point3d(((float)(pt.X * tolerance)), ((float)(pt.Y * tolerance)),0));
-            }
-
-            if (closed && path.Count > 0)
-            {
-                polylinepts.Add(polylinepts[0]);
-            }
-            var poly = new Polyline(polylinepts);
-
-            return poly;
         }
     }
 
