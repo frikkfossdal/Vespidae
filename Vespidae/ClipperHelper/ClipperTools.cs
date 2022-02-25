@@ -124,7 +124,6 @@ namespace ClipperHelper
 
             //keep height hack. Needs better logic
 
-
             foreach (Polyline poly in polysToOffset)
             {
                 if (poly.IsClosed) {
