@@ -143,36 +143,6 @@ namespace ClipperHelper
                 delta += distance;
             }
 
-
-            //PolyNode test = polytree.GetFirst();
-
-            //while (test != null) {
-
-            //    if (test.IsHole)
-            //    {
-            //        output.Add(ToPolyline(test.Contour, pln, tolerance, !test.IsOpen));
-            //    }
-
-
-            //    test = test.GetNext();
-            //}
-
-            //potential hack. Needs revision
-            //foreach (var path in polytree.Iterate()) {
-
-            //    if (path.IsHole)
-            //    {
-            //        if (path.Contour.Count > 1)
-            //        {
-            //            output.Add(ToPolyline(path.Contour, pln, tolerance, !path.IsOpen));
-            //        }
-            //    }
-            //    else {
-
-            //    }
-
-            //}
-
             return output;
         }
 
@@ -181,6 +151,10 @@ namespace ClipperHelper
             List<Polyline> output = new List<Polyline>();
 
             PolyNode cur = sol.GetFirst();
+
+            for (int i = 0; i < sol.ChildCount; i++) {
+                var test = sol.GetNext(); 
+            }
 
             while(cur != null)
             {
