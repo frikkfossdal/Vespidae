@@ -247,4 +247,6 @@ Talk with Jens. Jens likes what he sees. Requests & suggestions:
 
 Todays todos. Finish 01_example. Main gist is to show how to pattern VespActions with variations of input data. Found some bugs in offset component - input plane translates wrong after converting back into polylines. This could also be a good point to fix inside/outside filtering. 
 
- 
+# 2802_2022
+
+	Faster way to debug Rhino C# code? -> [link](https://discourse.mcneel.com/t/howto-run-c-script-in-rhino-using-vs-code/87642) 

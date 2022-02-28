@@ -9,18 +9,6 @@ namespace ClipperHelper
 {
     public static class ClipperTools
     {
-        //borrowed from original grasshopper clipper lib 
-        public static IEnumerable<PolyNode> Iterate(this PolyNode node)
-        {
-            yield return node;
-            foreach (var childNode in node.Childs)
-            {
-                foreach (var childNodeItem in childNode.Iterate())
-                {
-                    yield return childNodeItem;
-                }
-            }
-        }
 
         public static bool ConvertCurveToPolyline(Curve crv, out Polyline pl)
         {
@@ -146,26 +134,68 @@ namespace ClipperHelper
             return output;
         }
 
+        //borrowed from original grasshopper clipper lib 
+        public static IEnumerable<PolyNode> Iterate(this PolyNode node)
+        {
+            yield return node;
+            foreach (var childNode in node.Childs)
+            {
+                foreach (var childNodeItem in childNode.Iterate())
+                {
+                    yield return childNodeItem;
+                }
+            }
+        }
+
+        public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance) {
+            Rhino.RhinoApp.WriteLine(depth.ToString());
+
+            var output = new List<Polyline>();
+
+            //flip this 
+            if (depth % 2 == 0 && n.IsHole)
+            {
+                var poly = ToPolyline(n.Contour, Plane.WorldXY, tolerance, true);
+                if (poly.Length > 0)
+                {
+                    output.Add(poly);
+                }
+            }
+
+            foreach (var child in n.Childs)
+            {
+                output.AddRange(f_iterate(child, depth+1,tolerance));
+            }
+
+            return output; 
+        }
+
         //extracts polylines from a polytree. This should be sensitive to inside/outside ref slicerFriendliness 
         private static  List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance) {
             List<Polyline> output = new List<Polyline>();
 
-            PolyNode cur = sol.GetFirst();
+            //PolyNode cur = sol.GetFirst();
 
-            for (int i = 0; i < sol.ChildCount; i++) {
-                var test = sol.GetNext(); 
-            }
+            //for (int i = 0; i < sol.ChildCount; i++)
+            //{
+            //    var test = sol.GetNext();
+            //}
 
-            while(cur != null)
-            {
-                if (cur.IsHole)
-                {
-                    output.Add(ToPolyline(cur.Contour, pln, tolerance, !cur.IsOpen));
-                }
-               
-                cur = cur.GetNext();
-            }
-            return output; 
+            //while (cur != null)
+            //{
+            //    if (cur.Parent.IsHole)
+            //    {
+            //        output.Add(ToPolyline(cur.Contour, pln, tolerance, !cur.IsOpen));
+            //    }
+
+            //    cur = cur.GetNext();
+            //}
+
+            //bool test2 = true;
+
+            
+
+            return f_iterate(sol, 0, tolerance); 
         }
 
         //converts list of Clipper Intpoints to Polylines
