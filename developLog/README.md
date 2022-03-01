@@ -249,4 +249,6 @@ Todays todos. Finish 01_example. Main gist is to show how to pattern VespActions
 
 # 2802_2022
 
-	Faster way to debug Rhino C# code? -> [link](https://discourse.mcneel.com/t/howto-run-c-script-in-rhino-using-vs-code/87642) 
+Faster way to debug Rhino C# code? -> [link](https://discourse.mcneel.com/t/howto-run-c-script-in-rhino-using-vs-code/87642) 
+
+[Raster algorithm](https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code_v2/RasterPoly/index.html)? This is taken from [here](https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/graphics_3_2_eng_web.html#1).
