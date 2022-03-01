@@ -3,13 +3,12 @@ using System.Collections.Generic;
 
 using Grasshopper;
 using Grasshopper.Kernel;
-using Rhino;
 using Rhino.Geometry;
-using ClipperHelper;
+using System.Linq; 
 
-namespace Vespidae
+namespace Vespidae.CurveTools
 {
-    public class OffsetComponent : GH_Component
+    public class SortCurveComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -18,9 +17,9 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public OffsetComponent()
-          : base("SlicerFriendlyOffset", "SlicerOffset",
-            "Offsets polylines",
+        public SortCurveComponent()
+          : base("SortCurveComponent", "Sort Curves",
+            "Sorts curves. Sorts curve. Currenly kind of a hack. ",
             "Vespidae", "1.CurveTools")
         {
         }
@@ -30,10 +29,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "C", "Curve or curves to offset", GH_ParamAccess.list); 
-            pManager.AddNumberParameter("Distance", "D", "Distance to offset", GH_ParamAccess.item, 1);
-            pManager.AddIntegerParameter("Amount", "NO", "Amount of times to offset curve. Default 1", GH_ParamAccess.item, 1);
-            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, Plane.WorldXY);
+            pManager.AddCurveParameter("Curves", "c", "curves to be sorted", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -41,7 +37,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("result", "r", "", GH_ParamAccess.list);
+            pManager.AddCurveParameter("sortedCurves", "srtC", "sorted curves", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -51,20 +47,14 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Curve> offsetCurves = new List<Curve>();
-            double distance = 0;
-            int amount = 0; 
-            Plane pln = new Plane();
+            List<Curve> crvs = new List<Curve>();    
+            if(!DA.GetDataList("Curves", crvs)) return ;
 
-            if (!DA.GetDataList("Curve", offsetCurves))return;
-            DA.GetData("Distance", ref distance);
-            DA.GetData("Amount", ref amount);
-            DA.GetData("OutputPlane", ref pln);
-
-            List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
-            List<Polyline> result = ClipperTools.offset(offsetPolylines,amount, pln, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
-
-            DA.SetDataList(0, result); 
+            //first we sort in X
+            var sortX = crvs.OrderBy(p => p.PointAtStart.X);
+            //then we sort in Y
+            var sortY = sortX.OrderBy(p => p.PointAtStart.Y); 
+            DA.SetDataList("sortedCurves", sortY); 
         }
 
         /// <summary>
@@ -77,7 +67,7 @@ namespace Vespidae
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return Resources.Resources.offset;
+                return Resources.Resources.sortCurves;
             }
         }
 
@@ -88,7 +78,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("0f98fefb-135d-4e93-999b-30d501057087"); }
+            get { return new Guid("2b17fcbb-6d5f-44b8-a599-ddc497cc4631"); }
         }
     }
 }

@@ -54,9 +54,37 @@ namespace Vespidae.Resources {
             }
         }
         
-        internal static System.Drawing.Bitmap gcode {
+        internal static System.Drawing.Bitmap path {
             get {
-                object obj = ResourceManager.GetObject("gcode", resourceCulture);
+                object obj = ResourceManager.GetObject("path", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap extrude {
+            get {
+                object obj = ResourceManager.GetObject("extrude", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap offset {
+            get {
+                object obj = ResourceManager.GetObject("offset", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap boolean {
+            get {
+                object obj = ResourceManager.GetObject("boolean", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap sortCurves {
+            get {
+                object obj = ResourceManager.GetObject("sortCurves", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

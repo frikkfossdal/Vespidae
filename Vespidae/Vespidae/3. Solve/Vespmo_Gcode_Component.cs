@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using ClipperHelper;
+
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using GMaker; 
 
-namespace Vespidae.Ops
+namespace Vespidae
 {
-    public class ExtrusionComponent : GH_Component
+    public class Vespmo_Gcode_Component : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -16,10 +17,10 @@ namespace Vespidae.Ops
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public ExtrusionComponent()
-          : base("ExtrusionComponent", "VespExtrusion",
-            "ExtrusionComponent description",
-            "Vespidae", "2.Actions")
+        public Vespmo_Gcode_Component()
+          : base("Vespmo_Gcode_Component", "VespMoGcode",
+            "Converts VESPMO object to gcode",
+            "Vespidae", "3.Solver")
         {
         }
 
@@ -28,11 +29,9 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Extrusion", "ex", "extrusion flowrate", GH_ParamAccess.item,.1);
-            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
-            pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205);
-            pManager.AddTextParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, "t0");
+            pManager.AddGenericParameter("VESPMO", "VObj", "Vespidae action objects", GH_ParamAccess.list);
+            pManager.AddTextParameter("header", "h", "optional gcode header", GH_ParamAccess.list, "");
+            pManager.AddTextParameter("footer", "f", "optional gcode footer", GH_ParamAccess.list, ""); 
         }
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("VespObj", "VObj", "Vespidae action objects", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("gcode", "Gcode", "output gcode", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -50,27 +49,26 @@ namespace Vespidae.Ops
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Curve> crv = new List<Curve>();
-            int speed = 0;
-            double ext = 0;
-            int rh = 0;
-            double temp = 0;
-            string tool = ""; 
+            List<GMaker.Action> actions = new List<GMaker.Action>();
+            List<String> gcode = new List<string>();
+            List<String> header = new List<string>();
+            List<String> footer = new List<string>();
 
-            if (!DA.GetDataList("Curve", crv)) return;
+            if (!DA.GetDataList("VESPMO", actions)) return;
+            DA.GetDataList("header", header);
+            DA.GetDataList("footer", footer);
 
-            DA.GetData("Extrusion", ref ext);
-            DA.GetData("Speed", ref speed);
-            DA.GetData("Temperature", ref temp);
-            DA.GetData("ToolId", ref tool); 
+            if (header.Count > 0) {
+                gcode.AddRange(header);
+            }
 
-            var pol = ClipperTools.ConvertCurvesToPolylines(crv);
+            
+            gcode.AddRange(GMaker.Operation.translateToGcode(actions));
 
-            var actions = GMaker.Operation.createExtrudeOps(pol, speed, ext, temp, tool);
-
-            DA.SetDataList("VespObj", actions); 
-            //ops.createActions();
-            //
+            if (footer.Count > 0) {
+                gcode.AddRange(footer); 
+            }
+            DA.SetDataList("gcode", gcode);
         }
 
         /// <summary>
@@ -83,7 +81,7 @@ namespace Vespidae.Ops
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return null;
+                return Resources.Resources.path;
             }
         }
 
@@ -94,7 +92,7 @@ namespace Vespidae.Ops
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("a8615386-e873-4790-bbf9-7aed568e318f"); }
+            get { return new Guid("7b2fa908-e881-4bf6-96bd-68d5ef549b09"); }
         }
     }
 }

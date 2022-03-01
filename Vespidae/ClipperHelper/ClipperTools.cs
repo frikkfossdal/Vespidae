@@ -150,10 +150,10 @@ namespace ClipperHelper
         public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance) {
             Rhino.RhinoApp.WriteLine(depth.ToString());
 
-            var output = new List<Polyline>();
+             var output = new List<Polyline>();
 
             //flip this 
-            if (depth % 2 == 0 && n.IsHole)
+            if (depth == 2 || depth == 3)
             {
                 var poly = ToPolyline(n.Contour, Plane.WorldXY, tolerance, true);
                 if (poly.Length > 0)
