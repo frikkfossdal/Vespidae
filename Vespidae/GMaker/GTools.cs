@@ -194,7 +194,7 @@ namespace GMaker
             var translation = new List<string>();
 
             //inital code
-            translation.Add($";{actionType}");
+            translation.Add($";{actionType} Speed:{speed} Ex.Mult: {ex} Temp: {temperature}");
             translation.Add(tool);
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
@@ -206,7 +206,8 @@ namespace GMaker
             {
                 double distToPrev = p.DistanceTo(prev);
 
-                double extrude = distToPrev * ext;
+                //0.01 is experimental value
+                double extrude = distToPrev * .01 * ext;
 
                 translation.Add(p.toGcode() + $" E{Math.Round(extrude+ex,4)}");
                 ex += extrude;

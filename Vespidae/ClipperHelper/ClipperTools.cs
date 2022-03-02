@@ -147,15 +147,15 @@ namespace ClipperHelper
             }
         }
 
-        public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance) {
+        public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance, Plane pln) {
             Rhino.RhinoApp.WriteLine(depth.ToString());
 
              var output = new List<Polyline>();
 
-            //flip this 
+            //Needs better logic to handle more depth 
             if (depth == 2 || depth == 3)
             {
-                var poly = ToPolyline(n.Contour, Plane.WorldXY, tolerance, true);
+                var poly = ToPolyline(n.Contour, pln, tolerance, true);
                 if (poly.Length > 0)
                 {
                     output.Add(poly);
@@ -164,7 +164,7 @@ namespace ClipperHelper
 
             foreach (var child in n.Childs)
             {
-                output.AddRange(f_iterate(child, depth+1,tolerance));
+                output.AddRange(f_iterate(child, depth+1,tolerance, pln));
             }
 
             return output; 
@@ -174,28 +174,7 @@ namespace ClipperHelper
         private static  List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance) {
             List<Polyline> output = new List<Polyline>();
 
-            //PolyNode cur = sol.GetFirst();
-
-            //for (int i = 0; i < sol.ChildCount; i++)
-            //{
-            //    var test = sol.GetNext();
-            //}
-
-            //while (cur != null)
-            //{
-            //    if (cur.Parent.IsHole)
-            //    {
-            //        output.Add(ToPolyline(cur.Contour, pln, tolerance, !cur.IsOpen));
-            //    }
-
-            //    cur = cur.GetNext();
-            //}
-
-            //bool test2 = true;
-
-            
-
-            return f_iterate(sol, 0, tolerance); 
+            return f_iterate(sol, 0, tolerance, pln); 
         }
 
         //converts list of Clipper Intpoints to Polylines
@@ -205,8 +184,7 @@ namespace ClipperHelper
 
             foreach (var pt in path)
             {
-                polyline.Add(pln.PointAt(pt.X * tolerance, pt.Y * tolerance,pln.OriginZ));
-                //polylinepts.Add(new Point3d(((float)(pt.X * tolerance)), ((float)(pt.Y * tolerance)),0));
+                polyline.Add(pt.X * tolerance, pt.Y * tolerance, pln.OriginZ);
             }
 
             if (closed && path.Count > 0)

@@ -29,7 +29,7 @@ namespace Vespidae.Ops
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Extrusion", "ex", "extrusion flowrate", GH_ParamAccess.item,.1);
+            pManager.AddNumberParameter("Extrusion", "ex", "extrusion flowrate multiplier (distance x 0.01 x multiplier)", GH_ParamAccess.item,1);
             pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
             pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205);
             pManager.AddTextParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, "t0");

@@ -76,6 +76,7 @@ namespace Vespidae
             DA.SetDataList("AllMoves", allMoves); 
             DA.SetDataList("WorkMoves", workMoves);
             DA.SetDataList("TravelMoves", travelMoves);
+            var test = new Rhino.Geometry.Cone(); 
         }
 
         /// <summary>
@@ -88,7 +89,7 @@ namespace Vespidae
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return Resources.Resources.brain;
+                return Resources.Resources.visualizePaths;
             }
         }
 

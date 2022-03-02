@@ -53,13 +53,16 @@ namespace Vespidae
         {
             List<Curve> offsetCurves = new List<Curve>();
             double distance = 0;
-            int amount = 0; 
-            Plane pln = new Plane();
+            int amount = 0;
+            var pln = new Plane();
 
             if (!DA.GetDataList("Curve", offsetCurves))return;
             DA.GetData("Distance", ref distance);
             DA.GetData("Amount", ref amount);
             DA.GetData("OutputPlane", ref pln);
+
+            //hack: extract plane from first input curve
+            offsetCurves[0].TryGetPlane(out pln);
 
             List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
             List<Polyline> result = ClipperTools.offset(offsetPolylines,amount, pln, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);

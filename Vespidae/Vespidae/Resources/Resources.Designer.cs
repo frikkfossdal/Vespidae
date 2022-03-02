@@ -88,5 +88,19 @@ namespace Vespidae.Resources {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        internal static System.Drawing.Bitmap visualizePaths {
+            get {
+                object obj = ResourceManager.GetObject("visualizePaths", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap slice {
+            get {
+                object obj = ResourceManager.GetObject("slice", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
