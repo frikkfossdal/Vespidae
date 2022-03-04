@@ -22,6 +22,50 @@ namespace GMaker
         }
 }
 
+    public static class Visualization {
+        public static List<Mesh> enterExit(Polyline poly) {
+
+            var enter = createArrow(2);
+            var exit = createArrow(2);
+
+            enter.Transform(Transform.PlaneToPlane(Plane.WorldXY, horizFrame(poly, 0)));
+            var indexOfLastPoint = poly.IndexOf(poly.Last);
+            exit.Transform(Transform.PlaneToPlane(Plane.WorldXY, horizFrame(poly, indexOfLastPoint)));
+
+            return new List<Mesh>() { enter, exit }; 
+        }
+        //creates a mesh arrow 
+        private static Mesh createArrow(int scl) {
+            var returnMesh = new List<Mesh>();
+
+            var arrow = new Mesh();
+            var pnts = new List<Point3d>();
+            pnts.Add(new Point3d(0, -scl / 2, 0));
+            pnts.Add(new Point3d(0, scl / 2, 0));
+            pnts.Add(new Point3d(scl, 0, 0));
+
+            arrow.Vertices.AddVertices(pnts);
+            arrow.Faces.AddFace(new MeshFace(0, 1, 2));
+            return arrow; 
+        }
+
+        private static Plane horizFrame(Polyline C, double t) {
+            Vector3d Tangent = C.TangentAt(t);
+
+            if (Tangent.IsParallelTo(Vector3d.ZAxis) == 0)
+            {
+                Vector3d Perp = Vector3d.CrossProduct(Vector3d.ZAxis, Tangent);
+                Plane frame = new Plane(C.PointAt(t), Tangent, Perp);
+                return frame;
+            }
+            else
+            {
+                var frame = new Plane(C.PointAt(t), Tangent, Vector3d.XAxis);
+                return frame;
+            }
+        }
+    }
+
     public static class Operation
     {
         //static functino for creating simple extrusion operation. Could be modified with enumeration of tool 

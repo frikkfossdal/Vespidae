@@ -252,3 +252,11 @@ Todays todos. Finish 01_example. Main gist is to show how to pattern VespActions
 Faster way to debug Rhino C# code? -> [link](https://discourse.mcneel.com/t/howto-run-c-script-in-rhino-using-vs-code/87642) 
 
 [Raster algorithm](https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code_v2/RasterPoly/index.html)? This is taken from [here](https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/graphics_3_2_eng_web.html#1).
+
+# 04.02.2022
+
+Working on visualizing toolpaths in a good way. After discussion with Jens we agree to use mesh arrows to visualize direction. Jens showed me some cool prototypes of how this could also look in above-3-axis-toolpath. For now I'll stay with 3-axis but this could make for some fun future exercises. Here is a gif of how it looks now: 
+
+![](./img/arrow_viz_test.gif)
+
+Some quick thoughts about visualizing. Frequency could communicate speed, color could communicate tool or action-type. 
