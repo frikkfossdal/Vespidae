@@ -22,11 +22,16 @@ This is all great and in many cases efficient and useful, but there are cases wh
 
 *sketch, explain how tagging with meta-data is super cool and useful*
 
-At its Core Vespidae transforms Rhino Polycurves into encapsulated objects that we call *VespActions*. A VespActions can be anything from a simple move to a cutting move to an extrusino move. These are compiled... 
+At its Core Vespidae transforms Rhino Polycurves into encapsulated objects that we call *VespActions*. A VespActions can be anything from a simple move to a cutting move to an Extrusion move. 
+- sorting and visualization
 
 ## How do I use it? 
 
 1. Download Build folder from repository. 
 3. Move files from Build folder to Grasshopper Component Folder (Open Grasshopper, then File -> Special Folders -> Component Folder).
 4. Restart Rhino and you should be good to go. 
+
+## Getting familiar
+
+*put example here*
 
