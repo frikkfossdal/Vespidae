@@ -260,3 +260,12 @@ Working on visualizing toolpaths in a good way. After discussion with Jens we ag
 ![](./img/arrow_viz_test.gif)
 
 Some quick thoughts about visualizing. Frequency could communicate speed, color could communicate tool or action-type. 
+
+# 05.02.2022 
+
+Did a bunch of tweaks today and I think I'm at the final push before people can actually start using this. I implemented a new genereric Action type called just move. I'm using this action as a part of my initial getting-to-know-vespidae example. Travel moves between actions are now called, well, Travel. I also went back and cleaned the Gmaker library. I implemented a boolean value to select partial retract in the solver. A missing thing in the solver (I think) is to separate lift speed from travelling speed. A lot of machines (including frikk-clank) uses different drivetrains on the z axis then the xy axis. I'm putting this down in **bold todo.** 
+
+I integrated the arrow script in the previous entry into the ExposePath component and added a arrowScl parameter that lets us change scale of arrows. Next move here is to use different scale or frequency on the arrows to visualize different action types. I'm also pretty sure that I should be able to tweak the preview colour from C# but that will be a future thing. 
+
+All in all this is starting to feel good. I did some dry runs on frikk-clank to get the feel. I think the next thing I'm implementing is a component that uploads (and runs?) the gcode on the duet board. This will also be super useful for my Jubilee friends. 
+
