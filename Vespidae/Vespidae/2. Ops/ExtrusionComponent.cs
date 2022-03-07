@@ -53,7 +53,6 @@ namespace Vespidae.Ops
             List<Curve> crv = new List<Curve>();
             int speed = 0;
             double ext = 0;
-            int rh = 0;
             double temp = 0;
             string tool = ""; 
 

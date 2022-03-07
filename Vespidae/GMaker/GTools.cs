@@ -7,6 +7,7 @@ namespace GMaker
 {
     public enum opTypes
     {
+        travel,
         move,
         extrusion,
         zPin
@@ -23,10 +24,10 @@ namespace GMaker
 }
 
     public static class Visualization {
-        public static List<Mesh> enterExit(Polyline poly) {
+        public static List<Mesh> enterExit(Polyline poly, double scl) {
 
-            var enter = createArrow(2);
-            var exit = createArrow(2);
+            var enter = createArrow(scl);
+            var exit = createArrow(scl);
 
             enter.Transform(Transform.PlaneToPlane(Plane.WorldXY, horizFrame(poly, 0)));
             var indexOfLastPoint = poly.IndexOf(poly.Last);
@@ -35,15 +36,16 @@ namespace GMaker
             return new List<Mesh>() { enter, exit }; 
         }
         //creates a mesh arrow 
-        private static Mesh createArrow(int scl) {
+        private static Mesh createArrow(double scl) {
             var returnMesh = new List<Mesh>();
 
             var arrow = new Mesh();
             var pnts = new List<Point3d>();
-            pnts.Add(new Point3d(0, -scl / 2, 0));
-            pnts.Add(new Point3d(0, scl / 2, 0));
-            pnts.Add(new Point3d(scl, 0, 0));
+            pnts.Add(new Point3d(0, (double)-scl / 2, 0));
+            pnts.Add(new Point3d(0, (double)scl / 2, 0));
+            pnts.Add(new Point3d((double)scl, 0, 0));
 
+            
             arrow.Vertices.AddVertices(pnts);
             arrow.Faces.AddFace(new MeshFace(0, 1, 2));
             return arrow; 
@@ -78,6 +80,14 @@ namespace GMaker
                 actions.Add(new Extrude(p, temp, ext, speed, tool));
             }
             return actions;
+        }
+
+        public static List<Action> createMoveOps(List<Polyline> paths, int speed, string tool) {
+            List<Action> actions = new List<Action>();
+            foreach (var p in paths) {
+                actions.Add(new Move(p, speed, tool));
+            }
+            return actions; 
         }
 
         public static List<Action> createZpinOps(List<Polyline> paths, double amount, double temp, string tool) {
@@ -115,8 +125,8 @@ namespace GMaker
 
     public static class Solve{
         //generates a move between two actions 
-        private static Move moveBetweenActions(Action prev, Action cur, double rh, int speed, bool partial) {
-            var newMove = new Move(speed);
+        private static Travel moveBetweenActions(Action prev, Action cur, double rh, int speed, bool partial) {
+            var newMove = new Travel(speed);
             if (partial) {
                 newMove.path.Add(prev.path.Last);
                 newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, cur.path.First.Z + rh);
@@ -131,48 +141,51 @@ namespace GMaker
             }
                 return newMove;
         }
-        public static List<Action> GenerateProgram(List<Action> actions, int rh) {
+        public static List<Action> GenerateProgram(List<Action> actions, int rh, int sp, bool pr) {
             var newProgram = new List<Action>();
 
             //var prevPo = actions.First().path.First;
             var prevAct = actions.First(); 
             double partialRh = 0.2; //partial retract height
-            int moveSpeed = 10000;
 
             //add sorting?
             //when do we add moves between actions. We can add tons of checks here
             //should we check for planar vs non-planar? 
 
-            int counter = 0; 
+            bool first = true; 
 
             foreach (var act in actions) {
                 //first move
-                if (counter == 0) {
-                    var fm = new Move(moveSpeed);
+                if (first)
+                {
+                    var fm = new Travel(sp);
                     fm.path.Add(act.path.First.X, act.path.First.Y, rh);
                     fm.path.Add(act.path.First);
-                    newProgram.Add(fm); 
+                    newProgram.Add(fm);
 
                 }
-                //Check if last z height is same as current z full retract
-                else if (act.path.First.Z != prevAct.path.Last.Z) {
-                    Move m = moveBetweenActions(prevAct, act, rh, moveSpeed, false);
+                //Check if last z height is not same as current z or partial is false
+                //full retract
+                else if (act.path.First.Z != prevAct.path.Last.Z || pr ==false)
+                {
+                    Travel m = moveBetweenActions(prevAct, act, rh, sp, false);
                     newProgram.Add(m);
                 }
-                //same z-height. Partial retract 
-                else {
-                    Move m = moveBetweenActions(prevAct, act, partialRh, moveSpeed, true);
-                    newProgram.Add(m); 
+                //same z-height and partial is true. Partial retract 
+                else if (pr == true)
+                {
+                    Travel m = moveBetweenActions(prevAct, act, partialRh, sp, true);
+                    newProgram.Add(m);
                 }
                 
                 //then add action
                 newProgram.Add(act);
                 prevAct = act; 
-                counter++; 
+                first = false; 
             }
 
             //exit move
-            var lm = new Move(6000);
+            var lm = new Travel(6000);
             lm.path.Add(prevAct.path.Last);
             lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh); 
             newProgram.Add(lm); 
@@ -192,13 +205,13 @@ namespace GMaker
         public abstract List<string> translate(ref double ex);
     }
 
-    public class Move : Action
+    public class Travel : Action
     {
-        public Move(int s)
+        public Travel(int s)
         {
             path = new Polyline();
             speed = s;
-            actionType = opTypes.move;
+            actionType = opTypes.travel;
         }
 
         public override List<string> translate(ref double ex)
@@ -216,11 +229,39 @@ namespace GMaker
         }
     }
 
+    public class Move : Action
+    {
+        public string tool;
+
+        public Move(Polyline p,  int s, string to)
+        {
+            path = p;
+            speed = s;
+            actionType = opTypes.move;
+            tool = to;  
+        }
+
+        public override List<string> translate(ref double ex)
+        {
+            var translation = new List<string>();
+            translation.Add($";{actionType}");
+            translation.Add(tool);
+            translation.Add($"G0 F{speed}");
+
+            foreach (var p in path)
+            {
+                translation.Add(p.toGcode());
+            }
+
+            return translation;
+        }
+    }
+
     public class Extrude : Action
     {
         public double ext;
         public double temperature;
-        string tool;
+        public string tool;
 
         public Extrude(Polyline p, double t, double e, int s, string to)
         {

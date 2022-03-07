@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using GMaker;
+using ClipperHelper; 
 
 namespace Vespidae.Ops
 {
@@ -17,9 +19,9 @@ namespace Vespidae.Ops
         /// new tabs/panels will automatically be created.
         /// </summary>
         public MoveComponent()
-          : base("MoveComponent", "Nickname",
-            "MoveComponent description",
-            "Category", "Subcategory")
+          : base("MoveComponent", "VespMove",
+            "Create Move Actions",
+            "Vespidae", "2.Actions")
         {
         }
 
@@ -28,6 +30,9 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
+            pManager.AddTextParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, "t0");
         }
 
         /// <summary>
@@ -35,6 +40,7 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("VespObj", "VObj", "Vespidae action objects", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -44,6 +50,22 @@ namespace Vespidae.Ops
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            List<Curve> crv = new List<Curve>();
+            int speed = 0;
+            double temp = 0;
+            string tool = "";
+
+            if (!DA.GetDataList("Curve", crv)) return;
+
+            DA.GetData("Speed", ref speed);
+            DA.GetData("ToolId", ref tool);
+
+            var pol = ClipperTools.ConvertCurvesToPolylines(crv);
+
+            var actions = GMaker.Operation.createMoveOps(pol, speed, tool);
+
+            DA.SetDataList("VespObj", actions);
+            //ops.createActions();
         }
 
         /// <summary>
@@ -56,7 +78,7 @@ namespace Vespidae.Ops
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return null;
+                return Resources.Resources.move;
             }
         }
 

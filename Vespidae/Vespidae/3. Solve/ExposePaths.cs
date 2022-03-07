@@ -29,7 +29,8 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("vespmo", "VObj", "Vespidae action objects", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("vespmo", "VObj", "Vespidae action objects", GH_ParamAccess.list);
+            pManager.AddNumberParameter("arrowScl", "scl", "scale of viz arrows", GH_ParamAccess.item,1.0); 
         }
 
         /// <summary>
@@ -38,9 +39,7 @@ namespace Vespidae
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("AllMoves", "allPaths", "all paths of Vespidae object", GH_ParamAccess.list);
-            pManager.AddGenericParameter("TravelMoves", "allTravel", "filtered travel paths of Vespidae object", GH_ParamAccess.list);
-            pManager.AddGenericParameter("WorkMoves", "allWork", "filtered work paths of Vespidae object", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("Speed", "sp", "list of speeds", GH_ParamAccess.list);
+            pManager.AddGenericParameter("AllTravel", "allTravel", "all paths of Vespidae object", GH_ParamAccess.list);
             pManager.AddGenericParameter("Arrows", "ar", "direction arrows", GH_ParamAccess.list); 
         }
 
@@ -53,15 +52,18 @@ namespace Vespidae
         {
             List<GMaker.Action> actions = new List<GMaker.Action>();
             List<Polyline> allPaths = new List<Polyline>();
-            var arrows = new List<Mesh>(); 
+            var arrows = new List<Mesh>();
+            double scl = 1.0; 
 
             if (!DA.GetDataList("vespmo", actions)) return;
+            DA.GetData("arrowScl", ref scl); 
+
 
             //get all paths
             var allMoves = new List<Polyline>();
             foreach (var move in actions) {
                 allMoves.Add(move.path);
-                arrows.AddRange(GMaker.Visualization.enterExit(move.path)); 
+                arrows.AddRange(GMaker.Visualization.enterExit(move.path,scl)); 
             }
 
             var work = actions.Where(m => m.actionType == GMaker.opTypes.extrusion);
@@ -70,15 +72,14 @@ namespace Vespidae
                 workMoves.Add(move.path); 
             }
 
-            var travel = actions.Where(m => m.actionType == GMaker.opTypes.move);
+            var travel = actions.Where(m => m.actionType == GMaker.opTypes.travel);
             var travelMoves = new List<Polyline>(); 
             foreach (var move in travel) {
                 travelMoves.Add(move.path); 
             }
 
-            DA.SetDataList("AllMoves", allMoves); 
-            DA.SetDataList("WorkMoves", workMoves);
-            DA.SetDataList("TravelMoves", travelMoves);
+            DA.SetDataList("AllMoves", allMoves);
+            DA.SetDataList("AllTravel", travelMoves);
             DA.SetDataList("Arrows", arrows); 
         }
 

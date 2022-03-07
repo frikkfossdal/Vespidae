@@ -63,10 +63,10 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType></DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Release\net48</OutputPath>
+    <OutputPath>bin\Release\net48\net48</OutputPath>
     <DefineConstants></DefineConstants>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>obj\Release\net48</IntermediateOutputPath>
+    <IntermediateOutputPath>obj\Release\net48\net48</IntermediateOutputPath>
     <NoWarn></NoWarn>
   </PropertyGroup>
 </Project>

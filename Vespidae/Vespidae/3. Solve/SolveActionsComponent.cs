@@ -31,7 +31,8 @@ namespace Vespidae.Solve
         {
             pManager.AddGenericParameter("Actions", "VObj", "Actions to be solved", GH_ParamAccess.list);
             pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
-
+            pManager.AddIntegerParameter("TravelSpeed", "ts", "travel speed between moves", GH_ParamAccess.item, 5000);
+            pManager.AddBooleanParameter("PartialRetract", "pr", "partial retract when possible", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -51,11 +52,15 @@ namespace Vespidae.Solve
         {
             List<GMaker.Action> actions = new List<GMaker.Action>();
             int rh = 0;
+            int ts = 0;
+            bool pr = false; 
 
             if (!DA.GetDataList("Actions", actions))return ;
             DA.GetData("RetractHeight", ref rh);
+            DA.GetData("TravelSpeed", ref ts);
+            DA.GetData("PartialRetract", ref pr); 
 
-            var output = GMaker.Solve.GenerateProgram(actions, rh);
+            var output = GMaker.Solve.GenerateProgram(actions, rh, ts, pr);
 
             DA.SetDataList("OutputActions", output); 
         }
@@ -70,7 +75,7 @@ namespace Vespidae.Solve
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return null;
+                return Resources.Resources.solve;
             }
         }
 
