@@ -13,12 +13,14 @@
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="7.15.22039.13001" IncludeAssets="compile;build" />
+    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\ClipperHelper\ClipperHelper.csproj" />
     <ProjectReference Include="..\GMaker\GMaker.csproj" />
     <ProjectReference Include="..\SlicerTool\SlicerTool.csproj" />
+    <ProjectReference Include="..\Coms\Coms.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="GrasshopperAsyncComponent" />
@@ -27,12 +29,14 @@
     <None Remove="Resources\" />
     <None Remove="Resources\brain.png" />
     <None Remove="Curve\" />
+    <None Remove="4.Coms\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="2. Ops\" />
     <Folder Include="3. Solve\" />
     <Folder Include="Resources\" />
     <Folder Include="1. CurveTools\" />
+    <Folder Include="4.Coms\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ZPinning.cs" />
@@ -63,10 +67,11 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType></DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Release\net48\net48</OutputPath>
+    <OutputPath>..\..\Build</OutputPath>
     <DefineConstants></DefineConstants>
     <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath>obj\Release\net48\net48</IntermediateOutputPath>
+    <IntermediateOutputPath>obj\Release\net48\net48\net48\net48\net48</IntermediateOutputPath>
     <NoWarn></NoWarn>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 </Project>

@@ -123,5 +123,12 @@ namespace Vespidae.Resources {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        internal static System.Drawing.Bitmap uploadG {
+            get {
+                object obj = ResourceManager.GetObject("uploadG", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

@@ -253,7 +253,7 @@ Faster way to debug Rhino C# code? -> [link](https://discourse.mcneel.com/t/howt
 
 [Raster algorithm](https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code_v2/RasterPoly/index.html)? This is taken from [here](https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/graphics_3_2_eng_web.html#1).
 
-# 04.02.2022
+# 0403_2022
 
 Working on visualizing toolpaths in a good way. After discussion with Jens we agree to use mesh arrows to visualize direction. Jens showed me some cool prototypes of how this could also look in above-3-axis-toolpath. For now I'll stay with 3-axis but this could make for some fun future exercises. Here is a gif of how it looks now: 
 
@@ -261,7 +261,7 @@ Working on visualizing toolpaths in a good way. After discussion with Jens we ag
 
 Some quick thoughts about visualizing. Frequency could communicate speed, color could communicate tool or action-type. 
 
-# 05.02.2022 
+# 0503_2022 
 
 Did a bunch of tweaks today and I think I'm at the final push before people can actually start using this. I implemented a new genereric Action type called just move. I'm using this action as a part of my initial getting-to-know-vespidae example. Travel moves between actions are now called, well, Travel. I also went back and cleaned the Gmaker library. I implemented a boolean value to select partial retract in the solver. A missing thing in the solver (I think) is to separate lift speed from travelling speed. A lot of machines (including frikk-clank) uses different drivetrains on the z axis then the xy axis. I'm putting this down in **bold todo.** 
 
@@ -269,3 +269,16 @@ I integrated the arrow script in the previous entry into the ExposePath componen
 
 All in all this is starting to feel good. I did some dry runs on frikk-clank to get the feel. I think the next thing I'm implementing is a component that uploads (and runs?) the gcode on the duet board. This will also be super useful for my Jubilee friends. 
 
+# 0803_2022
+
+Added new component for uploading gcode directly to the Duet from the grasshopper canvas. The compomnent generally picks up the thread from old-vespidae and uses http requests to communicate with the duet. More specifically it sends gcode as a PUT requests. The details of the format are more documented [here](https://github.com/frikkfossdal/frikk-clank/tree/master/duet). Currently I'm just converting Lists with strings into one big string chunk. This might come back to bite me. I think a better and more correct solution is to do [this](https://stackoverflow.com/questions/1131425/send-a-file-via-http-post-with-c-sharp).I'll circle back if it becomes a problem. 
+
+The gcode upload should work on any other machine that uses the Duet3 as long as the duet framework is running. **A good way to check that is to check if the web app is up and running.** I've added the file upload to [**Example_00**](https://github.com/frikkfossdal/Vespidae/tree/main/examples). On this point I think a next good step would be to add a execute gcode component. 
+
+I have also started implementing a component that works asynchronously from the main ui thread using the [AsyncComponent](https://speckle.systems/blog/async-gh/) library. Right now this is only running the default example of calculating primes but I'm thinking I will circle back to this and try to use this to keep track of machine state and doing async communication with the machine in differnet ways. 
+
+Next step is to implementvisualizers that takes *Action-type* into account. I'm thinking that I will use arrow size and period to visulize different operations. I also want to play a bit with the different annotation tools in RhinoCommons and see if I can create anything useful. A cool idea here could be to for example group different operations together and tag them with operation specific meta-data. I think I have to play a bit around with this to get more ideas. 
+
+Final note: I have to do something about arrow sizes on really short paths. This is super obvious on the partial retract travel moves. Could it be an idea to check line distance and use this to scale arrow size? Or maybe just drop it if the arrow size ends up being tiny? Also is it better to set the arrow in the middle of each vertical/lift move?  
+
+![Fix this!](./img/arrow_problems.png)
