@@ -82,10 +82,10 @@ namespace GMaker
             return actions;
         }
 
-        public static List<Action> createMoveOps(List<Polyline> paths, int speed, string tool) {
+        public static List<Action> createMoveOps(List<Polyline> paths, int speed, string tool, List<string> injection) {
             List<Action> actions = new List<Action>();
             foreach (var p in paths) {
-                actions.Add(new Move(p, speed, tool));
+                actions.Add(new Move(p, speed, tool,injection));
             }
             return actions; 
         }
@@ -199,8 +199,8 @@ namespace GMaker
         public Polyline path;
         public int speed;
         public opTypes actionType;
+        public List<string> injection; 
         public Action() { }
-
 
         public abstract List<string> translate(ref double ex);
     }
@@ -233,12 +233,13 @@ namespace GMaker
     {
         public string tool;
 
-        public Move(Polyline p,  int s, string to)
+        public Move(Polyline p,  int s, string to, List<string> inj)
         {
             path = p;
             speed = s;
             actionType = opTypes.move;
-            tool = to;  
+            tool = to;
+            injection = inj; 
         }
 
         public override List<string> translate(ref double ex)
@@ -247,6 +248,12 @@ namespace GMaker
             translation.Add($";{actionType}");
             translation.Add(tool);
             translation.Add($"G0 F{speed}");
+
+            if (injection.First().Length > 0) {
+                translation.Add(";>>>>injected gcode start<<<<");
+                translation.AddRange(injection);
+                translation.Add(";>>>>injected gcode end<<<<");
+            }
 
             foreach (var p in path)
             {
