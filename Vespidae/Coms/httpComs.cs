@@ -13,6 +13,7 @@ namespace Coms
         {
             string sendCode = string.Join("\n", code); 
             HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(10); 
             client.BaseAddress = new Uri($"{ip}/machine/");
             var stringContent = new StringContent(sendCode);
 
