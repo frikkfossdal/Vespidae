@@ -1,6 +1,12 @@
 
 # Vespidae Develop Log
 
+## TODO BOARD
+
+- fix visualization arrows. Especially on smaller travel distances. See entry 0803_2022. 
+- Add gcode injection to more action components 
+- Make translation routines smarter (i.e check previous generated gcode for unecessary duplicates). 
+
 # Prior log lost in time 
 
 Today is all about simple toolpaths and visualization. I need scripts that takes curves as input and translates this into usable machine code. Simultaneously it needs to visualize the machine movement (retract moves, travel moves, etc). I'm not sure if these should be separated or how the data should be formmated, but I figure this will become clear if I work with the data for a while. Here goes. 
@@ -282,3 +288,16 @@ Next step is to implementvisualizers that takes *Action-type* into account. I'm 
 Final note: I have to do something about arrow sizes on really short paths. This is super obvious on the partial retract travel moves. Could it be an idea to check line distance and use this to scale arrow size? Or maybe just drop it if the arrow size ends up being tiny? Also is it better to set the arrow in the middle of each vertical/lift move?  
 
 ![Fix this!](./img/arrow_problems.png)
+
+# 0903_2022
+
+Added gcode injection to Move component. I feel good about this. This lets us for example change jerk settings on individual actions. I've added a example_01 to showcase how we can use this to tune machine. 
+
+Modified the sendGcodeTask in httpComs with a timeout so it doesnt hold up the ui thread if for example a non valid ip adress is used. Currently set to ten second timeout: 
+
+	 HttpClient client = new HttpClient();
+	 client.Timeout = TimeSpan.FromSeconds(10); 
+	 
+**Keep this in mind** on bigger files / longer programs.
+
+I also did some network changes on the test machine. This is documented in frikk-clank documentation. 
