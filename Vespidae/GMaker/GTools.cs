@@ -30,7 +30,7 @@ namespace GMaker
             var exit = createArrow(scl);
 
             enter.Transform(Transform.PlaneToPlane(Plane.WorldXY, horizFrame(poly, 0)));
-            var indexOfLastPoint = poly.IndexOf(poly.Last);
+            var indexOfLastPoint = poly.IndexOf(poly.Last)/2;
             exit.Transform(Transform.PlaneToPlane(Plane.WorldXY, horizFrame(poly, indexOfLastPoint)));
 
             return new List<Mesh>() { enter, exit }; 
@@ -44,7 +44,6 @@ namespace GMaker
             pnts.Add(new Point3d(0, (double)-scl / 2, 0));
             pnts.Add(new Point3d(0, (double)scl / 2, 0));
             pnts.Add(new Point3d((double)scl, 0, 0));
-
             
             arrow.Vertices.AddVertices(pnts);
             arrow.Faces.AddFace(new MeshFace(0, 1, 2));
@@ -107,7 +106,7 @@ namespace GMaker
             double extrusion = 0;
 
             //hack fix this 
-            output.Add("G0 E0 F1200");
+            //output.Add("G0 E0 F1200");
 
             foreach (var ac in actions)
             {
@@ -159,22 +158,26 @@ namespace GMaker
                 if (first)
                 {
                     var fm = new Travel(sp);
+                    //pick up first action's tool
+                    fm.tool = actions.First().tool;
+                    //go to position of first action 
                     fm.path.Add(act.path.First.X, act.path.First.Y, rh);
                     fm.path.Add(act.path.First);
                     newProgram.Add(fm);
-
                 }
                 //Check if last z height is not same as current z or partial is false
                 //full retract
                 else if (act.path.First.Z != prevAct.path.Last.Z || pr ==false)
                 {
                     Travel m = moveBetweenActions(prevAct, act, rh, sp, false);
+                    m.tool = act.tool; 
                     newProgram.Add(m);
                 }
                 //same z-height and partial is true. Partial retract 
                 else if (pr == true)
                 {
                     Travel m = moveBetweenActions(prevAct, act, partialRh, sp, true);
+                    m.tool = act.tool;
                     newProgram.Add(m);
                 }
                 
@@ -192,6 +195,24 @@ namespace GMaker
 
             return newProgram; 
         }
+
+        public static List<Action> multiToolSolver(List<Action> actions, double lh) {
+            var newProgram = new List<Action>();
+
+            //precheck
+            //set correct tool
+            //go to first position
+
+            //foreach actions
+            foreach (var act in actions) {
+                newProgram.Add(act); 
+            }
+            //1.execute
+            //2.checkTool 
+            //2.moveToNext
+
+            return newProgram; 
+        }
 }
 
     public abstract class Action
@@ -201,6 +222,7 @@ namespace GMaker
         public opTypes actionType;
         public List<string> injection; 
         public Action() { }
+        public string tool; 
 
         public abstract List<string> translate(ref double ex);
     }
@@ -212,13 +234,15 @@ namespace GMaker
             path = new Polyline();
             speed = s;
             actionType = opTypes.travel;
+            tool = "t-1"; 
         }
 
         public override List<string> translate(ref double ex)
         {
             var translation = new List<string>();
             translation.Add($";{actionType}");
-            translation.Add($"G0 F{speed}"); 
+            translation.Add(tool); 
+            translation.Add($"G0 F{speed}");
 
             foreach (var p in path)
             {
@@ -231,8 +255,6 @@ namespace GMaker
 
     public class Move : Action
     {
-        public string tool;
-
         public Move(Polyline p,  int s, string to, List<string> inj)
         {
             path = p;
@@ -246,7 +268,6 @@ namespace GMaker
         {
             var translation = new List<string>();
             translation.Add($";{actionType}");
-            translation.Add(tool);
             translation.Add($"G0 F{speed}");
 
             if (injection.First().Length > 0) {
@@ -268,7 +289,6 @@ namespace GMaker
     {
         public double ext;
         public double temperature;
-        public string tool;
 
         public Extrude(Polyline p, double t, double e, int s, string to)
         {
@@ -287,7 +307,7 @@ namespace GMaker
 
             //inital code
             translation.Add($";{actionType} Speed:{speed} Ex.Mult: {ex} Temp: {temperature}");
-            translation.Add(tool);
+            translation.Add("MISSING: tool precheck & preheat"); 
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
 
