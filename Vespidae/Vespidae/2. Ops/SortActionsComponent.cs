@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using ClipperHelper;
+
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using GMaker; 
 
 namespace Vespidae.Ops
 {
-    public class ExtrusionComponent : GH_Component
+    public class SortActionsComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -16,9 +17,9 @@ namespace Vespidae.Ops
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public ExtrusionComponent()
-          : base("ExtrusionComponent", "VespExtrusion",
-            "ExtrusionComponent description",
+        public SortActionsComponent()
+          : base("SortActionsComponent", "SortActions",
+            "SortActionsComponent description",
             "Vespidae", "2.Actions")
         {
         }
@@ -28,11 +29,9 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Extrusion", "ex", "extrusion flowrate multiplier (distance x 0.01 x multiplier)", GH_ParamAccess.item,1);
-            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
-            pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205);
-            pManager.AddIntegerParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, 0);
+            pManager.AddGenericParameter("Actions", "actions", "actions to sort", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("SortType", "sort", "Sorting options. 0: x-direction, 1: y-direction, 2: z-direction", GH_ParamAccess.item, 0);
+            pManager.AddBooleanParameter("Flip", "flip", "Flips direction of list of acitons. Default false", GH_ParamAccess.item, false); 
         }
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("VespObj", "VObj", "Vespidae action objects", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("SortedActions", "actions", "sorted actions", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -50,26 +49,40 @@ namespace Vespidae.Ops
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Curve> crv = new List<Curve>();
-            int speed = 0;
-            double ext = 0;
-            double temp = 0;
-            int tool = 0; 
+            var actions = new List<GMaker.Action>();
+            int option = 0;
+            bool flip = false; 
 
-            if (!DA.GetDataList("Curve", crv)) return;
+            if(!DA.GetDataList("Actions", actions))return;
+            DA.GetData("SortType", ref option);
+            DA.GetData("Flip", ref flip); 
 
-            DA.GetData("Extrusion", ref ext);
-            DA.GetData("Speed", ref speed);
-            DA.GetData("Temperature", ref temp);
-            DA.GetData("ToolId", ref tool); 
+            switch (option) {
+                
+                case 0:
+                    //sort in x direction
+                    actions = GMaker.Sort.sortByX(actions,flip); 
+                    break;
 
-            var pol = ClipperTools.ConvertCurvesToPolylines(crv);
+                case 1:
+                    //sort in y direction
+                    actions = GMaker.Sort.sortByY(actions,flip);
+                    break;
 
-            var actions = GMaker.Operation.createExtrudeOps(pol, speed, ext, temp, tool);
+                case 2:
+                    //sort in z direction
+                    actions = GMaker.Sort.sortByZ(actions,flip);
+                    break;
+                case 3:
+                    //sort by tool
+                    actions = GMaker.Sort.sortByTool(actions, flip);
+                    break;
 
-            DA.SetDataList("VespObj", actions); 
-            //ops.createActions();
-            //
+                default:
+                    //no sorting
+                    break; 
+            }
+            DA.SetDataList("SortedActions", actions); 
         }
 
         /// <summary>
@@ -82,7 +95,7 @@ namespace Vespidae.Ops
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return Resources.Resources.extrude; 
+                return null;
             }
         }
 
@@ -93,7 +106,7 @@ namespace Vespidae.Ops
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("a8615386-e873-4790-bbf9-7aed568e318f"); }
+            get { return new Guid("5d769569-7564-40e3-a497-57a1a7b03e28"); }
         }
     }
 }

@@ -67,10 +67,39 @@ namespace GMaker
         }
     }
 
+    //static class for sorting lists of actions
+    public static class Sort {
+        public static List<Action> sortByX(List<Action> actions, bool f) {
+            actions = actions.OrderBy(act => act.path.First().X).ToList();
+            if (f) actions.Reverse();
+            return actions; 
+        }
+
+        public static List<Action> sortByY(List<Action> actions, bool f)
+        {
+            actions = actions.OrderBy(act => act.path.First().Y).ToList();
+            if (f) actions.Reverse();
+            return actions;
+        }
+
+        public static List<Action> sortByZ(List<Action> actions, bool f)
+        {
+            actions = actions.OrderBy(act => act.path.First().Z).ToList();
+            if (f) actions.Reverse();
+            return actions;
+        }
+
+        public static List<Action> sortByTool(List<Action> actions, bool f) {
+            actions = actions.OrderBy(act => act.tool).ToList();
+            if (f) actions.Reverse();
+            return actions; 
+        }
+    }
+
     public static class Operation
     {
         //static functino for creating simple extrusion operation. Could be modified with enumeration of tool 
-        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double ext, double temp, string tool)
+        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double ext, double temp, int tool)
         {
             List<Action> actions = new List<Action>();
 
@@ -81,7 +110,7 @@ namespace GMaker
             return actions;
         }
 
-        public static List<Action> createMoveOps(List<Polyline> paths, int speed, string tool, List<string> injection) {
+        public static List<Action> createMoveOps(List<Polyline> paths, int speed, int tool, List<string> injection) {
             List<Action> actions = new List<Action>();
             foreach (var p in paths) {
                 actions.Add(new Move(p, speed, tool,injection));
@@ -89,7 +118,7 @@ namespace GMaker
             return actions; 
         }
 
-        public static List<Action> createZpinOps(List<Polyline> paths, double amount, double temp, string tool) {
+        public static List<Action> createZpinOps(List<Polyline> paths, double amount, double temp, int tool) {
             List<Action> actions = new List<Action>();
 
             foreach (var p in paths) {
@@ -222,7 +251,7 @@ namespace GMaker
         public opTypes actionType;
         public List<string> injection; 
         public Action() { }
-        public string tool; 
+        public int tool; 
 
         public abstract List<string> translate(ref double ex);
     }
@@ -234,14 +263,14 @@ namespace GMaker
             path = new Polyline();
             speed = s;
             actionType = opTypes.travel;
-            tool = "t-1"; 
+            tool = -1; 
         }
 
         public override List<string> translate(ref double ex)
         {
             var translation = new List<string>();
             translation.Add($";{actionType}");
-            translation.Add(tool); 
+            translation.Add($"t{tool}");
             translation.Add($"G0 F{speed}");
 
             foreach (var p in path)
@@ -255,7 +284,7 @@ namespace GMaker
 
     public class Move : Action
     {
-        public Move(Polyline p,  int s, string to, List<string> inj)
+        public Move(Polyline p,  int s, int to, List<string> inj)
         {
             path = p;
             speed = s;
@@ -290,7 +319,7 @@ namespace GMaker
         public double ext;
         public double temperature;
 
-        public Extrude(Polyline p, double t, double e, int s, string to)
+        public Extrude(Polyline p, double t, double e, int s, int to)
         {
             path = p;
             ext = e;
@@ -340,9 +369,8 @@ namespace GMaker
 
         public double amount;
         public double temperature;
-        string tool;
 
-        public zPin(Polyline p, double t, double a, string to) {
+        public zPin(Polyline p, double t, double a, int to) {
             path = p;
             amount = a;
             temperature = t;
@@ -359,7 +387,7 @@ namespace GMaker
             var translation = new List<string>();
 
             translation.Add($";{actionType}");
-            translation.Add(tool);
+            translation.Add($"t{tool}");
             translation.Add($"M109 {temperature}");
 
             Point3d prev = path.First;

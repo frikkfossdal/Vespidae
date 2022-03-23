@@ -32,7 +32,7 @@ namespace Vespidae.Ops
             pManager.AddNumberParameter("Amount", "am", "extrusion flowrate", GH_ParamAccess.item, .6);
             pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
             pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205);
-            pManager.AddTextParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, "t0");
+            pManager.AddIntegerParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, 0);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Vespidae.Ops
             double amount = 0;
             int rh = 0;
             double temp = 0;
-            string tool = "";
+            int tool = 0;
 
             if (!DA.GetDataList("Curve", crv)) return;
 
