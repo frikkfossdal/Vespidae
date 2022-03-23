@@ -301,3 +301,10 @@ Modified the sendGcodeTask in httpComs with a timeout so it doesnt hold up the u
 **Keep this in mind** on bigger files / longer programs.
 
 I also did some network changes on the test machine. This is documented in frikk-clank documentation. 
+
+# 2303_2022
+
+Added a new sorting component that lets us choose different types of sorting (x,y,z or tool) and direction/reverse. There might be more interesting things to sort by but we can add these as we go along. The sort functions are all defined as static function in Gmaker. 
+
+There still is an error in the solver / translation routines in Actions. It adds the last point of the previous operation to the travel. This made sense when I didnt have tool changing but is wrong now. This is highest priority on fix list. 
+
