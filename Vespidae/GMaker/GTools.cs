@@ -13,30 +13,35 @@ namespace GMaker
         zPin
     }
 
-    public static class Extension{
-        public static string toGcode(this Point3d p) {
+    public static class Extension
+    {
+        public static string toGcode(this Point3d p)
+        {
             double x = Math.Round(p.X, 3);
             double y = Math.Round(p.Y, 3);
             double z = Math.Round(p.Z, 3);
 
-            return $"G0 X{x} Y{y} Z{z}"; 
+            return $"G0 X{x} Y{y} Z{z}";
         }
-}
+    }
 
-    public static class Visualization {
-        public static List<Mesh> enterExit(Polyline poly, double scl) {
+    public static class Visualization
+    {
+        public static List<Mesh> enterExit(Polyline poly, double scl)
+        {
 
             var enter = createArrow(scl);
             var exit = createArrow(scl);
 
             enter.Transform(Transform.PlaneToPlane(Plane.WorldXY, horizFrame(poly, 0)));
-            var indexOfLastPoint = poly.IndexOf(poly.Last)/2;
+            var indexOfLastPoint = poly.IndexOf(poly.Last) / 2;
             exit.Transform(Transform.PlaneToPlane(Plane.WorldXY, horizFrame(poly, indexOfLastPoint)));
 
-            return new List<Mesh>() { enter, exit }; 
+            return new List<Mesh>() { enter, exit };
         }
         //creates a mesh arrow 
-        private static Mesh createArrow(double scl) {
+        private static Mesh createArrow(double scl)
+        {
             var returnMesh = new List<Mesh>();
 
             var arrow = new Mesh();
@@ -44,13 +49,14 @@ namespace GMaker
             pnts.Add(new Point3d(0, (double)-scl / 2, 0));
             pnts.Add(new Point3d(0, (double)scl / 2, 0));
             pnts.Add(new Point3d((double)scl, 0, 0));
-            
+
             arrow.Vertices.AddVertices(pnts);
             arrow.Faces.AddFace(new MeshFace(0, 1, 2));
-            return arrow; 
+            return arrow;
         }
 
-        private static Plane horizFrame(Polyline C, double t) {
+        private static Plane horizFrame(Polyline C, double t)
+        {
             Vector3d Tangent = C.TangentAt(t);
 
             if (Tangent.IsParallelTo(Vector3d.ZAxis) == 0)
@@ -68,11 +74,13 @@ namespace GMaker
     }
 
     //static class for sorting lists of actions
-    public static class Sort {
-        public static List<Action> sortByX(List<Action> actions, bool f) {
+    public static class Sort
+    {
+        public static List<Action> sortByX(List<Action> actions, bool f)
+        {
             actions = actions.OrderBy(act => act.path.First().X).ToList();
             if (f) actions.Reverse();
-            return actions; 
+            return actions;
         }
 
         public static List<Action> sortByY(List<Action> actions, bool f)
@@ -89,10 +97,11 @@ namespace GMaker
             return actions;
         }
 
-        public static List<Action> sortByTool(List<Action> actions, bool f) {
+        public static List<Action> sortByTool(List<Action> actions, bool f)
+        {
             actions = actions.OrderBy(act => act.tool).ToList();
             if (f) actions.Reverse();
-            return actions; 
+            return actions;
         }
     }
 
@@ -110,22 +119,26 @@ namespace GMaker
             return actions;
         }
 
-        public static List<Action> createMoveOps(List<Polyline> paths, int speed, int tool, List<string> injection) {
+        public static List<Action> createMoveOps(List<Polyline> paths, int speed, int tool, List<string> injection)
+        {
             List<Action> actions = new List<Action>();
-            foreach (var p in paths) {
-                actions.Add(new Move(p, speed, tool,injection));
+            foreach (var p in paths)
+            {
+                actions.Add(new Move(p, speed, tool, injection));
             }
-            return actions; 
+            return actions;
         }
 
-        public static List<Action> createZpinOps(List<Polyline> paths, double amount, double temp, int tool) {
+        public static List<Action> createZpinOps(List<Polyline> paths, double amount, double temp, int tool)
+        {
             List<Action> actions = new List<Action>();
 
-            foreach (var p in paths) {
-                actions.Add(new zPin(p, temp, amount, tool)); 
+            foreach (var p in paths)
+            {
+                actions.Add(new zPin(p, temp, amount, tool));
             }
 
-            return actions; 
+            return actions;
         }
 
         public static List<string> translateToGcode(List<Action> actions)
@@ -151,81 +164,99 @@ namespace GMaker
         }
     }
 
-    public static class Solve{
+    public static class Solve
+    {
         //generates a move between two actions 
-        private static Travel moveBetweenActions(Action prev, Action cur, double rh, int speed, bool partial) {
-            var newMove = new Travel(speed);
-            if (partial) {
+        private static Travel moveBetweenActions(Action prev, Action cur,double full_rh, double part_rh, int speed, bool partial)
+        {
+            var newMove = new Travel(speed, true);
+            if (partial)
+            {
                 newMove.path.Add(prev.path.Last);
-                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, cur.path.First.Z + rh);
-                newMove.path.Add(cur.path.First.X, cur.path.First.Y, cur.path.First.Z + rh);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, cur.path.First.Z + part_rh);
+                newMove.path.Add(cur.path.First.X, cur.path.First.Y, cur.path.First.Z + part_rh);
                 newMove.path.Add(cur.path.First);
             }
-            else {
+            else
+            {
                 newMove.path.Add(prev.path.Last);
-                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, rh);
-                newMove.path.Add(cur.path.First.X, cur.path.First.Y, rh);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
+                newMove.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
                 newMove.path.Add(cur.path.First);
             }
-                return newMove;
+            return newMove;
         }
-        public static List<Action> GenerateProgram(List<Action> actions, int rh, int sp, bool pr) {
+        public static List<Action> GenerateProgram(List<Action> actions, int rh, int sp, bool pr)
+        {
             var newProgram = new List<Action>();
 
             //var prevPo = actions.First().path.First;
-            var prevAct = actions.First(); 
-            double partialRh = 0.2; //partial retract height
+            var prevAct = actions.First();
+            double partial_rh = 0.2; //partial retract height
 
             //add sorting?
             //when do we add moves between actions. We can add tons of checks here
             //should we check for planar vs non-planar? 
 
-            bool first = true; 
+            bool first = true;
+            bool toolChange = true;
+            bool partial = false; 
 
-            foreach (var act in actions) {
+            foreach (var act in actions)
+            {
+
+                //check if we need new tool
+                if (act.tool != prevAct.tool) toolChange = true;
+
                 //first move
                 if (first)
                 {
-                    var fm = new Travel(sp);
+                    var fm = new Travel(sp, true);
+
                     //pick up first action's tool
-                    fm.tool = actions.First().tool;
+                    fm.tool = act.tool;
+
                     //go to position of first action 
                     fm.path.Add(act.path.First.X, act.path.First.Y, rh);
                     fm.path.Add(act.path.First);
                     newProgram.Add(fm);
+
+                    first = false;
                 }
+
+                //perform check if we are doing full or partial retraction  
+                //1. sameStartingPoint check. if yes dont full retract
+                //2. same z height. if yes partial retract.
+
                 //Check if last z height is not same as current z or partial is false
                 //full retract
-                else if (act.path.First.Z != prevAct.path.Last.Z || pr ==false)
+                else
                 {
-                    Travel m = moveBetweenActions(prevAct, act, rh, sp, false);
-                    m.tool = act.tool; 
-                    newProgram.Add(m);
-                }
-                //same z-height and partial is true. Partial retract 
-                else if (pr == true)
-                {
-                    Travel m = moveBetweenActions(prevAct, act, partialRh, sp, true);
+                    //check if next is same z-height
+                    if (act.path.First.Z != prevAct.path.Last.Z || pr == false) partial = false;
+                    else partial = true; 
+                    
+                    Travel m = moveBetweenActions(prevAct, act, rh, partial_rh, sp, partial);
                     m.tool = act.tool;
                     newProgram.Add(m);
                 }
-                
+
                 //then add action
                 newProgram.Add(act);
-                prevAct = act; 
-                first = false; 
+                prevAct = act;
             }
 
             //exit move
-            var lm = new Travel(6000);
-            lm.path.Add(prevAct.path.Last);
-            lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh); 
-            newProgram.Add(lm); 
+            var lm = new Travel(6000, false);
+            //lm.path.Add(prevAct.path.Last);
+            lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh);
+            newProgram.Add(lm);
 
-            return newProgram; 
+            return newProgram;
         }
 
-        public static List<Action> multiToolSolver(List<Action> actions, double lh) {
+        public static List<Action> multiToolSolver(List<Action> actions, double lh)
+        {
             var newProgram = new List<Action>();
 
             //precheck
@@ -233,44 +264,51 @@ namespace GMaker
             //go to first position
 
             //foreach actions
-            foreach (var act in actions) {
-                newProgram.Add(act); 
+            foreach (var act in actions)
+            {
+                newProgram.Add(act);
             }
             //1.execute
             //2.checkTool 
             //2.moveToNext
 
-            return newProgram; 
+            return newProgram;
         }
-}
+    }
 
     public abstract class Action
     {
         public Polyline path;
         public int speed;
         public opTypes actionType;
-        public List<string> injection; 
+        public List<string> injection;
         public Action() { }
-        public int tool; 
+        public int tool;
+        public bool toolCh; 
 
         public abstract List<string> translate(ref double ex);
     }
 
     public class Travel : Action
     {
-        public Travel(int s)
+        public Travel(int s, bool tc)
         {
             path = new Polyline();
             speed = s;
             actionType = opTypes.travel;
-            tool = -1; 
+            tool = -1;
+            toolCh = tc; 
         }
 
         public override List<string> translate(ref double ex)
         {
             var translation = new List<string>();
             translation.Add($";{actionType}");
-            translation.Add($"t{tool}");
+
+            if (toolCh) {
+                translation.Add($"t{tool}");
+            }
+            
             translation.Add($"G0 F{speed}");
 
             foreach (var p in path)
@@ -284,13 +322,14 @@ namespace GMaker
 
     public class Move : Action
     {
-        public Move(Polyline p,  int s, int to, List<string> inj)
+        public Move(Polyline p, int s, int to, List<string> inj)
         {
             path = p;
             speed = s;
             actionType = opTypes.move;
             tool = to;
-            injection = inj; 
+            injection = inj;
+            toolCh = true; 
         }
 
         public override List<string> translate(ref double ex)
@@ -299,7 +338,8 @@ namespace GMaker
             translation.Add($";{actionType}");
             translation.Add($"G0 F{speed}");
 
-            if (injection.First().Length > 0) {
+            if (injection.First().Length > 0)
+            {
                 translation.Add(";>>>>injected gcode start<<<<");
                 translation.AddRange(injection);
                 translation.Add(";>>>>injected gcode end<<<<");
@@ -325,7 +365,8 @@ namespace GMaker
             ext = e;
             temperature = t;
             tool = to;
-            speed = s; 
+            speed = s;
+            toolCh = true; 
 
             actionType = opTypes.extrusion;
         }
@@ -336,7 +377,7 @@ namespace GMaker
 
             //inital code
             translation.Add($";{actionType} Speed:{speed} Ex.Mult: {ex} Temp: {temperature}");
-            translation.Add("MISSING: tool precheck & preheat"); 
+            translation.Add("MISSING: tool precheck & preheat");
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
 
@@ -350,9 +391,9 @@ namespace GMaker
                 //0.01 is experimental value
                 double extrude = distToPrev * .01 * ext;
 
-                translation.Add(p.toGcode() + $" E{Math.Round(extrude+ex,4)}");
+                translation.Add(p.toGcode() + $" E{Math.Round(extrude + ex, 4)}");
                 ex += extrude;
-                prev = p; 
+                prev = p;
             }
 
             //retract filement 
@@ -365,12 +406,14 @@ namespace GMaker
     //and that we work
     //future could also include some type of oscillation and maybe also smearing on
     //top layer 
-    public class zPin : Action {
+    public class zPin : Action
+    {
 
         public double amount;
         public double temperature;
 
-        public zPin(Polyline p, double t, double a, int to) {
+        public zPin(Polyline p, double t, double a, int to)
+        {
             path = p;
             amount = a;
             temperature = t;
@@ -379,11 +422,13 @@ namespace GMaker
             actionType = opTypes.zPin;
         }
 
-        private int calculateExtrusion() {
-            return 1; 
+        private int calculateExtrusion()
+        {
+            return 1;
         }
-        
-        public override List<string> translate(ref double ex) {
+
+        public override List<string> translate(ref double ex)
+        {
             var translation = new List<string>();
 
             translation.Add($";{actionType}");
@@ -392,11 +437,12 @@ namespace GMaker
 
             Point3d prev = path.First;
 
-            foreach (var p in path) {
+            foreach (var p in path)
+            {
 
             }
 
-            return new List<string>(); 
+            return new List<string>();
         }
 
     }
