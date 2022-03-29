@@ -308,3 +308,19 @@ Added a new sorting component that lets us choose different types of sorting (x,
 
 There still is an error in the solver / translation routines in Actions. It adds the last point of the previous operation to the travel. This made sense when I didnt have tool changing but is wrong now. This is highest priority on fix list. 
 
+# 2503_2022 
+
+Back working on the solver today. There are a couple of inconsistencies in the gcode that I want to handle. I also want to improve the visualization by trying to differentiate different Action types by using different symbols. 
+
+First the solver. There is a lot of checking when I'm generating travel moves between operations and this makes the code look really messy and hard to cope with. I'm wondering if I can structure it in a better way. All of these moves are just conditions for partial or full retract between two actions. For example: 
+
+	if(curAct.z == prevAct.z) //do travel with partial retract
+	else //full retract
+	
+or 
+
+	if(curAct.XY == prevAct.XY) //no retract just go to next point 
+	
+I can just do that to keep things simpler maybe. Check if we need full retract or not. In professional CAM there are parameters like *stay down level percentage*. Is that what I'm making here? Did a couple of test runs on the clank and the output code feels cleaner now. Onwards to visualization! 
+
+The VisualizePathsComponent has been errorous for some time now. I'm suspecting somethings wrong in the way its reading Action objects. Ok I'm stuck here. I tried fiddling with the SolveInstance funciton of the visualizaer but no luck. I'll return with fresh eyes. 
