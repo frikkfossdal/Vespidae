@@ -4,7 +4,7 @@
 ## What is it? 
 
 
-Vespidae is a framework for prototyping and creating toolpaths for computer controlled motion systems (e.g 3D printers, laser cutters, CNC milling machines). At its core, Vespidae enables you to draw toolpaths using curves and polylines in Rhino and transform these paths into executable machine actions and gcode. Vespidae includes tools for manupulating curves (offseting and boolean tools, slicing tools) together with different tools for visualizing toolpaths and toosl for converting toolpaths into different gcode dialects. Finally Vespidae also includes tools for communitation between grasshopper and a machine contorller. 
+Vespidae is a framework for prototyping and creating toolpaths for computer controlled motion systems (e.g 3D printers, laser cutters, CNC milling machines). At its core, Vespidae takes curves and polylines in Rhino and transform these into executable machine actions and gcode. Vespidae includes tools for manupulating curves (offseting and boolean tools, slicing tools) together with different tools for visualizing toolpaths and toosl for converting toolpaths into different gcode dialects. Vespidae also includes tools for communitation between grasshopper and a machine contorller. 
 
 Vespidae is designed with an ethos to provide users with as much flexibility as possible. Modern CAM/slicing tools gives designers great means to create complex and efficient toolpaths, but this power comes at a cost of loosing flexibility and control. Full toolpath control can be particularly important for people who are either specific aesthetics or for people who are building novel tools that does not necessarily fit into a generalized CAM tool. 
 
