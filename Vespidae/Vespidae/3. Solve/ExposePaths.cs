@@ -18,7 +18,7 @@ namespace Vespidae
         /// new tabs/panels will automatically be created.
         /// </summary>
         public ExposePaths()
-          : base("ExposePaths", "Expose Paths",
+          : base("Visualize Paths", "viz_paths",
             "ExposePaths description",
             "Vespidae", "3.Solver")
         {
@@ -29,7 +29,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("vespmo", "VObj", "Vespidae action objects", GH_ParamAccess.list);
+            pManager.AddGenericParameter("actions", "VObj", "Vespidae action objects", GH_ParamAccess.list);
             pManager.AddNumberParameter("arrowScl", "scl", "scale of viz arrows", GH_ParamAccess.item,1.0); 
         }
 
@@ -50,37 +50,33 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<GMaker.Action> actions = new List<GMaker.Action>();
-            List<Polyline> allPaths = new List<Polyline>();
+            var actions = new List<GMaker.Action>();
+            var allPaths = new List<Polyline>();
             var arrows = new List<Mesh>();
             double scl = 1.0; 
 
-            if (!DA.GetDataList("vespmo", actions)) return;
-            DA.GetData("arrowScl", ref scl); 
+            if (!DA.GetDataList("actions", actions)) return;
+            DA.GetData("arrowScl", ref scl);
 
-
-            //get all paths
+            //////get all paths
             var allMoves = new List<Polyline>();
-            foreach (var move in actions) {
-                allMoves.Add(move.path);
-                arrows.AddRange(GMaker.Visualization.enterExit(move.path,scl)); 
+            foreach (var act in actions)
+            {
+                allMoves.Add(act.path);
+                arrows.AddRange(GMaker.Visualization.enterExit(act.path, scl));
             }
 
-            var work = actions.Where(m => m.actionType == GMaker.opTypes.extrusion);
-            var workMoves = new List<Polyline>();
-            foreach (var move in work) {
-                workMoves.Add(move.path); 
+            var travel = actions.Where(act => act.actionType == GMaker.opTypes.travel).ToList();
+            var travelMoves = new List<Polyline>();
+            foreach (var move in travel)
+            {
+                travelMoves.Add(move.path);
             }
 
-            var travel = actions.Where(m => m.actionType == GMaker.opTypes.travel);
-            var travelMoves = new List<Polyline>(); 
-            foreach (var move in travel) {
-                travelMoves.Add(move.path); 
-            }
 
-            DA.SetDataList("AllMoves", allMoves);
-            DA.SetDataList("AllTravel", travelMoves);
-            DA.SetDataList("Arrows", arrows); 
+            DA.SetDataList(0, allMoves);
+            DA.SetDataList(1, travelMoves);
+            DA.SetDataList(2, arrows); 
         }
 
         /// <summary>
