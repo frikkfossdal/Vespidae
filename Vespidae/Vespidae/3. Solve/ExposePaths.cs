@@ -30,7 +30,8 @@ namespace Vespidae
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("actions", "VObj", "Vespidae action objects", GH_ParamAccess.list);
-            pManager.AddNumberParameter("arrowScl", "scl", "scale of viz arrows", GH_ParamAccess.item,1.0); 
+            pManager.AddNumberParameter("arrowScl", "scl", "scale of viz arrows", GH_ParamAccess.item,1.0);
+            pManager.AddIntegerParameter("arrowDensity", "dens", "density of viz arrows", GH_ParamAccess.item, 1);
         }
 
         /// <summary>
@@ -53,28 +54,34 @@ namespace Vespidae
             var actions = new List<GMaker.Action>();
             var allPaths = new List<Polyline>();
             var arrows = new List<Mesh>();
-            double scl = 1.0; 
+            double scl = 0;
+            int density = 0; 
 
             if (!DA.GetDataList("actions", actions)) return;
+
             DA.GetData("arrowScl", ref scl);
+            DA.GetData("arrowDensity", ref density); 
 
             //////get all paths
             var allMoves = new List<Polyline>();
             foreach (var act in actions)
             {
-                allMoves.Add(act.path);
-                arrows.AddRange(GMaker.Visualization.enterExit(act.path, scl));
+                allMoves.Add(act.path); 
             }
 
             var travel = actions.Where(act => act.actionType == GMaker.opTypes.travel).ToList();
             var travelMoves = new List<Polyline>();
+
             foreach (var move in travel)
             {
                 travelMoves.Add(move.path);
             }
 
-
-            DA.SetDataList(0, allMoves);
+            var moves = actions.Where(act => act.actionType == GMaker.opTypes.move).ToList();
+            foreach (var move in moves) {
+                arrows.AddRange(GMaker.Visualization.pathViz(move.path, scl, density)); 
+            }
+            DA.SetDataList("AllMoves", allMoves);
             DA.SetDataList(1, travelMoves);
             DA.SetDataList(2, arrows); 
         }

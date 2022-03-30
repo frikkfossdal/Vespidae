@@ -29,7 +29,6 @@ namespace GMaker
     {
         public static List<Mesh> enterExit(Polyline poly, double scl)
         {
-
             var enter = createArrow(scl);
             var exit = createArrow(scl);
 
@@ -39,6 +38,36 @@ namespace GMaker
 
             return new List<Mesh>() { enter, exit };
         }
+
+        public static List<Mesh> pathViz(Polyline poly, double scl, int density) {
+            var arrows = new List<Mesh>();
+            var arrow = createArrow(scl);
+
+            //find points that will be populated with arrows
+            Point3d[] points;
+            var nurbCurve = poly.ToNurbsCurve();
+            nurbCurve.DivideByLength(density, false, out points);
+
+            //find planes on each point 
+            var plns = new List<Plane>();
+            foreach (var p in points)
+            {
+                var ind = poly.ClosestIndex(p);
+                plns.Add(horizFrame(poly, ind));
+            }
+
+            foreach (var p in plns)
+            {
+                var newMesh = new Mesh();
+                newMesh.CopyFrom(arrow);
+
+                newMesh.Transform(Transform.PlaneToPlane(Plane.WorldXY, p));
+                arrows.Add(newMesh);
+            }
+
+            return arrows; 
+        }
+
         //creates a mesh arrow 
         private static Mesh createArrow(double scl)
         {
@@ -204,7 +233,6 @@ namespace GMaker
 
             foreach (var act in actions)
             {
-
                 //check if we need new tool
                 if (act.tool != prevAct.tool) toolChange = true;
 
@@ -246,11 +274,11 @@ namespace GMaker
                 prevAct = act;
             }
 
-            //exit move
-            var lm = new Travel(6000, false);
-            //lm.path.Add(prevAct.path.Last);
-            lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh);
-            newProgram.Add(lm);
+            ////exit move
+            //var lm = new Travel(6000, false);
+            ////lm.path.Add(prevAct.path.Last);
+            //lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh);
+            //newProgram.Add(lm);
 
             return newProgram;
         }
