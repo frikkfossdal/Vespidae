@@ -27,4 +27,3 @@ Todays CAM tools and slicer relieves the machinist of this complexity by automat
 ![Exercise: curves to vespidae objects to gcode. Find example [here]()](img/vespidae_intro_example.png)
 
 To get familiar with Vespidae open [example_00]() in your grasshoppen environment. This file will take all curves from *Default* layer in Rhino, convert them into *Vespidae Move*-objects, run these objects through a *Vespidae-solver*, and finally convert all the objects to gcode and upload them to the Jobs folder on the Duet. 
-
