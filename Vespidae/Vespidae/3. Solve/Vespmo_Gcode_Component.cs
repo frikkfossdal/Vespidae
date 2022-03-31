@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using GMaker; 
+using VespidaeTools; 
 
 namespace Vespidae
 {
@@ -49,7 +49,7 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<GMaker.Action> actions = new List<GMaker.Action>();
+            List<VespidaeTools.Action> actions = new List<VespidaeTools.Action>();
             List<String> gcode = new List<string>();
             List<String> header = new List<string>();
             List<String> footer = new List<string>();
@@ -63,7 +63,7 @@ namespace Vespidae
             }
 
             
-            gcode.AddRange(GMaker.Operation.translateToGcode(actions));
+            gcode.AddRange(VespidaeTools.Operation.translateToGcode(actions));
 
             if (footer.Count > 0) {
                 gcode.AddRange(footer); 

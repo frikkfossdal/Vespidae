@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Rhino.Geometry;
 using System.Linq;
 
-namespace GMaker
+namespace VespidaeTools
 {
     public enum opTypes
     {

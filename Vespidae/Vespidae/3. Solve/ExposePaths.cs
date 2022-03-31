@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using GMaker;
+using VespidaeTools;
 using System.Linq; 
 
 namespace Vespidae
@@ -51,7 +51,7 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var actions = new List<GMaker.Action>();
+            var actions = new List<VespidaeTools.Action>();
             var allPaths = new List<Polyline>();
             var arrows = new List<Mesh>();
             double scl = 0;
@@ -69,7 +69,7 @@ namespace Vespidae
                 allMoves.Add(act.path); 
             }
 
-            var travel = actions.Where(act => act.actionType == GMaker.opTypes.travel).ToList();
+            var travel = actions.Where(act => act.actionType == VespidaeTools.opTypes.travel).ToList();
             var travelMoves = new List<Polyline>();
 
             foreach (var move in travel)
@@ -77,9 +77,9 @@ namespace Vespidae
                 travelMoves.Add(move.path);
             }
 
-            var moves = actions.Where(act => act.actionType == GMaker.opTypes.move).ToList();
+            var moves = actions.Where(act => act.actionType == VespidaeTools.opTypes.move).ToList();
             foreach (var move in moves) {
-                arrows.AddRange(GMaker.Visualization.pathViz(move.path, scl, density)); 
+                arrows.AddRange(VespidaeTools.Visualization.pathViz(move.path, scl, density)); 
             }
             DA.SetDataList("AllMoves", allMoves);
             DA.SetDataList(1, travelMoves);

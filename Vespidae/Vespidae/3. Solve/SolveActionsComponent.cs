@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using GMaker; 
+using VespidaeTools; 
 
 namespace Vespidae.Solve
 {
@@ -50,7 +50,7 @@ namespace Vespidae.Solve
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<GMaker.Action> actions = new List<GMaker.Action>();
+            List<VespidaeTools.Action> actions = new List<VespidaeTools.Action>();
             int rh = 0;
             int ts = 0;
             bool pr = false; 
@@ -60,7 +60,7 @@ namespace Vespidae.Solve
             DA.GetData("TravelSpeed", ref ts);
             DA.GetData("PartialRetract", ref pr); 
 
-            var output = GMaker.Solve.GenerateProgram(actions, rh, ts, pr);
+            var output = VespidaeTools.Solve.GenerateProgram(actions, rh, ts, pr);
 
             DA.SetDataList("OutputActions", output); 
         }

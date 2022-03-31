@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using GMaker; 
+using VespidaeTools; 
 
 namespace Vespidae.Ops
 {
@@ -49,7 +49,7 @@ namespace Vespidae.Ops
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var actions = new List<GMaker.Action>();
+            var actions = new List<VespidaeTools.Action>();
             int option = 0;
             bool flip = false; 
 
@@ -61,21 +61,21 @@ namespace Vespidae.Ops
                 
                 case 0:
                     //sort in x direction
-                    actions = GMaker.Sort.sortByX(actions,flip); 
+                    actions = VespidaeTools.Sort.sortByX(actions,flip); 
                     break;
 
                 case 1:
                     //sort in y direction
-                    actions = GMaker.Sort.sortByY(actions,flip);
+                    actions = VespidaeTools.Sort.sortByY(actions,flip);
                     break;
 
                 case 2:
                     //sort in z direction
-                    actions = GMaker.Sort.sortByZ(actions,flip);
+                    actions = VespidaeTools.Sort.sortByZ(actions,flip);
                     break;
                 case 3:
                     //sort by tool
-                    actions = GMaker.Sort.sortByTool(actions, flip);
+                    actions = VespidaeTools.Sort.sortByTool(actions, flip);
                     break;
 
                 default:
