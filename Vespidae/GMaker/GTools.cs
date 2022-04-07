@@ -405,7 +405,7 @@ namespace GMaker
 
             //inital code
             translation.Add($";{actionType} Speed:{speed} Ex.Mult: {ex} Temp: {temperature}");
-            translation.Add("MISSING: tool precheck & preheat");
+            translation.Add(";MISSING: tool precheck & preheat");
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
 
@@ -417,9 +417,9 @@ namespace GMaker
                 double distToPrev = p.DistanceTo(prev);
 
                 //0.01 is experimental value
-                double extrude = distToPrev * .01 * ext;
+                double extrude = distToPrev * ext;
 
-                translation.Add(p.toGcode() + $" E{Math.Round(extrude + ex, 4)}");
+                translation.Add(p.toGcode() + $" E{Math.Round(extrude, 4)}");
                 ex += extrude;
                 prev = p;
             }

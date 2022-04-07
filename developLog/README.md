@@ -324,3 +324,23 @@ or
 I can just do that to keep things simpler maybe. Check if we need full retract or not. In professional CAM there are parameters like *stay down level percentage*. Is that what I'm making here? Did a couple of test runs on the clank and the output code feels cleaner now. Onwards to visualization! 
 
 The VisualizePathsComponent has been errorous for some time now. I'm suspecting somethings wrong in the way its reading Action objects. Ok I'm stuck here. I tried fiddling with the SolveInstance funciton of the visualizaer but no luck. I'll return with fresh eyes. 
+
+# 0704_2022
+
+First round of feedback from Vinh. The Extrude Component totally needs some love as he points out. 
+
+**Preheating of tools**\
+For now I'll keep preheating in headers. A thought on this point could be to preheat next tool through code injection on previous Action. More later. 
+
+**Absolute vs relative extrusion**\
+I'm **changing Vespidae from absolute to relative** extrusion. I should have put more thought into this. I think my initial train of though was that absolute made it easier to keep track of filament use but I realize that this is not really a problem in relative. Relative should also make it a lot easier to customize extrusion amount on each indevidual Action. [This](https://www.sublimelayers.com/2017/10/to-extruder-relative-or-not-to-extrude.html) article was useful to get an overview on the matter. 
+
+- I've changed the translation methods to output relative E-values. 
+- Added `M83` command to tranlation method on Extrusion-Action. I want to change this to an initialization routine on Solver level but this will do for now. 
+
+**Retract after extrusion**\
+This is a bit tricky. My thinking is that I need to do an intial prep of the extruder before I go through the Actions. This is needs to be handled on Solver level. ..Or maybe not. Initial prep of extruders can be handled through the headers. This is basically what Vinh is already doing. I only need to retract filament after each Action by a specific Value and then move it back into position before I execute next move. Should this happen in Travel Actions or Extrude Actions? And should it be a controllable parameter? It seems important. **Come back to this point.**
+
+**Other things**\
+- Added gcode injection on Extrusion component. 
+- I need to have a discussion with myself about *what I should define and what should be left for a user to define*. Ideally a lot of the operation logic around Actions should be defined by the user. Not only the path the tool is moving by but also the different properties of the path. I think these are things that I will figure out as me and Vinh are going along. 
