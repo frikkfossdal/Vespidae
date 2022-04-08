@@ -137,13 +137,13 @@ namespace VespidaeTools
     public static class Operation
     {
         //static functino for creating simple extrusion operation. Could be modified with enumeration of tool 
-        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double ext, double temp, int tool)
+        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, List<string> injection)
         {
             List<Action> actions = new List<Action>();
 
             foreach (var p in paths)
             {
-                actions.Add(new Extrude(p, temp, ext, speed, tool));
+                actions.Add(new Extrude(p, temp, ext, speed, retract, tool, injection));
             }
             return actions;
         }
@@ -173,23 +173,17 @@ namespace VespidaeTools
         public static List<string> translateToGcode(List<Action> actions)
         {
             var output = new List<string>();
-            //can add something that checks if Action is Extrude type or not 
-            double extrusion = 0;
 
-            //hack fix this 
-            //output.Add("G0 E0 F1200");
+            //check if program contains Extruder actions
+            if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0) {
+                output.AddRange(new List<string>(){"; program contains extrusion actions", ";setting relative extrusion", "M83"}); 
+            } 
 
             foreach (var ac in actions)
             {
-                output.AddRange(ac.translate(ref extrusion));
+                output.AddRange(ac.translate());
             }
             return output;
-        }
-
-        public static List<Polyline> sortPolys(List<Polyline> polys)
-        {
-            //A = polylines.OrderBy(c => c.ElementAt(0).Y).ToList();
-            return polys.OrderBy(p => p[0].Y).ToList();
         }
     }
 
@@ -198,7 +192,7 @@ namespace VespidaeTools
         //generates a move between two actions 
         private static Travel moveBetweenActions(Action prev, Action cur,double full_rh, double part_rh, int speed, bool partial)
         {
-            var newMove = new Travel(speed, true);
+            var newMove = new Travel(speed, false);
             if (partial)
             {
                 newMove.path.Add(prev.path.Last);
@@ -229,7 +223,7 @@ namespace VespidaeTools
 
             bool first = true;
             bool toolChange = true;
-            bool partial = false; 
+            bool partial = false;
 
             foreach (var act in actions)
             {
@@ -282,26 +276,6 @@ namespace VespidaeTools
 
             return newProgram;
         }
-
-        public static List<Action> multiToolSolver(List<Action> actions, double lh)
-        {
-            var newProgram = new List<Action>();
-
-            //precheck
-            //set correct tool
-            //go to first position
-
-            //foreach actions
-            foreach (var act in actions)
-            {
-                newProgram.Add(act);
-            }
-            //1.execute
-            //2.checkTool 
-            //2.moveToNext
-
-            return newProgram;
-        }
     }
 
     public abstract class Action
@@ -314,7 +288,7 @@ namespace VespidaeTools
         public int tool;
         public bool toolCh; 
 
-        public abstract List<string> translate(ref double ex);
+        public abstract List<string> translate();
     }
 
     public class Travel : Action
@@ -328,7 +302,7 @@ namespace VespidaeTools
             toolCh = tc; 
         }
 
-        public override List<string> translate(ref double ex)
+        public override List<string> translate()
         {
             var translation = new List<string>();
             translation.Add($";{actionType}");
@@ -360,13 +334,14 @@ namespace VespidaeTools
             toolCh = true; 
         }
 
-        public override List<string> translate(ref double ex)
+        public override List<string> translate()
         {
             var translation = new List<string>();
             translation.Add($";{actionType}");
             translation.Add($"G0 F{speed}");
 
-            if (injection.First().Length > 0)
+            //gcode injection 
+            if (injection.Count > 0)
             {
                 translation.Add(";>>>>injected gcode start<<<<");
                 translation.AddRange(injection);
@@ -386,45 +361,61 @@ namespace VespidaeTools
     {
         public double ext;
         public double temperature;
+        public double retract; 
 
-        public Extrude(Polyline p, double t, double e, int s, int to)
+        public Extrude(Polyline p, double t, double e, int s, double r, int to, List<string> inj)
         {
             path = p;
             ext = e;
             temperature = t;
             tool = to;
             speed = s;
+            retract = r;
+            injection = inj;
             toolCh = true; 
 
             actionType = opTypes.extrusion;
         }
 
-        public override List<string> translate(ref double ex)
+        public override List<string> translate()
         {
             var translation = new List<string>();
 
             //inital code
-            translation.Add($";{actionType} Speed:{speed} Ex.Mult: {ex} Temp: {temperature}");
-            translation.Add("MISSING: tool precheck & preheat");
+            translation.Add($";{actionType} Speed:{speed} Temp: {temperature}");
+
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
+            //relative extrusion. Don't need to add this everytime
+
+            //gcode injection
+            if (injection.Count > 0 && injection.First().Length != 0)
+            {
+                translation.Add(";>>>>injected gcode start<<<<");
+                translation.AddRange(injection);
+                translation.Add(";>>>>injected gcode end<<<<");
+            }
 
             //add something to detect change in Z and removes Z if there is no change
+
+            //set previous point to first point of path. 
             Point3d prev = path.First;
+
+            translation.Add($"G0 E{retract}");
 
             foreach (var p in path)
             {
                 double distToPrev = p.DistanceTo(prev);
 
-                //0.01 is experimental value
+                //0.01 is experimental value. Check cura / slicer for scale 
                 double extrude = distToPrev * .01 * ext;
 
-                translation.Add(p.toGcode() + $" E{Math.Round(extrude + ex, 4)}");
-                ex += extrude;
+                translation.Add(p.toGcode() + $" E{Math.Round(extrude, 5)}");
                 prev = p;
             }
 
             //retract filement 
+            translation.Add($"G0 E{-retract}"); 
 
             return translation;
         }
@@ -455,7 +446,7 @@ namespace VespidaeTools
             return 1;
         }
 
-        public override List<string> translate(ref double ex)
+        public override List<string> translate()
         {
             var translation = new List<string>();
 

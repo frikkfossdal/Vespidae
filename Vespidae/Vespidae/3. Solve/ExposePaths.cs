@@ -81,6 +81,9 @@ namespace Vespidae
             foreach (var move in moves) {
                 arrows.AddRange(VespidaeTools.Visualization.pathViz(move.path, scl, density)); 
             }
+
+
+
             DA.SetDataList("AllMoves", allMoves);
             DA.SetDataList(1, travelMoves);
             DA.SetDataList(2, arrows); 

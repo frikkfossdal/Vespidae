@@ -324,3 +324,41 @@ or
 I can just do that to keep things simpler maybe. Check if we need full retract or not. In professional CAM there are parameters like *stay down level percentage*. Is that what I'm making here? Did a couple of test runs on the clank and the output code feels cleaner now. Onwards to visualization! 
 
 The VisualizePathsComponent has been errorous for some time now. I'm suspecting somethings wrong in the way its reading Action objects. Ok I'm stuck here. I tried fiddling with the SolveInstance funciton of the visualizaer but no luck. I'll return with fresh eyes. 
+
+# 0704_2022
+
+First round of feedback from Vinh. The Extrude Component totally needs some love as he points out. 
+
+**Preheating of tools**\
+For now I'll keep preheating in headers. A thought on this point could be to preheat for next Action through code injection on previous Action. 
+
+**Absolute vs relative extrusion**\
+I'm **changing Vespidae from absolute to relative** extrusion. I should have put more thought into this. I think my initial train of though was that absolute made it easier to keep track of filament use but I realize that this is not really a problem in relative. Relative should also make it a lot easier to customize extrusion amount on each indevidual Action. [This](https://www.sublimelayers.com/2017/10/to-extruder-relative-or-not-to-extrude.html) article was useful to get an overview on the matter. 
+
+- I've changed the translation methods to output relative E-values. 
+- Added `M83` command to tranlation method on Extrusion-Action. I want to change this to an initialization routine on Solver level but this will do for now. 
+
+**Retract after extrusion**\
+This is a bit tricky. My thinking is that I need to do an intial prep of the extruder before I go through the Actions. This is needs to be handled on Solver level. ..Or maybe not. Initial prep of extruders can be handled through the headers. This is basically what Vinh is already doing. I only need to retract filament after each Action by a specific Value and then move it back into position before I execute next move. Should this happen in Travel Actions or Extrude Actions? And should it be a controllable parameter? It seems important. **Come back to this point.**
+
+**Other things**\
+- Added gcode injection on Extrusion component. 
+- I need to have a discussion with myself about *what I should define and what should be left for a user to define*. Ideally a lot of the operation logic around Actions should be defined by the user. Not only the path the tool is moving by but also the different properties of the path. I think these are things that I will figure out as me and Vinh are going along. 
+
+# 0804_2022
+
+Problems you need to deal with: 
+
+- goes to retract height first travel move. Not critical but looks dumb. 
+- retract filament command linked with partial retract
+- sorting needs some kind of grouping component. It should be possible to sort groups. Think about this. 
+- mark start of Vespidae gcode
+- remove first E
+- ONLY(!) perform T commands (toolchange) when necassary. This is a Solver problem. 
+- I need some mechanism for sorting by tool in relation to z-height. ..or is this a task for user? Can I handle this by grouping? 
+
+**Why are you using *Solvers*?** Main train of thought here is that the solvers makes it easy for me to adapt how programs are created based on type of workflow/operations. Essentially I can let people stack up, group and order all the actions that they want to perform and then I can take all those actions and convert them into programs using Solvers (..and in the end gcode). If there is some weird /special requirements I can adapt a special solver to deal with this. On that note I think that the killer application here would be if I could make it easy for people to define their own solvers in Grasshopper. I'll keep this in the back of my mind as I keep implementing different solvers. 
+
+Extrusion operations requires a special Solver that keeps track on layer heights vs tools. It should frist sort out all layers and then sort and group all actions that uses the same tool. I'm guessing this would be the same with milling. Or I'm I thinking about this in the wrong way? Should sorting be handled separately in a step before solving? Or should I fasilitate this as a an option? I'm making a document where I experiment with this [here(example_03)](./examples/files/example_03/)
+
+If me and Vinh work in the same Grasshopper documenent, could that be a good way to check if we are using the same version of the Vespidae components? 

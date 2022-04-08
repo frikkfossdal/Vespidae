@@ -30,6 +30,6 @@ _Actions-components converts sets of polylines into Vespidae-actions and tags th
 # 4. Communicate
 
 |:--|:--|
-| UploadGcode | *Uploads gcode directly to a Duet controller. Requires a network connection to the duet and that the duet is running [DWC](https://docs.duet3d.com/en/User_manual/Reference/Duet_Web_Control_Manual)*.|
+| UploadGcode | *Uploads gcode directly to a Duet controller. Requires a network connection to the duet and that the duet is running [DWC](https://docs.duet3d.com/en/User_manual/Reference/Duet_Web_Control_Manual)*.\ **Do not use a toggle on sendGcode. This will send https requests in an endless loop.:** |
 | | |
 | | |
