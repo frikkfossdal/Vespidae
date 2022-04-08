@@ -78,10 +78,17 @@ namespace Vespidae
             }
 
             var moves = actions.Where(act => act.actionType == VespidaeTools.opTypes.move).ToList();
+            var ext_moves = actions.Where(act => act.actionType == VespidaeTools.opTypes.extrusion).ToList(); 
+
             foreach (var move in moves) {
                 arrows.AddRange(VespidaeTools.Visualization.pathViz(move.path, scl, density)); 
             }
 
+            //hack want different viz for different actions
+            foreach (var move in ext_moves)
+            {
+                arrows.AddRange(VespidaeTools.Visualization.pathViz(move.path, scl, density));
+            }
 
 
             DA.SetDataList("AllMoves", allMoves);

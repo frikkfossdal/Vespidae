@@ -7,7 +7,7 @@ namespace VespidaeTools
 {
     public enum opTypes
     {
-        travel,
+        travel, 
         move,
         extrusion,
         zPin
@@ -42,18 +42,26 @@ namespace VespidaeTools
         public static List<Mesh> pathViz(Polyline poly, double scl, int density) {
             var arrows = new List<Mesh>();
             var arrow = createArrow(scl);
+            
 
             //find points that will be populated with arrows
             Point3d[] points;
             var nurbCurve = poly.ToNurbsCurve();
             nurbCurve.DivideByLength(density, false, out points);
 
+            //check if distance between points is smaller than arrow size
+            var prevPoint = poly.First; 
+
             //find planes on each point 
             var plns = new List<Plane>();
             foreach (var p in points)
             {
-                var ind = poly.ClosestIndex(p);
-                plns.Add(horizFrame(poly, ind));
+                if (p.DistanceTo(prevPoint) > scl){
+                    var ind = poly.ClosestIndex(p);
+                    plns.Add(horizFrame(poly, ind));
+                }
+
+                prevPoint = p; 
             }
 
             foreach (var p in plns)
