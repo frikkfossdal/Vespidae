@@ -359,6 +359,13 @@ Problems you need to deal with:
 
 **Why are you using *Solvers*?** Main train of thought here is that the solvers makes it easy for me to adapt how programs are created based on type of workflow/operations. Essentially I can let people stack up, group and order all the actions that they want to perform and then I can take all those actions and convert them into programs using Solvers (..and in the end gcode). If there is some weird /special requirements I can adapt a special solver to deal with this. On that note I think that the killer application here would be if I could make it easy for people to define their own solvers in Grasshopper. I'll keep this in the back of my mind as I keep implementing different solvers. 
 
+Another thing I should think more carefully about is how the interaction of sequencing actions should be. I think that that is one of the most important feature of Vespidae really. How Actions are executed and in what order needs to be intuitive to manipulate and easy to understand. I think its time for Rhinos Text Dot. 
+
+![using Rhino Dots to visualize different tools.](./img/layer_dots.png)
+
 Extrusion operations requires a special Solver that keeps track on layer heights vs tools. It should frist sort out all layers and then sort and group all actions that uses the same tool. I'm guessing this would be the same with milling. Or I'm I thinking about this in the wrong way? Should sorting be handled separately in a step before solving? Or should I fasilitate this as a an option? I'm making a document where I experiment with this [here(example_03)](./examples/files/example_03/)
 
 If me and Vinh work in the same Grasshopper documenent, could that be a good way to check if we are using the same version of the Vespidae components? 
+
+I think I need to make a better distinction between representing Actions as polylines in Rhino and representing Actions as gcode. As its defined now the gcode converter blindly parses through each Actions path and converts its points into gcode. The gcode-solver should have more logic that keeps track of whats what and avoids unnecessary gcode. I'm putting this as a big todo next week. 
+
