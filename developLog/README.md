@@ -369,3 +369,11 @@ If me and Vinh work in the same Grasshopper documenent, could that be a good way
 
 I think I need to make a better distinction between representing Actions as polylines in Rhino and representing Actions as gcode. As its defined now the gcode converter blindly parses through each Actions path and converts its points into gcode. The gcode-solver should have more logic that keeps track of whats what and avoids unnecessary gcode. I'm putting this as a big todo next week. 
 
+# 1204_2022
+
+- ~~Check first move after toolchange.~~ 
+- Think more about separating paths from gcode. 
+- relative retract heigth. Right now its absolute and thats dangerous! 
+- implement additive solver
+
+Write about insights you get by coding all of this stuff. 
