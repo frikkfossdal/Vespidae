@@ -182,13 +182,17 @@ namespace VespidaeTools
         {
             var output = new List<string>();
 
+            output.Add("; Vespidae made this program"); 
+
             //check if program contains Extruder actions
             if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0) {
-                output.AddRange(new List<string>(){"; program contains extrusion actions", ";setting relative extrusion", "M83"}); 
-            } 
+                output.AddRange(new List<string>(){";program contains extrusion actions", ";setting relative extrusion", "M83"}); 
+            }
 
+            var currentPos = new Point3d(); 
             foreach (var ac in actions)
             {
+
                 output.AddRange(ac.translate());
             }
             return output;
@@ -198,9 +202,9 @@ namespace VespidaeTools
     public static class Solve
     {
         //generates a move between two actions 
-        private static Travel moveBetweenActions(Action prev, Action cur,double full_rh, double part_rh, int speed, bool partial)
+        private static Travel moveBetweenActions(Action prev, Action cur, int full_rh, double part_rh, int speed, bool partial)
         {
-            var newMove = new Travel(speed, false);
+            var newMove = new Travel(speed, false, full_rh);
             if (partial)
             {
                 newMove.path.Add(prev.path.Last);
@@ -217,6 +221,18 @@ namespace VespidaeTools
             }
             return newMove;
         }
+
+        private static Travel makeToolchange(Action prev, Action cur, int full_rh, int speed) {
+            Travel t = new Travel(speed, true, full_rh);
+            t.tool = cur.tool; 
+            t.path.Add(prev.path.Last);
+            t.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
+            t.path.Add(prev.path.Last.X, -50, full_rh);
+            t.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
+            t.path.Add(cur.path.First);
+            return t; 
+        }
+
         public static List<Action> GenerateProgram(List<Action> actions, int rh, int sp, bool pr)
         {
             var newProgram = new List<Action>();
@@ -234,14 +250,11 @@ namespace VespidaeTools
             bool partial = false;
 
             foreach (var act in actions)
-            {
-                //check if we need new tool
-                if (act.tool != prevAct.tool) toolChange = true;
-
+            { 
                 //first move
                 if (first)
                 {
-                    var fm = new Travel(sp, true);
+                    var fm = new Travel(sp, true, rh);
 
                     //pick up first action's tool
                     fm.tool = act.tool;
@@ -253,7 +266,6 @@ namespace VespidaeTools
 
                     first = false;
                 }
-
                 //perform check if we are doing full or partial retraction  
                 //1. sameStartingPoint check. if yes dont full retract
                 //2. same z height. if yes partial retract.
@@ -262,27 +274,47 @@ namespace VespidaeTools
                 //full retract
                 else
                 {
+                    //check if we need new tool
+                    if (act.tool != prevAct.tool) toolChange = true;
+
                     //check if next is same z-height
-                    if (act.path.First.Z != prevAct.path.Last.Z || pr == false) partial = false;
-                    else partial = true; 
-                    
-                    Travel m = moveBetweenActions(prevAct, act, rh, partial_rh, sp, partial);
-                    m.tool = act.tool;
-                    newProgram.Add(m);
+                    //if (act.path.First.Z != prevAct.path.Last.Z || pr == false) partial = false;
+                    //else partial = true;
+
+                    if (!toolChange)
+                    {
+                        Travel m = moveBetweenActions(prevAct, act, rh, partial_rh, sp, false);
+                        newProgram.Add(m);
+                    }
+
+                    else{
+                        var tm = makeToolchange(prevAct, act, rh, sp);
+                        newProgram.Add(tm);
+                    }
+                    //m.tool = act.tool;
                 }
 
                 //then add action
                 newProgram.Add(act);
                 prevAct = act;
+                toolChange = false; 
             }
 
-            ////exit move
+            //exit move
             //var lm = new Travel(6000, false);
             ////lm.path.Add(prevAct.path.Last);
             //lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh);
             //newProgram.Add(lm);
 
             return newProgram;
+        }
+
+        public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr) {
+            var newProgram = new List<Action>();
+
+            actions = actions.OrderBy(action => action.path.First.Z).ToList(); 
+
+            return newProgram; 
         }
     }
 
@@ -294,37 +326,50 @@ namespace VespidaeTools
         public List<string> injection;
         public Action() { }
         public int tool;
-        public bool toolCh; 
+        public bool toolCh;
+        public int retractHeight; 
 
         public abstract List<string> translate();
     }
 
     public class Travel : Action
     {
-        public Travel(int s, bool tc)
+        public Travel(int s, bool tc, int rh)
         {
             path = new Polyline();
             speed = s;
             actionType = opTypes.travel;
             tool = -1;
-            toolCh = tc; 
+            toolCh = tc;
+            retractHeight = rh; 
         }
 
         public override List<string> translate()
         {
             var translation = new List<string>();
-            translation.Add($";{actionType}");
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
 
             if (toolCh) {
+                translation.Add(";executing toolChange");
+                translation.Add($"G0 Z{retractHeight}"); 
                 translation.Add($"t{tool}");
-            }
-            
-            translation.Add($"G0 F{speed}");
+                translation.Add($"G0 F{speed}");
+                translation.Add($"G0 Z{retractHeight}");
+                translation.Add(path.Last.toGcode());
 
-            foreach (var p in path)
-            {
-                translation.Add(p.toGcode());
+                //go to retract height
+                //go to last point on path
+                //lower 
             }
+            else {
+                translation.Add($"G0 F{speed}");
+                foreach (var p in path)
+                {
+                    translation.Add(p.toGcode());
+                }
+            }
+
 
             return translation;
         }
@@ -345,7 +390,8 @@ namespace VespidaeTools
         public override List<string> translate()
         {
             var translation = new List<string>();
-            translation.Add($";{actionType}");
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
             translation.Add($"G0 F{speed}");
 
             //gcode injection 
@@ -390,7 +436,9 @@ namespace VespidaeTools
             var translation = new List<string>();
 
             //inital code
-            translation.Add($";{actionType} Speed:{speed} Temp: {temperature}");
+
+            translation.Add(""); 
+            translation.Add($";Action: {actionType}"); 
 
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
