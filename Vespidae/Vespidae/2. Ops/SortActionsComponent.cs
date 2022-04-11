@@ -30,7 +30,7 @@ namespace Vespidae.Ops
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Actions", "actions", "actions to sort", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("SortType", "sort", "Sorting options. 0: x-direction, 1: y-direction, 2: z-direction", GH_ParamAccess.item, 0);
+            pManager.AddIntegerParameter("SortType", "sort", "Sorting options. 0: x-direction, 1: y-direction, 2: z-direction, 3: by tool", GH_ParamAccess.item, 0);
             pManager.AddBooleanParameter("Flip", "flip", "Flips direction of list of acitons. Default false", GH_ParamAccess.item, false); 
         }
 
