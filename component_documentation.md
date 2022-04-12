@@ -1,9 +1,5 @@
 # Vespidae Component Dictionary 
 
-|test|this is a test column|
-|---|---|
-|item number two|this is a longer text to see how this really works. What happens when the text is wider then the page? Ok, that seems to be working ok. |
-
 # 1. CurveTools
 *Tools for manipulating geometry in Rhino. This includes clipping tools and soon slicing tools and tools for filling / clearing pockets.*
 |||
