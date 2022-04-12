@@ -13,7 +13,7 @@
 
 _Actions-components converts sets of polylines into Vespidae-actions and tags them with relevant metadata. For example, the ExtrudeAction tags each polyline with an extrusion-parameter that sets the extrusion rate for each move. This metadata is applied by the solvers and visualizers in step 3._
 |component name|description|
-|--|--|
+|:--|:--|
 | ExtrudeAction | Creates ExtrudeActions that is tagged with relevant metadata. <br> <br> **ex(extrusion)** extrusion flowrate multiplier. Extrusion amount is calculated by: `distance x 0.01 x ex` <br> **s (speed)** - speed of move. Translates to `F_speed_` in gcode. <br> **t(temperature)** - extruder temperature. Translates to `S_temperature` in gcode.|
 | MoveAction | *General purpose movement actions.*  <br> <br> **s(speed)**  - speed of move. Translates to `F_speed_` in gcode. <br> **to (tool_id)**  - tool number to execute move with. Translates to `T_toolId_` <br> **gInj (gcodeInjection)** - injects gcode prior to the move. The gcode is added when the action is translated to gcode in step 3.|
 | ZpinAction | *under development*|
