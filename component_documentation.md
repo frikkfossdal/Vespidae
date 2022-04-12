@@ -1,8 +1,12 @@
 # Vespidae Component Dictionary 
 
+|test|this is a test column|
+|---|---|
+|item number two|this is a longer text to see how this really works. What happens when the text is wider then the page? Ok, that seems to be working ok. |
+
 # 1. CurveTools
 *Tools for manipulating geometry in Rhino. This includes clipping tools and soon slicing tools and tools for filling / clearing pockets.*
-
+|||
 |:--|:--|
 |Boolean|Performs boolean operations, or *Clipping*, on polygons using the ClipperLib. The operations include intersection, union, difference and xor. See [this](http://www.angusj.com/delphi/clipper/documentation/Docs/Units/ClipperLib/Types/ClipType.htm) for more documentation on the different operations. |
 |Offset|Offsets polylines using the Clipper Library offset algorithm. Supports multiple offsets[^Only component] in same operation. Solution will be transformed to the XY plane of the first given polyline|
@@ -12,8 +16,8 @@
 # 2. Actions
 
 _Actions-components converts sets of polylines into Vespidae-actions and tags them with relevant metadata. For example, the ExtrudeAction tags each polyline with an extrusion-parameter that sets the extrusion rate for each move. This metadata is applied by the solvers and visualizers in step 3._
-
-|:--|:--|
+|||
+|--|--|
 | ExtrudeAction | Creates ExtrudeActions that is tagged with relevant metadata. <br> <br> **ex(extrusion)** extrusion flowrate multiplier. Extrusion amount is calculated by: `distance x 0.01 x ex` <br> **s (speed)** - speed of move. Translates to `F_speed_` in gcode. <br> **t(temperature)** - extruder temperature. Translates to `S_temperature` in gcode.|
 | MoveAction | *General purpose movement actions.*  <br> <br> **s(speed)**  - speed of move. Translates to `F_speed_` in gcode. <br> **to (tool_id)**  - tool number to execute move with. Translates to `T_toolId_` <br> **gInj (gcodeInjection)** - injects gcode prior to the move. The gcode is added when the action is translated to gcode in step 3.|
 | ZpinAction | *under development*|
@@ -22,6 +26,7 @@ _Actions-components converts sets of polylines into Vespidae-actions and tags th
 # 3. Solve
 *Solvers are used to compute and derive programs (sequence of actions) from sets of Actions. Solvers are also used when converting Actions into gcode*
 
+|||
 |:--|:--|
 | Solver Actions|*Takes lists of actions and transforms them into a list of executable Actions, adding travel moves between each action.* <br><br> **Vobj (Vespidae Actions)** - Input actions to the solver. <br> **rh (retract height)** - Retract height between the moves. <br> **ts (travel speed)** - Travel speed between moves. <br> **pr (partial retract)** - enables partial retract between Actions where possible[^the algorithm checks if the next Actions z-height is the same as the current Actions z-height. If yes, it will do a partial retract currently predefined to .2 mm.]. |
 | Solver Gcode| *Takes lists of actions and converts all actions into a single gcode file.* <br><br> **Vobj (Vespidae Actions)** - Input actions to the solver. <br> **h (header)** - inject header gcode. <br> **f (footer)** - inject footer gcode.|
