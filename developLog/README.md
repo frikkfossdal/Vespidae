@@ -376,4 +376,10 @@ I think I need to make a better distinction between representing Actions as poly
 - relative retract heigth. Right now its absolute and thats dangerous! 
 - implement additive solver
 
+Some things you should articulate better with visualization: 
+- clearly show start point of a program. 
+- find a better way to mark toolchange. 
+	- 
+
 Write about insights you get by coding all of this stuff. 
+
