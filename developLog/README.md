@@ -425,7 +425,7 @@ Ok. I think the new solver is working. I'll try to do some thorough testing of i
 
 I think this is the first time I'm really experiencing how powerful this workflow can be. I think Jens has been trying to show me this all along but I didnt really get it.
 
-![](./drawing_with_toolpaths.webp)
+![](./img/drawing_with_toolpaths.webp)
 
 So things are shaping up. Tomorrows todos: 
 
