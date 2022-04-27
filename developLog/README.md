@@ -385,3 +385,50 @@ New notes from Vinh. Here are the main todos:
 On that final note, I'm still not sure when and how sorting should happen. My initial thinking was that sorting should be completely exposed and up to the user to configure, **before** the solver runs its magic. However as it is configured now, this kind of forces us to choose one type of sorting (think what happens if your first sort in x and then sort again by for example tool number). I'll try to add several sorting options (and options for chaining sorting) in the new additive solver. I totally want to come back in future and add more complex sortin schemes to the stand-alone sorting component.
 
 I also started looking into better visualization. This is really a mess in Grasshopper but its supposed to improve in Grasshopper 2. I need to override the visual preview that the component generates by default. Look at [this](https://discourse.mcneel.com/t/can-drawviewportwires-draw-gh-objects/77494) thread. David Rutten provides a useful example.
+\
+
+# 2704_2022
+
+Today working on new solver component for additive operations. I'm also trying to rework some of the visualization that goes along with this. 
+
+First solver. I think I want to take all the actions, separate them into separate *layer-objects*, sort actions on each layer, then output everything as raw actions again. The way actions are designed right now they dont really have a layer height attribute. The reasoning here was that the Actions were designed to be paths that are non-planar. I'll ignore this for now and just use the first point on a actions path as reference. 
+
+This is neat. I'm using c# dictionary to sort actions onto layers: 
+
+        foreach (var action in actions) { 
+                double index = action.path.First.Z;
+                if (layerLookup.ContainsKey(index))
+                {
+                    layerLookup[index].Add(action);
+                }
+                else
+                {
+                    layerLookup.Add(index, new List<Action> { action });
+                }
+            }
+
+From this we can look through each layer and sort the actions based on a user defined criteria. So for example: 
+
+      foreach (var layer in layerLookup) {
+                layer.Value.OrderBy(action => action.path.First.X).ToList(); 
+            }
+
+Neat! Final step is just to flatten the structure and run the list of actions through the old solver. 
+
+On that note I want to do some improvements on the how I generate the travel moves when I make a program. Having actions sorted in lists based on layers enables me to simplify a couple of things. For example I can use partial retracts between the actions in each list. I think actually I'll just write a new "program generator" in the additive solver and implement changes on the old solver when I know more about how this looks. 
+
+Again I think I need a higher level representation of programs. Its just so nice having things organized in like this case layers. I need to sketch this on paper. I'm not sure what the translation routines would look like. 
+
+~~**NOTE:** The offset component doesnt work when multiple curves are inputed. Fix this.~~ **fixed**.
+
+Ok. I think the new solver is working. I'll try to do some thorough testing of it tomorrow. 
+
+I think this is the first time I'm really experiencing how powerful this workflow can be. I think Jens has been trying to show me this all along but I didnt really get it.
+
+![](./drawing_with_toolpaths.webp)
+
+So things are shaping up. Tomorrows todos: 
+
+- sketch out what a grouping / program class would look like 
+- work on visualization. On this note write an email to jasper and ask him about toolpath css. 
+- See if you could make a simple closed polygon infill generator. 
