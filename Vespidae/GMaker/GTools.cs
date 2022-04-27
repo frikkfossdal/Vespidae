@@ -7,7 +7,7 @@ namespace VespidaeTools
 {
     public enum opTypes
     {
-        travel, 
+        travel,
         move,
         extrusion,
         zPin
@@ -24,7 +24,6 @@ namespace VespidaeTools
             return $"G0 X{x} Y{y} Z{z}";
         }
     }
-
     public static class Visualization
     {
         public static List<Mesh> enterExit(Polyline poly, double scl)
@@ -39,10 +38,10 @@ namespace VespidaeTools
             return new List<Mesh>() { enter, exit };
         }
 
-        public static List<Mesh> pathViz(Polyline poly, double scl, int density) {
+        public static List<Mesh> pathViz(Polyline poly, double scl, int density)
+        {
             var arrows = new List<Mesh>();
             var arrow = createArrow(scl);
-            
 
             //find points that will be populated with arrows
             Point3d[] points;
@@ -50,18 +49,19 @@ namespace VespidaeTools
             nurbCurve.DivideByLength(density, false, out points);
 
             //check if distance between points is smaller than arrow size
-            var prevPoint = poly.First; 
+            var prevPoint = poly.First;
 
             //find planes on each point 
             var plns = new List<Plane>();
             foreach (var p in points)
             {
-                if (p.DistanceTo(prevPoint) > scl){
+                if (p.DistanceTo(prevPoint) > scl)
+                {
                     var ind = poly.ClosestIndex(p);
                     plns.Add(horizFrame(poly, ind));
                 }
 
-                prevPoint = p; 
+                prevPoint = p;
             }
 
             foreach (var p in plns)
@@ -73,7 +73,7 @@ namespace VespidaeTools
                 arrows.Add(newMesh);
             }
 
-            return arrows; 
+            return arrows;
         }
 
         //creates a mesh arrow 
@@ -110,7 +110,10 @@ namespace VespidaeTools
         }
     }
 
-    //static class for sorting lists of actions
+
+    /// <summary>
+    /// The <c>Sort</c> Class contains static methods for sorting lists of actions 
+    /// </summary>
     public static class Sort
     {
         public static List<Action> sortByX(List<Action> actions, bool f)
@@ -142,9 +145,13 @@ namespace VespidaeTools
         }
     }
 
+    /// <summary>
+    /// The <c>Operation</c> Class contains static methods for converting lists of polylines 
+    /// into lists of Actions. 
+    /// </summary>
     public static class Operation
     {
-        //static functino for creating simple extrusion operation. Could be modified with enumeration of tool 
+        //static function for creating simple extrusion operation. Could be modified with enumeration of tool 
         public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, List<string> injection)
         {
             List<Action> actions = new List<Action>();
@@ -174,7 +181,6 @@ namespace VespidaeTools
             {
                 actions.Add(new zPin(p, temp, amount, tool));
             }
-
             return actions;
         }
 
@@ -182,14 +188,15 @@ namespace VespidaeTools
         {
             var output = new List<string>();
 
-            output.Add("; Vespidae made this program"); 
+            output.Add("; Vespidae made this program");
 
             //check if program contains Extruder actions
-            if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0) {
-                output.AddRange(new List<string>(){";program contains extrusion actions", ";setting relative extrusion", "M83"}); 
+            if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0)
+            {
+                output.AddRange(new List<string>() { ";program contains extrusion actions", ";setting relative extrusion", "M83" });
             }
 
-            var currentPos = new Point3d(); 
+            var currentPos = new Point3d();
             foreach (var ac in actions)
             {
 
@@ -222,15 +229,16 @@ namespace VespidaeTools
             return newMove;
         }
 
-        private static Travel makeToolchange(Action prev, Action cur, int full_rh, int speed) {
+        private static Travel makeToolchange(Action prev, Action cur, int full_rh, int speed)
+        {
             Travel t = new Travel(speed, true, full_rh);
-            t.tool = cur.tool; 
+            t.tool = cur.tool;
             t.path.Add(prev.path.Last);
             t.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
             t.path.Add(prev.path.Last.X, -50, full_rh);
             t.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
             t.path.Add(cur.path.First);
-            return t; 
+            return t;
         }
 
         public static List<Action> GenerateProgram(List<Action> actions, int rh, int sp, bool pr)
@@ -250,7 +258,7 @@ namespace VespidaeTools
             bool partial = false;
 
             foreach (var act in actions)
-            { 
+            {
                 //first move
                 if (first)
                 {
@@ -287,7 +295,8 @@ namespace VespidaeTools
                         newProgram.Add(m);
                     }
 
-                    else{
+                    else
+                    {
                         var tm = makeToolchange(prevAct, act, rh, sp);
                         newProgram.Add(tm);
                     }
@@ -297,7 +306,7 @@ namespace VespidaeTools
                 //then add action
                 newProgram.Add(act);
                 prevAct = act;
-                toolChange = false; 
+                toolChange = false;
             }
 
             //exit move
@@ -309,12 +318,15 @@ namespace VespidaeTools
             return newProgram;
         }
 
-        public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr) {
+
+        public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr)
+        {
             var newProgram = new List<Action>();
 
-            actions = actions.OrderBy(action => action.path.First.Z).ToList(); 
+            actions = actions.OrderBy(action => action.path.First.Z).ToList();
 
-            return newProgram; 
+
+            return newProgram;
         }
     }
 
@@ -327,7 +339,7 @@ namespace VespidaeTools
         public Action() { }
         public int tool;
         public bool toolCh;
-        public int retractHeight; 
+        public int retractHeight;
 
         public abstract List<string> translate();
     }
@@ -341,7 +353,7 @@ namespace VespidaeTools
             actionType = opTypes.travel;
             tool = -1;
             toolCh = tc;
-            retractHeight = rh; 
+            retractHeight = rh;
         }
 
         public override List<string> translate()
@@ -350,9 +362,10 @@ namespace VespidaeTools
             translation.Add("");
             translation.Add($";Action: {actionType}");
 
-            if (toolCh) {
+            if (toolCh)
+            {
                 translation.Add(";executing toolChange");
-                translation.Add($"G0 Z{retractHeight}"); 
+                translation.Add($"G0 Z{retractHeight}");
                 translation.Add($"t{tool}");
                 translation.Add($"G0 F{speed}");
                 translation.Add($"G0 Z{retractHeight}");
@@ -362,7 +375,8 @@ namespace VespidaeTools
                 //go to last point on path
                 //lower 
             }
-            else {
+            else
+            {
                 translation.Add($"G0 F{speed}");
                 foreach (var p in path)
                 {
@@ -384,7 +398,7 @@ namespace VespidaeTools
             actionType = opTypes.move;
             tool = to;
             injection = inj;
-            toolCh = true; 
+            toolCh = true;
         }
 
         public override List<string> translate()
@@ -415,7 +429,7 @@ namespace VespidaeTools
     {
         public double ext;
         public double temperature;
-        public double retract; 
+        public double retract;
 
         public Extrude(Polyline p, double t, double e, int s, double r, int to, List<string> inj)
         {
@@ -426,7 +440,7 @@ namespace VespidaeTools
             speed = s;
             retract = r;
             injection = inj;
-            toolCh = true; 
+            toolCh = true;
 
             actionType = opTypes.extrusion;
         }
@@ -437,8 +451,8 @@ namespace VespidaeTools
 
             //inital code
 
-            translation.Add(""); 
-            translation.Add($";Action: {actionType}"); 
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
 
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
@@ -471,7 +485,7 @@ namespace VespidaeTools
             }
 
             //retract filement 
-            translation.Add($"G0 E{-retract}"); 
+            translation.Add($"G0 E{-retract}");
 
             return translation;
         }
