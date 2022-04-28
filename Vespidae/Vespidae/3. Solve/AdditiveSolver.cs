@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using VespidaeTools;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
@@ -17,9 +17,9 @@ namespace Vespidae.Solve
         /// new tabs/panels will automatically be created.
         /// </summary>
         public AdditiveSolver()
-          : base("AdditiveSolver", "Nickname",
-            "AdditiveSolver description",
-            "Category", "Subcategory")
+          : base("AdditiveSolver", "AdditiveSolver",
+            "Solver for additive operations. Sorts actions in ascending order based on z height",
+            "Vespidae", "3.Solver")
         {
         }
 
@@ -28,6 +28,11 @@ namespace Vespidae.Solve
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddGenericParameter("Actions", "VObj", "Actions to be solved", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
+            pManager.AddIntegerParameter("TravelSpeed", "ts", "travel speed between moves", GH_ParamAccess.item, 5000);
+            pManager.AddBooleanParameter("PartialRetract", "pr", "partial retract when possible", GH_ParamAccess.item, false);
+            pManager.AddIntegerParameter("SortCriteria", "sort", "layer sort criteria. 0: x-direction, 1: y-direction, 2: by tool. Default x", GH_ParamAccess.item, 0); 
         }
 
         /// <summary>
@@ -35,6 +40,7 @@ namespace Vespidae.Solve
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("OutputActions", "VObj", "New list of actions", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -44,6 +50,21 @@ namespace Vespidae.Solve
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            List<VespidaeTools.Action> actions = new List<VespidaeTools.Action>();
+            int rh = 0;
+            int ts = 0;
+            int srt = 0; 
+            bool pr = false;
+
+            if (!DA.GetDataList("Actions", actions)) return;
+            DA.GetData("RetractHeight", ref rh);
+            DA.GetData("TravelSpeed", ref ts);
+            DA.GetData("PartialRetract", ref pr);
+            DA.GetData("SortCriteria", ref srt);
+
+            var output = VespidaeTools.Solve.AdditiveSolver(actions, rh, ts, true,srt);
+            DA.SetDataList("OutputActions", output);
+
         }
 
         /// <summary>
