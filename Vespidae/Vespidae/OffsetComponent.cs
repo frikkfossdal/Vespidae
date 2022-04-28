@@ -30,10 +30,10 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "C", "Curve or curves to offset", GH_ParamAccess.list); 
-            pManager.AddNumberParameter("Distance", "D", "Distance to offset", GH_ParamAccess.item, 1);
-            pManager.AddIntegerParameter("Amount", "NO", "Amount of times to offset curve. Default 1", GH_ParamAccess.item, 1);
-            pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, Plane.WorldXY);
+            pManager.AddCurveParameter("curve", "crv", "Curve or curves to offset", GH_ParamAccess.list); 
+            pManager.AddNumberParameter("Distance", "dist", "Distance to offset", GH_ParamAccess.item, 1);
+            pManager.AddIntegerParameter("Amount", "amo", "Amount of times to offset curve. Default 1", GH_ParamAccess.item, 1);
+            //pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, Plane.WorldXY);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("result", "r", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("result", "res", "", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -51,23 +51,29 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            
             List<Curve> offsetCurves = new List<Curve>();
             double distance = 0;
             int amount = 0;
             var pln = new Plane();
 
-            if (!DA.GetDataList("Curve", offsetCurves))return;
+            if (!DA.GetDataList("curve", offsetCurves))return;
             DA.GetData("Distance", ref distance);
             DA.GetData("Amount", ref amount);
-            DA.GetData("OutputPlane", ref pln);
+            //DA.GetData("OutputPlane", ref pln);
 
             //hack: extract plane from first input curve
-            offsetCurves[0].TryGetPlane(out pln);
 
-            List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
-            List<Polyline> result = ClipperTools.offset(offsetPolylines,amount, pln, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            var output = new List<Polyline>(); 
 
-            DA.SetDataList(0, result); 
+            foreach (var crv in offsetCurves) {
+                crv.TryGetPlane(out pln);
+                List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
+                output.AddRange(ClipperTools.offset(offsetPolylines, amount, pln, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance));
+            }
+
+
+            DA.SetDataList(0, output); 
         }
 
         /// <summary>
