@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Rhino; 
 using Rhino.Geometry;
 using ClipperLib;
-using System.Linq; 
+using System.Linq;
 
 namespace ClipperHelper
 {
@@ -127,7 +127,7 @@ namespace ClipperHelper
             double delta = distance;
             for (int i = 0; i < amount; i++) {
                 clipOfs.Execute(ref polytree, delta / tolerance);
-                output.AddRange(extractSolution(polytree, pln, tolerance)); 
+                output.AddRange(extractSolution(polytree, pln, tolerance));
                 delta += distance;
             }
 
@@ -150,7 +150,7 @@ namespace ClipperHelper
         public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance, Plane pln) {
             Rhino.RhinoApp.WriteLine(depth.ToString());
 
-             var output = new List<Polyline>();
+            var output = new List<Polyline>();
 
             //Needs better logic to handle more depth 
             if (depth == 2 || depth == 3)
@@ -164,23 +164,23 @@ namespace ClipperHelper
 
             foreach (var child in n.Childs)
             {
-                output.AddRange(f_iterate(child, depth+1,tolerance, pln));
+                output.AddRange(f_iterate(child, depth + 1, tolerance, pln));
             }
 
-            return output; 
+            return output;
         }
 
         //extracts polylines from a polytree. This should be sensitive to inside/outside ref slicerFriendliness 
-        private static  List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance) {
+        private static List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance) {
             List<Polyline> output = new List<Polyline>();
 
-            return f_iterate(sol, 0, tolerance, pln); 
+            return f_iterate(sol, 0, tolerance, pln);
         }
 
         //converts list of Clipper Intpoints to Polylines
         public static Polyline ToPolyline(List<IntPoint> path, Plane pln, double tolerance, bool closed)
         {
-            var polyline = new Polyline(); 
+            var polyline = new Polyline();
 
             foreach (var pt in path)
             {
@@ -198,16 +198,90 @@ namespace ClipperHelper
         public static List<IntPoint> ToPath2d(this Polyline pl, double tolerance) {
             var path = new List<IntPoint>();
             foreach (var pt in pl) {
-                path.Add(ToIntPoint2d(pt,tolerance));
+                path.Add(ToIntPoint2d(pt, tolerance));
             }
             return path;
         }
 
         private static IntPoint ToIntPoint2d(Point3d pt, double tolerance)
         {
-            var point = new IntPoint(((long)(pt.X/tolerance)), ((long)(pt.Y/tolerance)));
+            var point = new IntPoint(((long)(pt.X / tolerance)), ((long)(pt.Y / tolerance)));
             return point;
         }
+    }
+
+    /// <summary>
+    /// Static class for creating infill patterns. Most functions take closed
+    /// polygons as input and outputs infill patterns. See documentation
+    /// for more information
+    /// </summary>
+    public static class Infill{
+        
+        static public List<Polyline> simpleInfill(Polyline pol, double gap) {
+            var output = new List<Polyline>();
+            var bound = pol.BoundingBox;
+            var min = bound.Min;
+            var max = bound.Max;
+
+            //iterate and create infill lines 
+            for (double i = min.X; i <= max.X + gap; i += gap)
+            {
+                var poly = new Polyline();
+                poly.Add(i, min.Y, 0);
+                poly.Add(i, max.Y, 0);
+                output.Add(poly);
+            }
+            return output;
+        }
+        static public List<Polyline> contInfill(Polyline pol, double gap)
+        {
+            var output = new List<Polyline>();
+            var bound = pol.BoundingBox;
+            var min = bound.Min;
+            var max = bound.Max;
+
+            //solution dictionary
+            var solution = new SortedDictionary<int, Polyline>();
+            int numIntersections = -10;
+            int dictIndex = 0;
+
+            //iterate and create infill lines 
+            for (double i = min.X; i <= max.X + gap; i += gap)
+            {
+
+                //create line
+                var line = new Polyline();
+                line.Add(i, min.Y, 0);
+                line.Add(i, max.Y, 0);
+
+     
+                //check intersection
+                var intersectLines = ClipperTools.boolean(new List<Polyline> { line }, new List<Polyline> { pol }, Plane.WorldXY, 0.001, 1);
+
+                if (intersectLines.Count != numIntersections)
+                {
+                    numIntersections = intersectLines.Count;
+                    foreach (var p in intersectLines) {
+                        solution.Add(dictIndex++, p); 
+                    }
+                }
+                else {
+                    int reverseIndex = numIntersections; 
+                    foreach (var p in intersectLines) {
+              
+                        solution[dictIndex - reverseIndex].AddRange(p); 
+                        reverseIndex--; 
+                    }
+                }
+            }
+
+            foreach (var s in solution) {
+                output.Add(s.Value); 
+            }
+
+            return output;
+        }
+
     }
 
     public static class brepTools {
@@ -218,22 +292,6 @@ namespace ClipperHelper
             return 3;
         }
 
-        //Creates infill in x direction 
-        public static List<Polyline> createInfillLines(Brep b, double gap){
-
-            var output = new List<Polyline>(); 
-            var bound = b.GetBoundingBox(true);
-            var min = bound.Min;
-            var max = bound.Max;
-
-            for (double i = min.X; i <= max.X+gap; i+=gap) {
-                var poly = new Polyline();
-                poly.Add(i, min.Y, 0);
-                poly.Add(i, max.Y, 0);
-                output.Add(poly); 
-            }
-            return output; 
-        }
 
         //flips every second polyline in list
         public static List<Polyline> flipInfillLines(List<Polyline> polys) {
