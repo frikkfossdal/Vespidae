@@ -8,3 +8,5 @@ Right now you are developing this in Rhino / Grasshopper. Thats not really a pro
 
 - Think about interacting with Vespidae without Grasshopper but through the Rhino terminal. What functionallity do you need to add to enable this? What does this interaction look like? 
 - There are a couple of commercial toolpath/CAM apis. Notably [Fusion 360's api](https://help.autodesk.com/view/fusion360/ENU/?guid=GUID-7F3F9D48-ED88-451A-907C-82EAE67DEA93) or [dyndrite's](https://www.dyndrite.com/technology/vector-toolpathing-api). They are however behind subscription walls.
+
+Searching through the web and reading through different forums there doesnt seem to excist a proper open-source library for working with CAM. I can find a lot of examples of people who are implementing  
