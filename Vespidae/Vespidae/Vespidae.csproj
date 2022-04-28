@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ZPinning.cs" />
+    <Compile Remove="1. CurveTools\SlicerComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\brain.png" />
