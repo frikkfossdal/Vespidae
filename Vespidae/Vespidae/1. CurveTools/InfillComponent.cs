@@ -30,8 +30,9 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Vespidae_Operations", "VESPO", "Prior Vespidae operations", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("density", "D", "infill density", GH_ParamAccess.item, 1); 
+            pManager.AddGenericParameter("curve", "crv", "closed polygon to be filled", GH_ParamAccess.list);
+            pManager.AddNumberParameter("density", "den", "infill density", GH_ParamAccess.item, 1.0);
+            pManager.AddNumberParameter("offset", "off", "infill offset", GH_ParamAccess.item, 0.2); 
         }
 
         /// <summary>
@@ -39,8 +40,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Vespidae_Object_out", "VESO", "Prior Vespidae operations", GH_ParamAccess.item);
-            pManager.AddGenericParameter("InfillPoly", "Inf", "Preview infill", GH_ParamAccess.list);
+            pManager.AddGenericParameter("curves", "crvs", "infill polygons", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -50,15 +50,35 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            var vespo = new Slicer(); 
-            int density = 0; 
+            var inputCurves = new List<Curve>();
+            double density = 0;
+            double offset = 0; 
 
-            if (!DA.GetData("Vespidae_Operations", ref vespo)) return;
-
+            if (!DA.GetDataList("curve", inputCurves)) return;
             DA.GetData("density", ref density);
+            DA.GetData("offset", ref offset);
 
-            vespo.createInfill(density, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
-            DA.SetDataList("InfillPoly", vespo.exposeInfill());
+            var outputCurves = new List<Polyline>();
+
+            foreach (var crv in inputCurves) {
+                if (crv.IsClosed){
+                    Polyline pol; 
+                    if(ClipperHelper.ClipperTools.ConvertCurveToPolyline(crv,out pol))
+                    {
+                        //create infill lines 
+                        var lines = ClipperHelper.Infill.simpleInfill(pol, density);
+
+                        outputCurves = ClipperHelper.Infill.contInfill(pol, density); 
+
+                        //offset polygon shape
+                        //var infillPol = ClipperHelper.ClipperTools.offset(new List<Polyline> { pol }, 1, Plane.WorldXY, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+
+                        //clip infill lines 
+                        //outputCurves.AddRange(ClipperHelper.ClipperTools.boolean(lines, infillPol, Plane.WorldXY, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance, 1)); 
+                    }  
+                }
+            }
+            DA.SetDataList("curves", outputCurves); 
         }
 
         /// <summary>
