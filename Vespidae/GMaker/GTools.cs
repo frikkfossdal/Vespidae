@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections; 
 using System.Collections.Generic;
 using Rhino.Geometry;
 using System.Linq;
@@ -24,6 +25,10 @@ namespace VespidaeTools
             return $"G0 X{x} Y{y} Z{z}";
         }
     }
+
+    /// <summary>
+    /// Static methods for visualizing toolpaths. 
+    /// </summary>
     public static class Visualization
     {
         public static List<Mesh> enterExit(Polyline poly, double scl)
@@ -110,9 +115,8 @@ namespace VespidaeTools
         }
     }
 
-
     /// <summary>
-    /// The <c>Sort</c> Class contains static methods for sorting lists of actions 
+    /// Static methods for sorting lists of actions.
     /// </summary>
     public static class Sort
     {
@@ -146,7 +150,7 @@ namespace VespidaeTools
     }
 
     /// <summary>
-    /// The <c>Operation</c> Class contains static methods for converting lists of polylines 
+    /// Static methods for converting lists of polylines 
     /// into lists of Actions. 
     /// </summary>
     public static class Operation
@@ -206,6 +210,10 @@ namespace VespidaeTools
         }
     }
 
+    /// <summary>
+    /// The Operation class consists of functions that take list of actions and converts them
+    /// into complete Vespidae programs with travel moves between each Action. 
+    /// </summary>
     public static class Solve
     {
         //generates a move between two actions 
@@ -319,17 +327,69 @@ namespace VespidaeTools
         }
 
 
-        public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr)
+        //OPTIMIZE by only looping once through layer dictionary 
+        /// <summary>
+        /// Solver for additive operations. Sorts actions by layer and by sort critera on each layer
+        /// </summary>
+        public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr, int srtType)
         {
             var newProgram = new List<Action>();
+            //STEP 1: Sort actions into dictionary with layer height as lookup index.
+            //Note: currently uses first point of each actions path as referance value
+            //move to separate function?
+            
+            SortedDictionary<double, List<Action>> layerLookup = new SortedDictionary<double, List<Action>>();
 
-            actions = actions.OrderBy(action => action.path.First.Z).ToList();
+            foreach (var action in actions) { 
+                double index = action.path.First.Z;
+                if (layerLookup.ContainsKey(index))
+                {
+                    layerLookup[index].Add(action);
+                }
+                else
+                {
+                    layerLookup.Add(index, new List<Action> { action });
+                }
+            }
 
+            //STEP 2: sort dictionary by layer
+            
+
+            //STEP 2: loop through each layer and sort actions based on criteria
+            switch (srtType)
+            {
+                //sort by x
+                case 0:
+                    foreach (var layer in layerLookup)
+                    {
+                        newProgram.AddRange(Sort.sortByX(layer.Value, false));
+                    }
+                    break;
+                //sort by y
+                case 1:
+                    foreach (var layer in layerLookup)
+                    {
+                        newProgram.AddRange(Sort.sortByY(layer.Value, false));
+                    }
+                    break;
+                //sort by tool
+                case 2:
+                    foreach (var layer in layerLookup)
+                    {
+                        newProgram.AddRange(Sort.sortByTool(layer.Value, false));
+                    }
+                    break;
+            }
+
+            //STEP 3: flatten dictionary and generate complete program
 
             return newProgram;
         }
     }
 
+    /// <summary>
+    /// Abstract class for all Vespidae Actions. 
+    /// </summary>
     public abstract class Action
     {
         public Polyline path;
