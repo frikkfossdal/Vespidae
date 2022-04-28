@@ -62,14 +62,14 @@ namespace SlicerTool
         }
 
 
-        public void createInfill(double density, double tolerance) {
-            List<Polyline> infillLines =  brepTools.createInfillLines(model, density);
+        //public void createInfill(double density, double tolerance) {
+        //    List<Polyline> infillLines =  brepTools.createInfillLines(model, density);
 
-            foreach (Layer l in this.layers) {
-                List<Polyline> inf =  ClipperTools.boolean(infillLines, l.shells, l.pln, tolerance, 1);
-                l.infill.AddRange(inf);
-            }
-        }
+        //    foreach (Layer l in this.layers) {
+        //        List<Polyline> inf =  ClipperTools.boolean(infillLines, l.shells, l.pln, tolerance, 1);
+        //        l.infill.AddRange(inf);
+        //    }
+        //}
 
         public List<Polyline> exposeShells() {
             var output = new List<Polyline>();
