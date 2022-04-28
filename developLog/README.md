@@ -432,3 +432,26 @@ So things are shaping up. Tomorrows todos:
 - sketch out what a grouping / program class would look like 
 - work on visualization. On this note write an email to jasper and ask him about toolpath css. 
 - See if you could make a simple closed polygon infill generator. 
+
+# 2804_2022 - infill 
+
+Some notes on making an infill generator:
+	- something happens everytime the number of intersections changes.
+	- think more about the discussion in [this thread](https://stackoverflow.com/questions/15668149/polygon-infill-algorithm). 
+	- [Evil mad scientist](https://wiki.evilmadscientist.com/Creating_filled_regions) has really good notes about hatching.
+	- [this](https://github.com/Tannz0rz/Mandoline) looks promising.
+
+Also some quick thoughts about organization. I think that all curve manipulation functions can live in what is now called ClipperTools. I'll see about renaming this sometime in the future. For now I'm not going to focus more about creating a complete slicing scheme. For Vinhs case I think its more interesting to create the individual building blocks of a slicer and offer them as components.
+
+Ok so I redid the infill component and I think its really neat. Missing: 
+
+- Control direction of infill (with a vector?). 
+- Prettify the code. I dont like that I need to redeclare the polygons as lists to be able to use the static clipper functions. 
+- I need to enable polygon clipping on the indside of infill polygons. Not sure what this interaction looks like. 
+- Connect the polygons! 
+
+It might make sense to have infill as a separate action. I'm putting this down as a todo note. 
+
+Explore how the infill component works together with the offset component. Infill should really be based on the inner of the offseted polygons. Not a big problem but annoying. Not really sure how this could be fixed though without having metadata. 
+
+Ok finally have sort of working grouping of infill. I'll document tomorrow. 
