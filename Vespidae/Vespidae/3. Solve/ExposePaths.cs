@@ -39,8 +39,10 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("AllMoves", "allPaths", "all paths of Vespidae object", GH_ParamAccess.list);
-            pManager.AddGenericParameter("AllTravel", "allTravel", "all paths of Vespidae object", GH_ParamAccess.list);
+            pManager.AddGenericParameter("allMoves", "all", "all paths of Vespidae object", GH_ParamAccess.list);
+            pManager.AddGenericParameter("moves", "mv", "Vespidae generic actions", GH_ParamAccess.list);
+            pManager.AddGenericParameter("extrude", "ext", "Vespidae extrude actions", GH_ParamAccess.list);
+            pManager.AddGenericParameter("travel", "trv", "Vespidae travel actions", GH_ParamAccess.list);
             pManager.AddGenericParameter("Arrows", "ar", "direction arrows", GH_ParamAccess.list); 
         }
 
@@ -51,8 +53,10 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+
+            //output
             var actions = new List<VespidaeTools.Action>();
-            var allPaths = new List<Polyline>();
+
             var arrows = new List<Mesh>();
             double scl = 0;
             int density = 0; 
@@ -62,38 +66,32 @@ namespace Vespidae
             DA.GetData("arrowScl", ref scl);
             DA.GetData("arrowDensity", ref density); 
 
-            //////get all paths
-            var allMoves = new List<Polyline>();
-            foreach (var act in actions)
-            {
-                allMoves.Add(act.path); 
+            //sort out actions 
+            var travelActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.travel).ToList();
+            var moveActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.move).ToList();
+            var extrudeActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.extrusion).ToList();
+
+            //get paths from sorted actions
+
+            var allPaths = convertActionsToPaths(actions); 
+            var travelPaths = convertActionsToPaths(travelActions);
+            var movePaths = convertActionsToPaths(moveActions);
+            var extrudePaths = convertActionsToPaths(extrudeActions);
+
+            DA.SetDataList("allMoves", allPaths);
+            DA.SetDataList("moves", movePaths);
+            DA.SetDataList("extrude", extrudePaths);
+            DA.SetDataList("travel", travelPaths); 
+        }
+
+        //temp function for converting Actions into polylines 
+        static List<Polyline> convertActionsToPaths(List<VespidaeTools.Action> actions) {
+            var returnPolylines = new List<Polyline>(); 
+            foreach (var act in actions) {
+                returnPolylines.Add(act.path); 
             }
 
-            var travel = actions.Where(act => act.actionType == VespidaeTools.opTypes.travel).ToList();
-            var travelMoves = new List<Polyline>();
-
-            foreach (var move in travel)
-            {
-                travelMoves.Add(move.path);
-            }
-
-            var moves = actions.Where(act => act.actionType == VespidaeTools.opTypes.move).ToList();
-            var ext_moves = actions.Where(act => act.actionType == VespidaeTools.opTypes.extrusion).ToList(); 
-
-            foreach (var move in moves) {
-                arrows.AddRange(VespidaeTools.Visualization.pathViz(move.path, scl, density)); 
-            }
-
-            //hack want different viz for different actions
-            foreach (var move in ext_moves)
-            {
-                arrows.AddRange(VespidaeTools.Visualization.pathViz(move.path, scl, density));
-            }
-
-
-            DA.SetDataList("AllMoves", allMoves);
-            DA.SetDataList(1, travelMoves);
-            DA.SetDataList(2, arrows); 
+            return returnPolylines; 
         }
 
         /// <summary>
