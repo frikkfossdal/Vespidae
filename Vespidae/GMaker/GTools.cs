@@ -353,28 +353,28 @@ namespace VespidaeTools
             }
 
             //STEP 2: sort dictionary by layer
-            
+            var sortedLayerLookup = layerLookup.OrderBy(ind => ind.Key); 
 
             //STEP 2: loop through each layer and sort actions based on criteria
             switch (srtType)
             {
                 //sort by x
                 case 0:
-                    foreach (var layer in layerLookup)
+                    foreach (var layer in sortedLayerLookup)
                     {
                         newProgram.AddRange(Sort.sortByX(layer.Value, false));
                     }
                     break;
                 //sort by y
                 case 1:
-                    foreach (var layer in layerLookup)
+                    foreach (var layer in sortedLayerLookup)
                     {
                         newProgram.AddRange(Sort.sortByY(layer.Value, false));
                     }
                     break;
                 //sort by tool
                 case 2:
-                    foreach (var layer in layerLookup)
+                    foreach (var layer in sortedLayerLookup)
                     {
                         newProgram.AddRange(Sort.sortByTool(layer.Value, false));
                     }
