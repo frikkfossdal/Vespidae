@@ -14,6 +14,11 @@ namespace VespidaeTools
         zPin
     }
 
+    public enum extrudeTypes {
+        shell,
+        infill
+    }
+
     public static class Extension
     {
         public static string toGcode(this Point3d p)
@@ -156,13 +161,22 @@ namespace VespidaeTools
     public static class Operation
     {
         //static function for creating simple extrusion operation. Could be modified with enumeration of tool 
-        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, List<string> injection)
+        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, int extType,  List<string> injection)
         {
             List<Action> actions = new List<Action>();
 
+            extrudeTypes tp;
+            if (extType == 0)
+            {
+                tp = extrudeTypes.shell;
+            }
+            else {
+                tp = extrudeTypes.infill; 
+            }
+
             foreach (var p in paths)
             {
-                actions.Add(new Extrude(p, temp, ext, speed, retract, tool, injection));
+                actions.Add(new Extrude(p, temp, ext, speed, retract, tool, tp,  injection));
             }
             return actions;
         }
@@ -192,7 +206,7 @@ namespace VespidaeTools
         {
             var output = new List<string>();
 
-            output.Add("; Vespidae made this program");
+            output.Add(";Vespidae made this program");
 
             //check if program contains Extruder actions
             if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0)
@@ -203,7 +217,6 @@ namespace VespidaeTools
             var currentPos = new Point3d();
             foreach (var ac in actions)
             {
-
                 output.AddRange(ac.translate());
             }
             return output;
@@ -334,6 +347,8 @@ namespace VespidaeTools
         public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr, int srtType)
         {
             var newProgram = new List<Action>();
+            bool first = true; 
+
             //STEP 1: Sort actions into dictionary with layer height as lookup index.
             //Note: currently uses first point of each actions path as referance value
             //move to separate function?
@@ -352,36 +367,28 @@ namespace VespidaeTools
                 }
             }
 
-            //STEP 2: sort dictionary by layer
-            var sortedLayerLookup = layerLookup.OrderBy(ind => ind.Key); 
-
-            //STEP 2: loop through each layer and sort actions based on criteria
-            switch (srtType)
-            {
-                //sort by x
-                case 0:
-                    foreach (var layer in sortedLayerLookup)
-                    {
-                        newProgram.AddRange(Sort.sortByX(layer.Value, false));
-                    }
-                    break;
-                //sort by y
-                case 1:
-                    foreach (var layer in sortedLayerLookup)
-                    {
-                        newProgram.AddRange(Sort.sortByY(layer.Value, false));
-                    }
-                    break;
-                //sort by tool
-                case 2:
-                    foreach (var layer in sortedLayerLookup)
-                    {
-                        newProgram.AddRange(Sort.sortByTool(layer.Value, false));
-                    }
-                    break;
-            }
+            ///STEP 2: sort extrudeTypes e.g. shells then infill or visa versa
+            ///z
 
             //STEP 3: flatten dictionary and generate complete program
+            foreach (var layer in layerLookup) {
+
+                //move to first point in layer.
+                if (first) {
+                    //var firstPoint = action.path.First;
+                    //var trvMove = new Travel(5000, false, 5);
+                    //trvMove.path.Add(new Point3d(firstPoint.X, firstPoint.Y, rh));
+                    //trvMove.path.Add(firstPoint);
+                    //newProgram.Add(trvMove);
+                }
+
+                //execute all actions on layer with partial retract height 
+                foreach (var action in layer.Value) {
+                    newProgram.Add(action); 
+                }
+                //full retract before next layer 
+            }
+
 
             return newProgram;
         }
@@ -469,7 +476,7 @@ namespace VespidaeTools
             translation.Add($"G0 F{speed}");
 
             //gcode injection 
-            if (injection.Count > 0)
+            if (injection.Count > 0 && injection.First().Length != 0)
             {
                 translation.Add(";>>>>injected gcode start<<<<");
                 translation.AddRange(injection);
@@ -490,8 +497,9 @@ namespace VespidaeTools
         public double ext;
         public double temperature;
         public double retract;
+        public extrudeTypes extType; 
 
-        public Extrude(Polyline p, double t, double e, int s, double r, int to, List<string> inj)
+        public Extrude(Polyline p, double t, double e, int s, double r, int to, extrudeTypes _extType, List<string> inj)
         {
             path = p;
             ext = e;
@@ -503,6 +511,7 @@ namespace VespidaeTools
             toolCh = true;
 
             actionType = opTypes.extrusion;
+            extType = _extType; 
         }
 
         public override List<string> translate()
@@ -513,7 +522,7 @@ namespace VespidaeTools
 
             translation.Add("");
             translation.Add($";Action: {actionType}");
-
+            translation.Add($";extrudeType: {extType}");
             translation.Add($"M109 {temperature}");
             translation.Add($"G0 F{speed}");
             //relative extrusion. Don't need to add this everytime

@@ -64,7 +64,6 @@ namespace Vespidae.Solve
 
             var output = VespidaeTools.Solve.AdditiveSolver(actions, rh, ts, true,srt);
             DA.SetDataList("OutputActions", output);
-
         }
 
         /// <summary>

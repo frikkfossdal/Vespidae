@@ -28,12 +28,13 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
+            pManager.AddCurveParameter("Curve", "crv", "curves to extrude", GH_ParamAccess.list);
             pManager.AddNumberParameter("Extrusion", "ex", "relative extrusion multiplier. Extrusion is calculated by distance_between_points * ext", GH_ParamAccess.item, 1);
-            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
-            pManager.AddNumberParameter("Temperature", "t", "extrusion temperature", GH_ParamAccess.item, 205);
+            pManager.AddIntegerParameter("Speed", "speed", "speed of move in mm/min. Default 1000mm/min", GH_ParamAccess.item, 1000);
+            pManager.AddNumberParameter("Temperature", "temp", "extrusion temperature", GH_ParamAccess.item, 205);
             pManager.AddNumberParameter("Retract", "re", "retract length", GH_ParamAccess.item, 2);
             pManager.AddIntegerParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, 0);
+            pManager.AddIntegerParameter("extType", "extType", "Extrusion type. Used for sorting by solvers. 0: shell (default), 1: infill", GH_ParamAccess.item, 0); 
             pManager.AddTextParameter("GcodeInjection", "gInj", "gcode to inject before operation", GH_ParamAccess.list, "");
         }
 
@@ -59,7 +60,8 @@ namespace Vespidae.Ops
             double ext = 0;
             double temp = 0;
             double retract = 0; 
-            int tool = 0; 
+            int tool = 0;
+            int extType = 0; 
 
             if (!DA.GetDataList("Curve", crv)) return;
 
@@ -67,12 +69,14 @@ namespace Vespidae.Ops
             DA.GetData("Speed", ref speed);
             DA.GetData("Temperature", ref temp);
             DA.GetData("ToolId", ref tool);
-            DA.GetData("Retract", ref retract); 
+            DA.GetData("Retract", ref retract);
+            DA.GetData("extType", ref extType); 
             DA.GetDataList("GcodeInjection", gInj);
+            
 
             var pol = ClipperTools.ConvertCurvesToPolylines(crv);
 
-            var actions = VespidaeTools.Operation.createExtrudeOps(pol, speed,retract, ext, temp, tool, gInj);
+            var actions = VespidaeTools.Operation.createExtrudeOps(pol, speed,retract, ext, temp, tool, extType, gInj);
 
             DA.SetDataList("VespObj", actions); 
             //ops.createActions();
