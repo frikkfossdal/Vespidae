@@ -29,7 +29,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("VESPMO", "VObj", "Vespidae action objects", GH_ParamAccess.list);
+            pManager.AddGenericParameter("actions", "VObj", "Vespidae action objects", GH_ParamAccess.list);
             pManager.AddTextParameter("header", "h", "optional gcode header", GH_ParamAccess.list, "");
             pManager.AddTextParameter("footer", "f", "optional gcode footer", GH_ParamAccess.list, ""); 
         }
@@ -54,7 +54,7 @@ namespace Vespidae
             List<String> header = new List<string>();
             List<String> footer = new List<string>();
 
-            if (!DA.GetDataList("VESPMO", actions)) return;
+            if (!DA.GetDataList("actions", actions)) return;
             DA.GetDataList("header", header);
             DA.GetDataList("footer", footer);
 
