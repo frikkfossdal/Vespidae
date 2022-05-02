@@ -234,7 +234,7 @@ namespace ClipperHelper
             return output;
         }
 
-        static public List<Polyline> contInfill(Polyline pol, double gap)
+        static public List<Polyline> contInfill(Polyline pol, double gap, Plane pln)
         {
             var output = new List<Polyline>();
             var bound = pol.BoundingBox;
@@ -257,7 +257,7 @@ namespace ClipperHelper
                 line.Add(i, max.Y, 0);
      
                 //check intersection
-                var intersectLines = ClipperTools.boolean(new List<Polyline> { line }, new List<Polyline> { pol }, Plane.WorldXY, 0.001, 1);
+                var intersectLines = ClipperTools.boolean(new List<Polyline> { line }, new List<Polyline> { pol }, pln, 0.001, 1);
 
                 if (intersectLines.Count != numIntersections)
                 {
@@ -289,14 +289,16 @@ namespace ClipperHelper
                 }
             }
 
-            
 
+  
             foreach (var s in solution2) {
                 var tempList = brepTools.flipInfillLines(s.Value);
-                
-                foreach (var p in tempList) {
+                var path = new Polyline();
+                foreach (var p in s.Value) {
+                    path.AddRange(p); 
+                }
 
-                } 
+                output.Add(path);
             }
 
             return output;
