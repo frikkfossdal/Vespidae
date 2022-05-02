@@ -436,7 +436,7 @@ So things are shaping up. Tomorrows todos:
 # 2804_2022 - infill 
 
 Some notes on making an infill generator:
-	- something happens everytime the number of intersections changes.
+	- something happens every time the number of intersections changes.
 	- think more about the discussion in [this thread](https://stackoverflow.com/questions/15668149/polygon-infill-algorithm). 
 	- [Evil mad scientist](https://wiki.evilmadscientist.com/Creating_filled_regions) has really good notes about hatching.
 	- [this](https://github.com/Tannz0rz/Mandoline) looks promising.
@@ -452,6 +452,15 @@ Ok so I redid the infill component and I think its really neat. Missing:
 
 It might make sense to have infill as a separate action. I'm putting this down as a todo note. 
 
-Explore how the infill component works together with the offset component. Infill should really be based on the inner of the offseted polygons. Not a big problem but annoying. Not really sure how this could be fixed though without having metadata. 
+Explore how the infill component works together with the offset component. Infill should really be based on the inner of the offset polygons. Not a big problem but annoying. Not really sure how this could be fixed though without having metadata. 
 
 Ok finally have sort of working grouping of infill. I'll document tomorrow. 
+
+# 2904_2022
+
+Quick note to self about the new infill function. I think its better if I change the dictionaries value type to List of polylines instead of *one* polyline that I just keep adding lines to. Or maybe not. I nearly worked it our with the current hack. Seems like this is dependent on the shape of the geometry. It needs some more work but I'm close. Here are some unsolved todos: 
+
+- Infill only accepts single polygon? Investigate. 
+- Fix flipping of polylines when linking clipped lines together. I think the solution lies in changing the data type as described above.
+- Fix additive solver. Its missing travel moves generation. Keep in mind the opportunity you have now that everything is organized onto neat layers. 
+- Test the gcode!

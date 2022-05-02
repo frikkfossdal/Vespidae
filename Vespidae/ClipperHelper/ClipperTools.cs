@@ -233,6 +233,7 @@ namespace ClipperHelper
             }
             return output;
         }
+
         static public List<Polyline> contInfill(Polyline pol, double gap)
         {
             var output = new List<Polyline>();
@@ -242,18 +243,18 @@ namespace ClipperHelper
 
             //solution dictionary
             var solution = new SortedDictionary<int, Polyline>();
+            var solution2 = new SortedDictionary<int, List<Polyline>>();
             int numIntersections = -10;
             int dictIndex = 0;
+            bool flip = true; 
 
             //iterate and create infill lines 
             for (double i = min.X; i <= max.X + gap; i += gap)
             {
-
                 //create line
                 var line = new Polyline();
                 line.Add(i, min.Y, 0);
                 line.Add(i, max.Y, 0);
-
      
                 //check intersection
                 var intersectLines = ClipperTools.boolean(new List<Polyline> { line }, new List<Polyline> { pol }, Plane.WorldXY, 0.001, 1);
@@ -262,21 +263,40 @@ namespace ClipperHelper
                 {
                     numIntersections = intersectLines.Count;
                     foreach (var p in intersectLines) {
-                        solution.Add(dictIndex++, p); 
+                        //solution.Add(dictIndex++, p);
+                        solution2.Add(dictIndex++, new List<Polyline> {p}); 
                     }
                 }
+
                 else {
-                    int reverseIndex = numIntersections; 
+                    int reverseIndex = numIntersections;
                     foreach (var p in intersectLines) {
-              
-                        solution[dictIndex - reverseIndex].AddRange(p); 
+                        solution2[dictIndex - reverseIndex].Add(p);
+                        //if (flip) {
+                             
+                        //    //solution[dictIndex - reverseIndex].AddRange(p);
+                            
+                        //    flip = false; 
+                        //}
+                        //else {
+                        //    //solution[dictIndex - reverseIndex].AddRange(p);
+                        //    solution2[dictIndex - reverseIndex].Add(p);
+                        //    flip = true; 
+                        //}
+
                         reverseIndex--; 
                     }
                 }
             }
 
-            foreach (var s in solution) {
-                output.Add(s.Value); 
+            
+
+            foreach (var s in solution2) {
+                var tempList = brepTools.flipInfillLines(s.Value);
+                
+                foreach (var p in tempList) {
+
+                } 
             }
 
             return output;
