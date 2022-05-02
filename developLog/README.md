@@ -488,6 +488,6 @@ Again grouping seems to be a reasonable thing to have in this setup. This will b
 
 Todays victory is the new infill component and putting it to use in a battery-ish-scenario. I think I understand more about what directions I should pull this in. More tomorrow. 
 
-![](.img/battery_infill_structure.webp)
+![](./img/battery_infill_structure.webp)
 
 
