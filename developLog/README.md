@@ -464,3 +464,30 @@ Quick note to self about the new infill function. I think its better if I change
 - Fix flipping of polylines when linking clipped lines together. I think the solution lies in changing the data type as described above.
 - Fix additive solver. Its missing travel moves generation. Keep in mind the opportunity you have now that everything is organized onto neat layers. 
 - Test the gcode!
+
+# 0204_2022
+
+Ok infill is finally working. Also added working offset. **Infill is missing a way to control infill angle**.
+
+![](./img/infill_working.webp)
+
+I did a quick test on clank. There still is something weird going on in my gcode. Its on the first move if its doing toolchange and the machine doest have toolchange. Add sensitity for this. 
+
+
+I need a way to separate different types of Extrusion-actions I think. I want the additive solver to be able to for example sort actions that are shells from actions that are infill. Ok I added a new enumeration to the VespidaeTool namespace. The Extrude Action class tags each action with a ExtudeType enumeration like `infill` or `shell`. 
+
+Again grouping seems to be a reasonable thing to have in this setup. This will be first thing to investigate once im out of implementation hell. 
+
+**TODOS:**
+
+- Option to ignore tool commands. Especially on the generic/move action component. 
+- Add keep original to offset curve component. 
+- Add fixed min value on infill component. If resolution is set to too low Rhino goes bonkers! 
+- direction based infill.
+- Fixed that darn additive solver. 
+
+Todays victory is the new infill component and putting it to use in a battery-ish-scenario. I think I understand more about what directions I should pull this in. More tomorrow. 
+
+![](.img/battery_infill_structure.webp)
+
+
