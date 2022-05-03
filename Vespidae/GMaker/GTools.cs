@@ -229,40 +229,17 @@ namespace VespidaeTools
     /// </summary>
     public static class Solve
     {
-        //generates a move between two actions 
-        private static Travel moveBetweenActions(Action prev, Action cur, int full_rh, double part_rh, int speed, bool partial)
-        {
-            var newMove = new Travel(speed, false, full_rh);
-            if (partial)
-            {
-                newMove.path.Add(prev.path.Last);
-                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, cur.path.First.Z + part_rh);
-                newMove.path.Add(cur.path.First.X, cur.path.First.Y, cur.path.First.Z + part_rh);
-                newMove.path.Add(cur.path.First);
-            }
-            else
-            {
-                newMove.path.Add(prev.path.Last);
-                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
-                newMove.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
-                newMove.path.Add(cur.path.First);
-            }
-            return newMove;
-        }
-
-        private static Travel makeToolchange(Action prev, Action cur, int full_rh, int speed)
-        {
-            Travel t = new Travel(speed, true, full_rh);
-            t.tool = cur.tool;
-            t.path.Add(prev.path.Last);
-            t.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
-            t.path.Add(prev.path.Last.X, -50, full_rh);
-            t.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
-            t.path.Add(cur.path.First);
-            return t;
-        }
-
-        public static List<Action> GenerateProgram(List<Action> actions, int rh, int sp, bool pr)
+        /// <summary>
+        /// Generic solves for any sequence of Actions. Takes user defined sequences of Actions
+        /// and creates a complete Vespidae program with Travel Actions between each Action.
+        /// The solver does not sort or change the input sequence of Actions. 
+        /// </summary>
+        /// <param name="actions">actions to put in program</param>
+        /// <param name="rh">retract height </param>
+        /// <param name="sp">travel speed</param>
+        /// <param name="pr">enable partial retract where possible</param>
+        /// <returns></returns>
+        public static List<Action> GenericSolver(List<Action> actions, int rh, int sp, bool pr)
         {
             var newProgram = new List<Action>();
 
@@ -339,20 +316,17 @@ namespace VespidaeTools
             return newProgram;
         }
 
-
-        //OPTIMIZE by only looping once through layer dictionary 
         /// <summary>
         /// Solver for additive operations. Sorts actions by layer and by sort critera on each layer
         /// </summary>
         public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr, int srtType)
         {
             var newProgram = new List<Action>();
-            bool first = true; 
+            var prHeight = 1; 
 
             //STEP 1: Sort actions into dictionary with layer height as lookup index.
             //Note: currently uses first point of each actions path as referance value
             //move to separate function?
-            
             SortedDictionary<double, List<Action>> layerLookup = new SortedDictionary<double, List<Action>>();
 
             foreach (var action in actions) { 
@@ -368,29 +342,89 @@ namespace VespidaeTools
             }
 
             ///STEP 2: sort extrudeTypes e.g. shells then infill or visa versa
-            ///z
+
+            bool firstLayerFlag = true;
+            bool layerChangeFlag = false;
+
+            var prevAction = layerLookup.First().Value.First();
 
             //STEP 3: flatten dictionary and generate complete program
-            foreach (var layer in layerLookup) {
+            foreach (var layer in layerLookup)
+            {
 
-                //move to first point in layer.
-                if (first) {
-                    //var firstPoint = action.path.First;
-                    //var trvMove = new Travel(5000, false, 5);
-                    //trvMove.path.Add(new Point3d(firstPoint.X, firstPoint.Y, rh));
-                    //trvMove.path.Add(firstPoint);
-                    //newProgram.Add(trvMove);
+                if (firstLayerFlag)
+                {
+                    //move to first point in layer.
+                    var firstPoint = layer.Value.First().path.First;
+                    var trvMove = new Travel(sp, false, rh);
+                    trvMove.path.Add(new Point3d(firstPoint.X, firstPoint.Y, rh));
+                    trvMove.path.Add(firstPoint);
+                    newProgram.Add(trvMove);
+                }
+
+                if (layerChangeFlag) {
+                    //move between layers. We can use the last action
+                    newProgram.Add(moveBetweenActions(prevAction, layer.Value.First(), rh, prHeight, sp, false)); 
                 }
 
                 //execute all actions on layer with partial retract height 
-                foreach (var action in layer.Value) {
-                    newProgram.Add(action); 
-                }
-                //full retract before next layer 
-            }
+                foreach (var action in layer.Value)
+                {
+                    if (firstLayerFlag)
+                    {
+                        firstLayerFlag = false;
+                    }
+                    else if(layerChangeFlag){
+                        layerChangeFlag = false; 
+                    }
 
+                    else {
+                        newProgram.Add(moveBetweenActions(prevAction, action, rh, .5, sp, true));
+                    }
+
+                    newProgram.Add(action);
+                    prevAction = action;
+                }
+
+                //flag layer to layer move next round
+                layerChangeFlag = true; 
+            }
+            //final move of operation. Park tools? 
 
             return newProgram;
+        }
+
+        //generates a move between two actions 
+        private static Travel moveBetweenActions(Action prev, Action cur, int full_rh, double part_rh, int speed, bool partial)
+        {
+            var newMove = new Travel(speed, false, full_rh);
+            if (partial)
+            {
+                newMove.path.Add(prev.path.Last);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, cur.path.First.Z + part_rh);
+                newMove.path.Add(cur.path.First.X, cur.path.First.Y, cur.path.First.Z + part_rh);
+                newMove.path.Add(cur.path.First);
+            }
+            else
+            {
+                newMove.path.Add(prev.path.Last);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
+                newMove.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
+                newMove.path.Add(cur.path.First);
+            }
+            return newMove;
+        }
+
+        private static Travel makeToolchange(Action prev, Action cur, int full_rh, int speed)
+        {
+            Travel t = new Travel(speed, true, full_rh);
+            t.tool = cur.tool;
+            t.path.Add(prev.path.Last);
+            t.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
+            t.path.Add(prev.path.Last.X, -50, full_rh);
+            t.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
+            t.path.Add(cur.path.First);
+            return t;
         }
     }
 

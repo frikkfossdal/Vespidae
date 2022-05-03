@@ -60,7 +60,7 @@ namespace Vespidae.Solve
             DA.GetData("TravelSpeed", ref ts);
             DA.GetData("PartialRetract", ref pr); 
 
-            var output = VespidaeTools.Solve.GenerateProgram(actions, rh, ts, pr);
+            var output = VespidaeTools.Solve.GenericSolver(actions, rh, ts, pr);
 
             DA.SetDataList("OutputActions", output); 
         }
