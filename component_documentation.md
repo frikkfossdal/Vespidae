@@ -36,10 +36,29 @@ _Actions-components converts sets of polylines into Vespidae-actions and tags th
 
 ## Action: Extrude
 
-*Creates ExtrudeActions that is tagged with relevant metadata.*  
+*Extrusion Action.*  
+
 - **crv(curve):** input curve 
-- **ex(extrusion)** extrusion flowrate multiplier. Extrusion amount is calculated by: `distance x 0.01 x ex` <br> 
-- **speed (speed)** - speed of move. Translates to `F_speed_` in gcode. **temp(temperature)** - extruder temperature. Translates to `S_temperature` in gcode. <br> **re (retract):** how much to retract the filament 
+- **ex(extrusion)** extrusion flowrate multiplier. Extrusion amount is calculated by: `distance x 0.01 x ex`  
+- **speed (speed)** - speed of move. Translates to `F_speed_` in gcode. **temp(temperature)** - extruder temperature. Translates to `S_temperature` in gcode. 
+- **re (retract):** how much to retract the filament between each operation. See notes for more detail. 
+
+### Notes
+
+Vespidae uses relative extrusion. Its important to "prepare" the filament of the relevant extruders before starting the actual programs. Specifically the filament position should be set to the same value as the retract value used in the Actions. Beeneth is a Extrude Action translated to gcode with *a retract value of 2*. 
+
+	;Action: extrusion
+	;extrudeType: shell
+	M109 205
+	G0 F1000
+	G0 E2
+	G0 X50 Y110 Z0 E0
+	G0 X70 Y110 Z0 E0.2
+	G0 X70 Y130 Z0 E0.2
+	G0 X50 Y130 Z0 E0.2
+	G0 X50 Y110 Z0 E0.2
+	G0 E-2
+	
 
 ## Action: Generic Move
 *General purpose movement actions.* 
@@ -64,7 +83,6 @@ Solvers are used to compute and derive programs (sequence of actions) from sets 
 
 Solvers are also used when converting Actions into gcode.
 
-
 ## Solver: Generic 
 Takes lists of actions and transforms them into a list of executable Actions, adding travel moves between each action. Setting up the sequence of the Actions (in what order they are executed in) is left to the user.  
 
@@ -87,6 +105,12 @@ Takes lists of actions and transforms them into a list of executable Actions, ad
 
 *outputs*
 
+### Notes
+Current sorting algorith. 
+
+1. Filter Extrude Actions into list
+2. Sort Extrude Actions into Dictionary with layerheight as Key. 
+3. 
 
 ## Solver Gcode
 *Takes lists of actions and converts all actions into a single gcode file.* <br><br> **Vobj (Vespidae Actions)** - Input actions to the solver. <br> **h (header)** - inject header gcode. <br> **f (footer)** - inject footer gcode.|
