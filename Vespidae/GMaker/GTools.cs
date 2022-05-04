@@ -15,8 +15,8 @@ namespace VespidaeTools
     }
 
     public enum extrudeTypes {
-        shell,
-        infill
+        shell = 0,
+        infill = 1
     }
 
     public static class Extension
@@ -321,15 +321,21 @@ namespace VespidaeTools
         /// </summary>
         public static List<Action> AdditiveSolver(List<Action> actions, int rh, int sp, bool pr, int srtType)
         {
+
+            ///hack. filter out all extrude actions.
+            var filteredActions = actions.Where(obj => obj.GetType() == typeof(Extrude)).Select(obj => obj as Extrude);
+            
+
+            //
             var newProgram = new List<Action>();
             var prHeight = 1; 
 
             //STEP 1: Sort actions into dictionary with layer height as lookup index.
             //Note: currently uses first point of each actions path as referance value
             //move to separate function?
-            SortedDictionary<double, List<Action>> layerLookup = new SortedDictionary<double, List<Action>>();
+            SortedDictionary<double, List<Extrude>> layerLookup = new SortedDictionary<double, List<Extrude>>();
 
-            foreach (var action in actions) { 
+            foreach (var action in filteredActions) { 
                 double index = action.path.First.Z;
                 if (layerLookup.ContainsKey(index))
                 {
@@ -337,38 +343,48 @@ namespace VespidaeTools
                 }
                 else
                 {
-                    layerLookup.Add(index, new List<Action> { action });
+                    layerLookup.Add(index, new List<Extrude> { action });
                 }
             }
 
-            ///STEP 2: sort extrudeTypes e.g. shells then infill or visa versa
+            //STEP 2: flatten dictionary and generate complete program
 
             bool firstLayerFlag = true;
             bool layerChangeFlag = false;
 
             var prevAction = layerLookup.First().Value.First();
 
-            //STEP 3: flatten dictionary and generate complete program
+
             foreach (var layer in layerLookup)
             {
+                ///first sort layer by tool then by extrusionType e.g shell->infill
+                var sortedLayer = layer.Value.OrderBy(l => l.tool).ThenBy(l => l.extType); 
 
                 if (firstLayerFlag)
                 {
                     //move to first point in layer.
-                    var firstPoint = layer.Value.First().path.First;
-                    var trvMove = new Travel(sp, false, rh);
+                    var firstPoint = sortedLayer.First().path.First;
+                    var trvMove = new Travel(sp, true, rh);
+                    trvMove.tool = sortedLayer.First().tool; 
                     trvMove.path.Add(new Point3d(firstPoint.X, firstPoint.Y, rh));
                     trvMove.path.Add(firstPoint);
                     newProgram.Add(trvMove);
                 }
 
                 if (layerChangeFlag) {
-                    //move between layers. We can use the last action
-                    newProgram.Add(moveBetweenActions(prevAction, layer.Value.First(), rh, prHeight, sp, false)); 
+                    //move between layers. Last action to first action on new layer
+                    if (prevAction.tool != sortedLayer.First().tool)
+                    {
+                        //perform toolchange
+                        newProgram.Add(makeToolchange(prevAction, sortedLayer.First(), rh, sp)); 
+                    }
+                    else {
+                        newProgram.Add(moveBetweenActions(prevAction, sortedLayer.First(), rh, prHeight, sp, false));
+                    }
                 }
 
                 //execute all actions on layer with partial retract height 
-                foreach (var action in layer.Value)
+                foreach (var action in sortedLayer)
                 {
                     if (firstLayerFlag)
                     {
@@ -379,7 +395,8 @@ namespace VespidaeTools
                     }
 
                     else {
-                        newProgram.Add(moveBetweenActions(prevAction, action, rh, .5, sp, true));
+                        if(prevAction.tool != action.tool) newProgram.Add(makeToolchange(prevAction, action, rh, sp));
+                        else newProgram.Add(moveBetweenActions(prevAction, action, rh, .5, sp, true));
                     }
 
                     newProgram.Add(action);
@@ -389,7 +406,8 @@ namespace VespidaeTools
                 //flag layer to layer move next round
                 layerChangeFlag = true; 
             }
-            //final move of operation. Park tools? 
+            //final move of operation. Park tools?
+
 
             return newProgram;
         }
