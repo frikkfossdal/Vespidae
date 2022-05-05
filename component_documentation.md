@@ -38,7 +38,7 @@ _Actions-components converts sets of polylines into Vespidae-actions and tags th
 
 *Extrusion Action.*  
 
-- **crv(curve):** input curve 
+- **crv(curve):** input curves to create Extrude Actions from. 
 - **ex(extrusion)** extrusion flowrate multiplier. Extrusion amount is calculated by: `distance x 0.01 x ex`  
 - **speed (speed)** - speed of move. Translates to `F_speed_` in gcode. **temp(temperature)** - extruder temperature. Translates to `S_temperature` in gcode. 
 - **re (retract):** how much to retract the filament between each operation. See notes for more detail. 
@@ -61,36 +61,47 @@ Vespidae uses relative extrusion. Its important to "prepare" the filament of the
 	
 
 ## Action: Generic Move
-*General purpose movement actions.* 
+*General purpose movement actions. Good starting point to get familiar withe Vespidae.* 
 
+*inputs:*
+- **crv (curve):** input curves to create Move Actions from. 
 - **s(speed)**  - speed of move. Translates to `F_speed_` in gcode. <br> 
 - **to (tool_id)**  - tool number to execute move with. Translates to `T_toolId_` 
 - **gInj (gcodeInjection)** - injects gcode prior to the move. The gcode is added when the action is translated to gcode in step 3.
-## Action: Z-pin
-*under development* - main idea: go to a specified point and extrude goo. 
+
+*outputs:*
+- **vobj (vespidae actions):** Input
 
 ## Sort Actions 
 
 *Sorts action according to input criteria. So far this includes sorting by x-y and z-directions + by tool number*
+
+*input:*
+
+
 - **actions** - actions to be sorted. 
 - **sort (sort type)** - Sorting options: 0: x-direction, 1: y-direction, 2: z-direction. 
 -  **flip**- flips the sorted list.| 
 
+*output:*
+
+- **vobj (Vespidae Actions):** sorted list of Actions. 
+
 # 3. Solve
 Solvers are used to compute and derive programs (sequence of actions) from sets of Actions. Specifically the solvers will loop through a sequence of Actions and generate Travel-Actions between each Actions. 
 
-**Add figure of *solving.***
+![](./img/Vespidae_diagrams_Solver.jpg)
 
 Solvers are also used when converting Actions into gcode.
 
 ## Solver: Generic 
-Takes lists of actions and transforms them into a list of executable Actions, adding travel moves between each action. Setting up the sequence of the Actions (in what order they are executed in) is left to the user.  
+Takes lists of actions and transforms them into a list of executable Actions, adding travel moves between each action. The output sequence of Actions is ordered in the same way as they were inputted. 
 
 *inputs:*
 - **Vobj (Vespidae Actions)** - Input actions to the solver. 
 -  **rh (retract height)** - Retract height between the moves. 
 -  **ts (travel speed)** - Travel speed between moves. 
--  **pr (partial retract)** - enables partial retract between Actions where possible[^the algorithm checks if the next Actions z-height is the same as the current Actions z-height. If yes, it will do a partial retract currently predefined to .2 mm.].
+-  **pr (partial retract)** - Enables partial retract between Actions where possible[^the algorithm checks if the next Actions z-height is the same as the current Actions z-height. If yes, it will do a partial retract currently predefined to .2 mm.].
 
 *outputs:*
 - **Vobj (Vespidae Actions)** - new list of actions that includes Travel-Actions between each original Action. 
