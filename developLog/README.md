@@ -2,9 +2,9 @@
 
 ## TODO BOARD
 
-- fix visualization arrows. Especially on smaller travel distances. See entry 0803_2022.
-- Add gcode injection to more action components
 - Make translation routines smarter (i.e check previous generated gcode for unecessary duplicates).
+- Make a chart of how Vespidae is structured (_UML chart?_)
+- Investigate how and why grouping of Actions.
 
 # Prior log lost in time
 
@@ -389,13 +389,13 @@ I also started looking into better visualization. This is really a mess in Grass
 
 # 2704_2022
 
-Today working on new solver component for additive operations. I'm also trying to rework some of the visualization that goes along with this. 
+Today working on new solver component for additive operations. I'm also trying to rework some of the visualization that goes along with this.
 
-First solver. I think I want to take all the actions, separate them into separate *layer-objects*, sort actions on each layer, then output everything as raw actions again. The way actions are designed right now they dont really have a layer height attribute. The reasoning here was that the Actions were designed to be paths that are non-planar. I'll ignore this for now and just use the first point on a actions path as reference. 
+First solver. I think I want to take all the actions, separate them into separate _layer-objects_, sort actions on each layer, then output everything as raw actions again. The way actions are designed right now they dont really have a layer height attribute. The reasoning here was that the Actions were designed to be paths that are non-planar. I'll ignore this for now and just use the first point on a actions path as reference.
 
-This is neat. I'm using c# dictionary to sort actions onto layers: 
+This is neat. I'm using c# dictionary to sort actions onto layers:
 
-        foreach (var action in actions) { 
+        foreach (var action in actions) {
                 double index = action.path.First.Z;
                 if (layerLookup.ContainsKey(index))
                 {
@@ -407,62 +407,58 @@ This is neat. I'm using c# dictionary to sort actions onto layers:
                 }
             }
 
-From this we can look through each layer and sort the actions based on a user defined criteria. So for example: 
+From this we can look through each layer and sort the actions based on a user defined criteria. So for example:
 
       foreach (var layer in layerLookup) {
-                layer.Value.OrderBy(action => action.path.First.X).ToList(); 
+                layer.Value.OrderBy(action => action.path.First.X).ToList();
             }
 
-Neat! Final step is just to flatten the structure and run the list of actions through the old solver. 
+Neat! Final step is just to flatten the structure and run the list of actions through the old solver.
 
-On that note I want to do some improvements on the how I generate the travel moves when I make a program. Having actions sorted in lists based on layers enables me to simplify a couple of things. For example I can use partial retracts between the actions in each list. I think actually I'll just write a new "program generator" in the additive solver and implement changes on the old solver when I know more about how this looks. 
+On that note I want to do some improvements on the how I generate the travel moves when I make a program. Having actions sorted in lists based on layers enables me to simplify a couple of things. For example I can use partial retracts between the actions in each list. I think actually I'll just write a new "program generator" in the additive solver and implement changes on the old solver when I know more about how this looks.
 
-Again I think I need a higher level representation of programs. Its just so nice having things organized in like this case layers. I need to sketch this on paper. I'm not sure what the translation routines would look like. 
+Again I think I need a higher level representation of programs. Its just so nice having things organized in like this case layers. I need to sketch this on paper. I'm not sure what the translation routines would look like.
 
 ~~**NOTE:** The offset component doesnt work when multiple curves are inputed. Fix this.~~ **fixed**.
 
-Ok. I think the new solver is working. I'll try to do some thorough testing of it tomorrow. 
+Ok. I think the new solver is working. I'll try to do some thorough testing of it tomorrow.
 
 I think this is the first time I'm really experiencing how powerful this workflow can be. I think Jens has been trying to show me this all along but I didnt really get it.
 
 ![](./img/drawing_with_toolpaths.webp)
 
-So things are shaping up. Tomorrows todos: 
+So things are shaping up. Tomorrows todos:
 
-- sketch out what a grouping / program class would look like 
-- work on visualization. On this note write an email to jasper and ask him about toolpath css. 
-- See if you could make a simple closed polygon infill generator. 
+- sketch out what a grouping / program class would look like
+- work on visualization. On this note write an email to jasper and ask him about toolpath css.
+- See if you could make a simple closed polygon infill generator.
 
-# 2804_2022 - infill 
+# 2804_2022 - infill
 
-Some notes on making an infill generator:
-	- something happens every time the number of intersections changes.
-	- think more about the discussion in [this thread](https://stackoverflow.com/questions/15668149/polygon-infill-algorithm). 
-	- [Evil mad scientist](https://wiki.evilmadscientist.com/Creating_filled_regions) has really good notes about hatching.
-	- [this](https://github.com/Tannz0rz/Mandoline) looks promising.
+Some notes on making an infill generator: - something happens every time the number of intersections changes. - think more about the discussion in [this thread](https://stackoverflow.com/questions/15668149/polygon-infill-algorithm). - [Evil mad scientist](https://wiki.evilmadscientist.com/Creating_filled_regions) has really good notes about hatching. - [this](https://github.com/Tannz0rz/Mandoline) looks promising.
 
 Also some quick thoughts about organization. I think that all curve manipulation functions can live in what is now called ClipperTools. I'll see about renaming this sometime in the future. For now I'm not going to focus more about creating a complete slicing scheme. For Vinhs case I think its more interesting to create the individual building blocks of a slicer and offer them as components.
 
-Ok so I redid the infill component and I think its really neat. Missing: 
+Ok so I redid the infill component and I think its really neat. Missing:
 
-- Control direction of infill (with a vector?). 
-- Prettify the code. I dont like that I need to redeclare the polygons as lists to be able to use the static clipper functions. 
-- I need to enable polygon clipping on the indside of infill polygons. Not sure what this interaction looks like. 
-- Connect the polygons! 
+- Control direction of infill (with a vector?).
+- Prettify the code. I dont like that I need to redeclare the polygons as lists to be able to use the static clipper functions.
+- I need to enable polygon clipping on the indside of infill polygons. Not sure what this interaction looks like.
+- Connect the polygons!
 
-It might make sense to have infill as a separate action. I'm putting this down as a todo note. 
+It might make sense to have infill as a separate action. I'm putting this down as a todo note.
 
-Explore how the infill component works together with the offset component. Infill should really be based on the inner of the offset polygons. Not a big problem but annoying. Not really sure how this could be fixed though without having metadata. 
+Explore how the infill component works together with the offset component. Infill should really be based on the inner of the offset polygons. Not a big problem but annoying. Not really sure how this could be fixed though without having metadata.
 
-Ok finally have sort of working grouping of infill. I'll document tomorrow. 
+Ok finally have sort of working grouping of infill. I'll document tomorrow.
 
 # 2904_2022
 
-Quick note to self about the new infill function. I think its better if I change the dictionaries value type to List of polylines instead of *one* polyline that I just keep adding lines to. Or maybe not. I nearly worked it our with the current hack. Seems like this is dependent on the shape of the geometry. It needs some more work but I'm close. Here are some unsolved todos: 
+Quick note to self about the new infill function. I think its better if I change the dictionaries value type to List of polylines instead of _one_ polyline that I just keep adding lines to. Or maybe not. I nearly worked it our with the current hack. Seems like this is dependent on the shape of the geometry. It needs some more work but I'm close. Here are some unsolved todos:
 
-- Infill only accepts single polygon? Investigate. 
+- Infill only accepts single polygon? Investigate.
 - Fix flipping of polylines when linking clipped lines together. I think the solution lies in changing the data type as described above.
-- Fix additive solver. Its missing travel moves generation. Keep in mind the opportunity you have now that everything is organized onto neat layers. 
+- Fix additive solver. Its missing travel moves generation. Keep in mind the opportunity you have now that everything is organized onto neat layers.
 - Test the gcode!
 
 # 0204_2022
@@ -471,23 +467,36 @@ Ok infill is finally working. Also added working offset. **Infill is missing a w
 
 ![](./img/infill_working.webp)
 
-I did a quick test on clank. There still is something weird going on in my gcode. Its on the first move if its doing toolchange and the machine doest have toolchange. Add sensitity for this. 
+I did a quick test on clank. There still is something weird going on in my gcode. Its on the first move if its doing toolchange and the machine doest have toolchange. Add sensitity for this.
 
+I need a way to separate different types of Extrusion-actions I think. I want the additive solver to be able to for example sort actions that are shells from actions that are infill. Ok I added a new enumeration to the VespidaeTool namespace. The Extrude Action class tags each action with a ExtudeType enumeration like `infill` or `shell`.
 
-I need a way to separate different types of Extrusion-actions I think. I want the additive solver to be able to for example sort actions that are shells from actions that are infill. Ok I added a new enumeration to the VespidaeTool namespace. The Extrude Action class tags each action with a ExtudeType enumeration like `infill` or `shell`. 
-
-Again grouping seems to be a reasonable thing to have in this setup. This will be first thing to investigate once im out of implementation hell. 
+Again grouping seems to be a reasonable thing to have in this setup. This will be first thing to investigate once im out of implementation hell.
 
 **TODOS:**
 
-- Option to ignore tool commands. Especially on the generic/move action component. 
-- Add keep original to offset curve component. 
-- Add fixed min value on infill component. If resolution is set to too low Rhino goes bonkers! 
+- Option to ignore tool commands. Especially on the generic/move action component.
+- Add keep original to offset curve component.
+- Add fixed min value on infill component. If resolution is set to too low Rhino goes bonkers!
 - direction based infill.
-- Fixed that darn additive solver. 
+- Fixed that darn additive solver.
 
-Todays victory is the new infill component and putting it to use in a battery-ish-scenario. I think I understand more about what directions I should pull this in. More tomorrow. 
+Todays victory is the new infill component and putting it to use in a battery-ish-scenario. I think I understand more about what directions I should pull this in. More tomorrow.
 
 ![](./img/battery_infill_structure.webp)
 
+# 0405_2022
 
+Worked out the final bugs in the additve solver today. Learned a lot about linq queries. They are really neat. For example here is me filtering a layer first by tool then by what type of extrusion operation (wipe, shell, infill, etc):
+
+`var sortedLayer = layer.Value.OrderBy(l => l.tool).ThenBy(l => l.extType);`
+
+Here is another linq function for retrieving objects of specific actioin type and selecting that type (this sets the `var sortedLayer` to be of type `Extrude`).
+
+`var filteredActions = actions.Where(obj => obj.GetType() == typeof(Extrude)).Select(obj => obj as Extrude);`
+
+I did a couple of test run on the Clank and I feel tool swapping and ordering is pretty consisten now. I havent tried it with real extrusion but I think it should hold up. Hopefully doing a run on that tomorrow.
+
+Hopefully this should cover most of the concerns that Vinh raised last round. I think the next big moves would be to implement some way to group Actions together and have a solver that is sensitive to this. I'm adding this to the big to do.
+
+A take away so far in this project is how important control of ordering is. The new solver does some of these automatic and I'm curious about how much of this control Vinh wants to take back. On top of ordering, visualizing the order and make it understandable is important. I dont think I'm handling this in a really good way yet, but so far using grasshoppers list component together with vespidaes expose action component seems to do the trick.
