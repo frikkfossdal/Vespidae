@@ -31,8 +31,9 @@ namespace Vespidae
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("curve", "crv", "closed polygon to be filled", GH_ParamAccess.list);
-            pManager.AddNumberParameter("density", "den", "infill density", GH_ParamAccess.item, 1.0);
-            pManager.AddNumberParameter("offset", "off", "infill offset", GH_ParamAccess.item, 0.2); 
+            pManager.AddNumberParameter("density", "den", "infill density. Hard limit on 0.05", GH_ParamAccess.item, 1.0);
+            pManager.AddNumberParameter("offset", "off", "infill offset", GH_ParamAccess.item, 0.2);
+            pManager.AddNumberParameter("infillAngle", "ang", "direciion angle of infill lines. Default value: 0", GH_ParamAccess.item,0);
         }
 
         /// <summary>
@@ -52,11 +53,18 @@ namespace Vespidae
         {
             var inputCurves = new List<Curve>();
             double density = 0;
-            double offset = 0; 
+            double offset = 0;
+            double angle = 0; 
 
             if (!DA.GetDataList("curve", inputCurves)) return;
             DA.GetData("density", ref density);
             DA.GetData("offset", ref offset);
+            DA.GetData("infillAngle", ref angle); 
+
+            //sanity check on input density to stop infinite computation
+            if (density < 0.05) {
+                density = 0.05; 
+            }
 
             var outputCurves = new List<Polyline>();
 
@@ -73,7 +81,7 @@ namespace Vespidae
 
                         ///create infill lines.
                         ///This is feels hacky right now. Am I sure that infillPol[0] always exists? 
-                        outputCurves.AddRange(ClipperHelper.Infill.contInfill(infillPol[0] ,density, pln)); 
+                        outputCurves.AddRange(ClipperHelper.Infill.contInfill(infillPol[0] ,density,angle, pln)); 
                     }  
                 }
             }

@@ -234,30 +234,49 @@ namespace ClipperHelper
             return output;
         }
 
-        static public List<Polyline> contInfill(Polyline pol, double gap, Plane pln)
+        /// <summary>
+        /// Generates infill lines on closed polygons.
+        /// </summary>
+        /// <param name="pol">closed polyline to be infilled</param>
+        /// <param name="gap">distance between infill lines</param>
+        /// <param name="angle">direction angle in degrees of infill lines. </param>
+        /// <param name="pln">output plane.</param>
+        /// <returns></returns>
+        static public List<Polyline> contInfill(Polyline pol, double gap, double angle, Plane pln)
         {
             var output = new List<Polyline>();
             var bound = pol.BoundingBox;
-            var min = bound.Min;
-            var max = bound.Max;
+
+            //convert from degree to radians
+            double rad = RhinoMath.ToRadians(angle);
+
+            //get length of polygon bounding box diagonal
+            double length = bound.Diagonal.Length; 
 
             //solution dictionary
-            var solution = new SortedDictionary<int, Polyline>();
+            //var solution = new SortedDictionary<int, Polyline>();
             var solution2 = new SortedDictionary<int, List<Polyline>>();
             int numIntersections = -10;
             int dictIndex = 0;
             bool flip = true; 
 
             //iterate and create infill lines 
-            for (double i = min.X; i <= max.X + gap; i += gap)
+            for (double i = -length/2; i <= length+ gap; i += gap)
             {
                 //create line
-                var line = new Polyline();
-                line.Add(i, min.Y, 0);
-                line.Add(i, max.Y, 0);
-     
+                //var line = new Polyline();
+                //line.Add(i, min.Y, 0);
+                //line.Add(i, max.Y, 0);
+
+                var newLine = new Polyline();
+                newLine.Add(bound.Center.X + i, bound.Center.Y + length / 2, bound.Center.Z);
+                newLine.Add(bound.Center.X + i, bound.Center.Y - length / 2, bound.Center.Z);
+                var tr = Rhino.Geometry.Transform.Rotation(rad, bound.Center);
+                newLine.Transform(tr);
+                
+
                 //check intersection
-                var intersectLines = ClipperTools.boolean(new List<Polyline> { line }, new List<Polyline> { pol }, pln, 0.001, 1);
+                var intersectLines = ClipperTools.boolean(new List<Polyline> { newLine }, new List<Polyline> { pol }, pln, 0.001, 1);
 
                 if (intersectLines.Count != numIntersections)
                 {
