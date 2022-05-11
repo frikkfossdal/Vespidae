@@ -292,7 +292,6 @@ namespace VespidaeTools
                         Travel m = moveBetweenActions(prevAct, act, rh, partial_rh, sp, false);
                         newProgram.Add(m);
                     }
-
                     else
                     {
                         var tm = makeToolchange(prevAct, act, rh, sp);
@@ -324,7 +323,7 @@ namespace VespidaeTools
 
             ///hack. filter out all extrude actions.
             var filteredActions = actions.Where(obj => obj.GetType() == typeof(Extrude)).Select(obj => obj as Extrude);
-            
+          
 
             //
             var newProgram = new List<Action>();
@@ -359,6 +358,8 @@ namespace VespidaeTools
             {
                 ///first sort layer by tool then by extrusionType e.g shell->infill
                 var sortedLayer = layer.Value.OrderBy(l => l.tool).ThenBy(l => l.extType); 
+
+                //sort by x y
 
                 if (firstLayerFlag)
                 {
@@ -508,6 +509,9 @@ namespace VespidaeTools
         }
     }
 
+    /// <summary>
+    /// Creates Action object for generic moves. Good for experienting with generic motion. 
+    /// </summary>
     public class Move : Action
     {
         public Move(Polyline p, int s, int to, List<string> inj)
@@ -543,7 +547,9 @@ namespace VespidaeTools
             return translation;
         }
     }
-
+    /// <summary>
+    /// Creates Action object for extrusion operations. 
+    /// </summary>
     public class Extrude : Action
     {
         public double ext;
