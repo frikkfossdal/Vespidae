@@ -391,7 +391,7 @@ I also started looking into better visualization. This is really a mess in Grass
 
 Today working on new solver component for additive operations. I'm also trying to rework some of the visualization that goes along with this.
 
-First solver. I think I want to take all the actions, separate them into separate _layer-objects_, sort actions on each layer, then output everything as raw actions again. The way actions are designed right now they dont really have a layer height attribute. The reasoning here was that the Actions were designed to be paths that are non-planar. I'll ignore this for now and just use the first point on a actions path as reference.
+First solver. I think I want to take all the actions, separate them into separate _layer-objects_, sort actions on each layer, then output everything as raw actions again. The way actions are designed right now they dont really have a layer height attribute. The reasoning here was that the Actions were designed to be paths that are non-planar. I'll ignore this for now and just use the first point on an actions path as reference.
 
 This is neat. I'm using c# dictionary to sort actions onto layers:
 
@@ -500,3 +500,10 @@ I did a couple of test run on the Clank and I feel tool swapping and ordering is
 Hopefully this should cover most of the concerns that Vinh raised last round. I think the next big moves would be to implement some way to group Actions together and have a solver that is sensitive to this. I'm adding this to the big to do.
 
 A take away so far in this project is how important control of ordering is. The new solver does some of these automatic and I'm curious about how much of this control Vinh wants to take back. On top of ordering, visualizing the order and make it understandable is important. I dont think I'm handling this in a really good way yet, but so far using grasshoppers list component together with vespidaes expose action component seems to do the trick.
+
+# 1105_2022
+
+Implemented angle based infill. General gist of it is to rotate the diagonal line of a polygons bounding box and copy it at a given interval. I think this should cover most cases. For more documentation see the code. 
+
+Infill is missing some way of handling polygons within polygons. I can rely on the Clipper library to handle inner outer polygons.
+
