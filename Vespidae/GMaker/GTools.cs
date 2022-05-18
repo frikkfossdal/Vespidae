@@ -307,10 +307,10 @@ namespace VespidaeTools
             }
 
             //exit move
-            //var lm = new Travel(6000, false);
-            ////lm.path.Add(prevAct.path.Last);
-            //lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh);
-            //newProgram.Add(lm);
+            var lm = new Travel(6000, false, rh);
+            lm.path.Add(prevAct.path.Last);
+            lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh);
+            newProgram.Add(lm);
 
             return newProgram;
         }
