@@ -5,9 +5,10 @@ using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using GrasshopperAsyncComponent;
-
-
-
+using WebSocketSharp;
+using System.Text;
+using VespidaeTools;
+using Newtonsoft.Json; 
 
 namespace Vespidae.Coms
 {
@@ -25,7 +26,9 @@ namespace Vespidae.Coms
             "UNDER DEVELOPMENT",
             "Vespidae", "4.Coms")
         {
+            
             BaseWorker = new PrimeCalculatorWorker();
+   
         }
 
         /// <summary>
@@ -35,7 +38,7 @@ namespace Vespidae.Coms
         {
             pManager.AddIntegerParameter("N", "N", "Which n-th prime number. Minimum 1, maximum one million. Take care, it can burn your CPU.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Cancel", "cnl", "cancel current operation", GH_ParamAccess.item,false);
-
+            pManager.AddGenericParameter("Actions", "VObj", "Actions to be serialized and sent", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -71,20 +74,37 @@ namespace Vespidae.Coms
 
     }
 
-    public class PrimeCalculatorWorker : WorkerInstance
+    public class PrimeCalculatorWorker: WorkerInstance
     {
         int TheNthPrime { get; set; } = 100;
         long ThePrime { get; set; } = -1;
+        List<VespidaeTools.Action> actions { get; set; }
+
+
+
 
         public PrimeCalculatorWorker() : base(null) { }
 
-        public override void DoWork(Action<string, double> ReportProgress, Action Done)
+        public override void DoWork(Action<string, double> ReportProgress, System.Action Done)
         {
             // 👉 Checking for cancellation!
             if (CancellationToken.IsCancellationRequested) { return; }
 
             int count = 0;
             long a = 2;
+
+            var ws = new WebSocket("ws://localhost:8080");
+            ws.Connect();
+
+            string message = JsonConvert.SerializeObject(actions);
+            ws.Send(message); 
+                
+            //foreach (var act in actions) {
+            //    if (CancellationToken.IsCancellationRequested) { return; }
+                
+            //    //tNewtonsoft.Json.JsonSerializer
+            //    ws.Send(message); 
+            //}
 
             // Thanks Steak Overflow (TM) https://stackoverflow.com/a/13001749/
             while (count < TheNthPrime)
@@ -106,7 +126,7 @@ namespace Vespidae.Coms
                     }
                     b++;
                 }
-
+          
                 ReportProgress(Id, ((double)count) / TheNthPrime);
 
                 if (prime > 0)
@@ -115,8 +135,8 @@ namespace Vespidae.Coms
                 }
                 a++;
             }
-
             ThePrime = --a;
+            
             Done();
         }
 
@@ -124,12 +144,19 @@ namespace Vespidae.Coms
 
         public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
         {
+
             int _nthPrime = 100;
+            List<VespidaeTools.Action> _actions = new List<VespidaeTools.Action>();
+
             DA.GetData(0, ref _nthPrime);
+            DA.GetDataList(2, _actions); 
+            
             if (_nthPrime > 1000000) _nthPrime = 1000000;
             if (_nthPrime < 1) _nthPrime = 1;
 
             TheNthPrime = _nthPrime;
+            actions = _actions; 
+
         }
 
         public override void SetData(IGH_DataAccess DA)
