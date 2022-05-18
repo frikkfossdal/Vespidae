@@ -21,4 +21,6 @@ Wikipedia keeps a good overview of existing geometry kernels [here](https://en.w
 
 This is a reflection based no a conversation I had with Leo McElroy the other day where he made some interesting points as I was describing the research project. *Why cant we model battery geometry in CAD and create toolpaths from this model?* 
 
-# 
+# Tools for generating infills and tools for sorting seems to be the thing 
+
+Just a quick note about what seems to be the most useful features so far in Vespidae when working with Vinh. Number one, Vespidae needs to provide semi-automatic tools for creating toolpath curves. What I mean by semi-automatic is that these tools should automate and make it easy to for example create infill lines from polygons. I'm curious how important the infill patterns will become as we start with real batteries. 
