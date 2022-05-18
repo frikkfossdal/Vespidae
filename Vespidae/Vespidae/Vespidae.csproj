@@ -14,6 +14,9 @@
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="7.15.22039.13001" IncludeAssets="compile;build" />
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
+    <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
+    <PackageReference Include="System.Text.Json" Version="6.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
   
   <ItemGroup>
@@ -30,6 +33,9 @@
     <None Remove="Resources\brain.png" />
     <None Remove="Curve\" />
     <None Remove="4.Coms\" />
+    <None Remove="WebSocketSharp-netstandard" />
+    <None Remove="System.Text.Json" />
+    <None Remove="Newtonsoft.Json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="2. Ops\" />
