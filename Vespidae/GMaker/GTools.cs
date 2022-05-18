@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections; 
 using System.Collections.Generic;
 using Rhino.Geometry;
 using System.Linq;
@@ -14,8 +14,7 @@ namespace VespidaeTools
         zPin
     }
 
-    public enum extrudeTypes
-    {
+    public enum extrudeTypes {
         shell = 0,
         infill = 1
     }
@@ -162,7 +161,7 @@ namespace VespidaeTools
     public static class Operation
     {
         //static function for creating simple extrusion operation. Could be modified with enumeration of tool 
-        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, int extType, List<string> injection)
+        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, int extType,  List<string> injection)
         {
             List<Action> actions = new List<Action>();
 
@@ -171,14 +170,13 @@ namespace VespidaeTools
             {
                 tp = extrudeTypes.shell;
             }
-            else
-            {
-                tp = extrudeTypes.infill;
+            else {
+                tp = extrudeTypes.infill; 
             }
 
             foreach (var p in paths)
             {
-                actions.Add(new Extrude(p, temp, ext, speed, retract, tool, tp, injection));
+                actions.Add(new Extrude(p, temp, ext, speed, retract, tool, tp,  injection));
             }
             return actions;
         }
@@ -325,11 +323,13 @@ namespace VespidaeTools
 
             ///hack. filter out all extrude actions.
             var filteredActions = actions.Where(obj => obj.GetType() == typeof(Extrude)).Select(obj => obj as Extrude);
+          
 
+            //
             var newProgram = new List<Action>();
             var prHeight = 1; 
 
-            //STEP 1: Sort acions into dictionary with layer height as lookup index.
+            //STEP 1: Sort actions into dictionary with layer height as lookup index.
             //Note: currently uses first point of each actions path as referance value
             //move to separate function?
             SortedDictionary<double, List<Extrude>> layerLookup = new SortedDictionary<double, List<Extrude>>();
@@ -337,7 +337,6 @@ namespace VespidaeTools
             foreach (var action in filteredActions) { 
                 double index = action.path.First.Z;
                 if (layerLookup.ContainsKey(index))
-            {
                 {
                     layerLookup[index].Add(action);
                 }
@@ -375,16 +374,14 @@ namespace VespidaeTools
 
                 if (layerChangeFlag) {
                     //move between layers. Last action to first action on new layer
-                    if (prevAction.t
-                {
-                    //move between layers. Last action to first action on new layer
                     if (prevAction.tool != sortedLayer.First().tool)
                     {
                         //perform toolchange
-                        newProgram.Add(makeToolchange(prevAction, sortedLayer.First(), rh, sp));
+                        newProgram.Add(makeToolchange(prevAction, sortedLayer.First(), rh, sp)); 
                     }
-                    else
-                   
+                    else {
+                        newProgram.Add(moveBetweenActions(prevAction, sortedLayer.First(), rh, prHeight, sp, false));
+                    }
                 }
 
                 //execute all actions on layer with partial retract height 
@@ -396,14 +393,12 @@ namespace VespidaeTools
                     }
                     else if(layerChangeFlag){
                         layerChangeFlag = false; 
-                    } 
-                    
-
                     }
 
-                    else
-                    {
-                        if 
+                    else {
+                        if(prevAction.tool != action.tool) newProgram.Add(makeToolchange(prevAction, action, rh, sp));
+                        else newProgram.Add(moveBetweenActions(prevAction, action, rh, .5, sp, true));
+                    }
 
                     newProgram.Add(action);
                     prevAction = action;
@@ -412,7 +407,7 @@ namespace VespidaeTools
                 //flag layer to layer move next round
                 layerChangeFlag = true; 
             }
-            //final move of operation. ark tools?
+            //final move of operation. Park tools?
 
 
             return newProgram;
@@ -562,7 +557,7 @@ namespace VespidaeTools
         public double retract;
         public extrudeTypes extType; 
 
-        public Extrude(Polyline p, duble t, double e, int s, double r, int to, extrudeTypes _extType, List<string> inj)
+        public Extrude(Polyline p, double t, double e, int s, double r, int to, extrudeTypes _extType, List<string> inj)
         {
             path = p;
             ext = e;
