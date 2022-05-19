@@ -507,3 +507,17 @@ Implemented angle based infill. General gist of it is to rotate the diagonal lin
 
 Infill is missing some way of handling polygons within polygons. I can rely on the Clipper library to handle inner outer polygons.
 
+# 1905_2022
+
+Today I want to make the infill component sensitive to inside/outside polygons. Some quick testing with the already implemented boolean component in Vespidae basically yields what I'm after: 
+
+![](./img/infill_with_clipper_layer.png)
+
+So its just a matter of how I stack up the inputted polylines to the actual clipper pipeline. Shoot! On that note I first have to fix my offsetting function. I knew this was coming. Alright for now I can hack this and then fix real problem. The infill component will basically work like this: 
+
+	-> offset inputted polygons with inside/outside sensitivity \
+	//this part will break if there are two many layers in terms of inside/outside polygons\
+	-> perform cliping with infill lines as clipping subject \
+	-> loop through result (all clipped lines) and connect where possible\
+
+ok I ended up trying to fix offsetting. Recursion is hard. I'm close to a working solution but I have to keep at it for a while longer. I'm out of time for today but will try to wrap up later / tomorrow. I'm branching this implementation to keep the stable version running. 
