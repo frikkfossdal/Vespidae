@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Rhino; 
+using Rhino;
 using Rhino.Geometry;
 using ClipperLib;
 using System.Linq;
@@ -22,7 +22,8 @@ namespace ClipperHelper
             {
                 return false;
             }
-            if (!polylineCurve.TryGetPolyline(out pl)) {
+            if (!polylineCurve.TryGetPolyline(out pl))
+            {
                 return false;
             }
 
@@ -47,24 +48,28 @@ namespace ClipperHelper
         }
 
         //perform boolean operation on curves 
-        public static List<Polyline> boolean(IEnumerable<Polyline> A, IEnumerable<Polyline> B, Plane pln, double tolerance, int type) {
+        public static List<Polyline> boolean(IEnumerable<Polyline> A, IEnumerable<Polyline> B, Plane pln, double tolerance, int type)
+        {
             List<Polyline> result = new List<Polyline>();
 
             var clip = new Clipper();
             var polyfilltype = PolyFillType.pftEvenOdd;
 
-            foreach (var plA in A) {
+            foreach (var plA in A)
+            {
                 clip.AddPath(ToPath2d(plA, tolerance), PolyType.ptSubject, plA.IsClosed);
             }
 
-            foreach (var plB in B) {
+            foreach (var plB in B)
+            {
                 clip.AddPath(ToPath2d(plB, tolerance), PolyType.ptClip, true);
             }
 
             PolyTree polytree = new PolyTree();
             var ctype = new ClipType();
 
-            switch (type) {
+            switch (type)
+            {
                 case 0:
                     ctype = ClipType.ctDifference;
                     break;
@@ -83,8 +88,10 @@ namespace ClipperHelper
 
             var output = new List<Polyline>();
 
-            foreach (var pn in polytree.Iterate()) {
-                if (pn.Contour.Count > 1) {
+            foreach (var pn in polytree.Iterate())
+            {
+                if (pn.Contour.Count > 1)
+                {
                     output.Add(ToPolyline(pn.Contour, pln, tolerance, !pn.IsOpen));
                 }
             }
@@ -114,24 +121,76 @@ namespace ClipperHelper
 
             foreach (Polyline poly in polysToOffset)
             {
-                if (poly.IsClosed) {
+                if (poly.IsClosed)
+                {
                     clipOfs.AddPath(ToPath2d(poly, tolerance), JoinType.jtRound, EndType.etClosedLine);
                 }
-                else {
+                else
+                {
                     clipOfs.AddPath(ToPath2d(poly, tolerance), JoinType.jtRound, EndType.etOpenRound);
                 }
             }
 
             PolyTree polytree = new PolyTree();
-
             double delta = distance;
-            for (int i = 0; i < amount; i++) {
+
+            clipOfs.Execute(ref polytree, delta / tolerance);
+
+            for (int i = 0; i < amount; i++)
+            {
                 clipOfs.Execute(ref polytree, delta / tolerance);
-                output.AddRange(extractSolution(polytree, pln, tolerance));
+                output.AddRange(outerFunc(polytree,amount));
                 delta += distance;
-            }
+            }   
 
             return output;
+        }
+
+        public static List<Polyline> outerFunc(PolyNode n, int amount )
+        {
+            int index = 0;
+            var flatSolution = new List<Polyline>();
+            var solution = new Dictionary<int, List<Polyline>>();
+            /// we loop through all outer "shells" run recursive function
+            /// on all "sub-childs"
+            foreach (var cn in n.Childs)
+            {
+                Rhino.RhinoApp.WriteLine($"new list: {index}");
+                solution[index] = new List<Polyline>();
+
+                iteratev2(cn, 0, solution[index], 1, false);
+                index++;
+            }
+            foreach (var group in solution)
+            {
+                foreach (var poly in group.Value)
+                {
+                    flatSolution.Add(poly);
+                }
+            }
+            return flatSolution;
+        }
+
+        public static void iteratev2(PolyNode n, int depth, List<Polyline> lst, int goalDepth, bool bigSmall)
+        {
+            if (depth == goalDepth)
+            {
+                lst.Add(ToPolyline(n.Contour, Plane.WorldXY, .001, true));
+                if (bigSmall)
+                {
+                    goalDepth = depth + 3;
+                }
+                else {
+                    goalDepth = depth + 1; 
+                }
+                bigSmall = !bigSmall;
+            }
+
+            foreach (var pn in n.Childs)
+            {
+                Rhino.RhinoApp.WriteLine($"new level: {depth}");
+                iteratev2(pn, depth+1, lst, goalDepth, bigSmall);
+            }
         }
 
         //borrowed from original grasshopper clipper lib 
@@ -147,7 +206,10 @@ namespace ClipperHelper
             }
         }
 
-        public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance, Plane pln) {
+
+
+        public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance, Plane pln)
+        {
             Rhino.RhinoApp.WriteLine(depth.ToString());
 
             var output = new List<Polyline>();
@@ -171,7 +233,8 @@ namespace ClipperHelper
         }
 
         //extracts polylines from a polytree. This should be sensitive to inside/outside ref slicerFriendliness 
-        private static List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance) {
+        private static List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance)
+        {
             List<Polyline> output = new List<Polyline>();
 
             return f_iterate(sol, 0, tolerance, pln);
@@ -195,9 +258,11 @@ namespace ClipperHelper
             return polyline;
         }
 
-        public static List<IntPoint> ToPath2d(this Polyline pl, double tolerance) {
+        public static List<IntPoint> ToPath2d(this Polyline pl, double tolerance)
+        {
             var path = new List<IntPoint>();
-            foreach (var pt in pl) {
+            foreach (var pt in pl)
+            {
                 path.Add(ToIntPoint2d(pt, tolerance));
             }
             return path;
@@ -215,9 +280,11 @@ namespace ClipperHelper
     /// polygons as input and outputs infill patterns. See documentation
     /// for more information
     /// </summary>
-    public static class Infill{
-        
-        static public List<Polyline> simpleInfill(Polyline pol, double gap) {
+    public static class Infill
+    {
+
+        static public List<Polyline> simpleInfill(Polyline pol, double gap)
+        {
             var output = new List<Polyline>();
             var bound = pol.BoundingBox;
             var min = bound.Min;
@@ -251,17 +318,17 @@ namespace ClipperHelper
             double rad = RhinoMath.ToRadians(angle);
 
             //get length of polygon bounding box diagonal
-            double length = bound.Diagonal.Length; 
+            double length = bound.Diagonal.Length;
 
             //solution dictionary
             //var solution = new SortedDictionary<int, Polyline>();
             var solution2 = new SortedDictionary<int, List<Polyline>>();
             int numIntersections = -10;
             int dictIndex = 0;
-            bool flip = true; 
+            bool flip = true;
 
             //iterate and create infill lines 
-            for (double i = -length/2; i <= length+ gap; i += gap)
+            for (double i = -length / 2; i <= length + gap; i += gap)
             {
                 //create line
                 //var line = new Polyline();
@@ -273,7 +340,7 @@ namespace ClipperHelper
                 newLine.Add(bound.Center.X + i, bound.Center.Y - length / 2, bound.Center.Z);
                 var tr = Rhino.Geometry.Transform.Rotation(rad, bound.Center);
                 newLine.Transform(tr);
-                
+
 
                 //check intersection
                 var intersectLines = ClipperTools.boolean(new List<Polyline> { newLine }, new List<Polyline> { pol }, pln, 0.001, 1);
@@ -281,20 +348,23 @@ namespace ClipperHelper
                 if (intersectLines.Count != numIntersections)
                 {
                     numIntersections = intersectLines.Count;
-                    foreach (var p in intersectLines) {
+                    foreach (var p in intersectLines)
+                    {
                         //solution.Add(dictIndex++, p);
-                        solution2.Add(dictIndex++, new List<Polyline> {p}); 
+                        solution2.Add(dictIndex++, new List<Polyline> { p });
                     }
                 }
 
-                else {
+                else
+                {
                     int reverseIndex = numIntersections;
-                    foreach (var p in intersectLines) {
+                    foreach (var p in intersectLines)
+                    {
                         solution2[dictIndex - reverseIndex].Add(p);
                         //if (flip) {
-                             
+
                         //    //solution[dictIndex - reverseIndex].AddRange(p);
-                            
+
                         //    flip = false; 
                         //}
                         //else {
@@ -303,18 +373,20 @@ namespace ClipperHelper
                         //    flip = true; 
                         //}
 
-                        reverseIndex--; 
+                        reverseIndex--;
                     }
                 }
             }
 
 
-  
-            foreach (var s in solution2) {
+
+            foreach (var s in solution2)
+            {
                 var tempList = brepTools.flipInfillLines(s.Value);
                 var path = new Polyline();
-                foreach (var p in s.Value) {
-                    path.AddRange(p); 
+                foreach (var p in s.Value)
+                {
+                    path.AddRange(p);
                 }
 
                 output.Add(path);
@@ -325,9 +397,11 @@ namespace ClipperHelper
 
     }
 
-    public static class brepTools {
+    public static class brepTools
+    {
 
-        private static double checkAngle(Vector3d check, Vector3d refVector) {
+        private static double checkAngle(Vector3d check, Vector3d refVector)
+        {
             check.IsPerpendicularTo(refVector);
             check.IsParallelTo(refVector);
             return 3;
@@ -335,37 +409,43 @@ namespace ClipperHelper
 
 
         //flips every second polyline in list
-        public static List<Polyline> flipInfillLines(List<Polyline> polys) {
+        public static List<Polyline> flipInfillLines(List<Polyline> polys)
+        {
             var shouldFlip = false;
 
-            foreach (var poly in polys) {
+            foreach (var poly in polys)
+            {
                 if (shouldFlip)
                 {
                     poly.Reverse();
                     shouldFlip = false;
                 }
-                else {
-                    shouldFlip = true; 
+                else
+                {
+                    shouldFlip = true;
                 }
             }
-            return polys; 
+            return polys;
         }
 
-        public static List<Polyline> sortPolys(List<Polyline> polys) {
-            return polys.OrderBy(p => p[0].X).ToList(); 
+        public static List<Polyline> sortPolys(List<Polyline> polys)
+        {
+            return polys.OrderBy(p => p[0].X).ToList();
         }
 
         //connects infillPolys. Needs more logic. I think...
         public static Polyline connectPolys(List<Polyline> polys)
         {
-            var output = new Polyline(); 
-            foreach (var poly in polys) {
-                foreach (var p in poly) {
-                    output.Add(p); 
+            var output = new Polyline();
+            foreach (var poly in polys)
+            {
+                foreach (var p in poly)
+                {
+                    output.Add(p);
                 }
             }
-            return output; 
+            return output;
         }
-            
+
     }
 }

@@ -75,13 +75,12 @@ namespace Vespidae
                     Plane pln; 
                     if(ClipperHelper.ClipperTools.ConvertCurveToPolyline(crv, out pol) && crv.TryGetPlane(out pln))
                     {
-                        
                         ///offset polygon shape.
                         var infillPol = ClipperHelper.ClipperTools.offset(new List<Polyline> { pol }, 1, pln, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
 
                         ///create infill lines.
                         ///This is feels hacky right now. Am I sure that infillPol[0] always exists? 
-                        outputCurves.AddRange(ClipperHelper.Infill.contInfill(infillPol[0] ,density,angle, pln)); 
+                        outputCurves.AddRange(ClipperHelper.Infill.contInfill(infillPol[0] , density,angle, pln)); 
                     }  
                 }
             }

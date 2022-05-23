@@ -273,7 +273,7 @@ The gcode upload should work on any other machine that uses the Duet3 as long as
 
 I have also started implementing a component that works asynchronously from the main ui thread using the [AsyncComponent](https://speckle.systems/blog/async-gh/) library. Right now this is only running the default example of calculating primes but I'm thinking I will circle back to this and try to use this to keep track of machine state and doing async communication with the machine in differnet ways.
 
-Next step is to implementvisualizers that takes _Action-type_ into account. I'm thinking that I will use arrow size and period to visulize different operations. I also want to play a bit with the different annotation tools in RhinoCommons and see if I can create anything useful. A cool idea here could be to for example group different operations together and tag them with operation specific meta-data. I think I have to play a bit around with this to get more ideas.
+Next step is to implement visualizers that takes _Action-type_ into account. I'm thinking that I will use arrow size and period to visulize different operations. I also want to play a bit with the different annotation tools in RhinoCommons and see if I can create anything useful. A cool idea here could be to for example group different operations together and tag them with operation specific meta-data. I think I have to play a bit around with this to get more ideas.
 
 Final note: I have to do something about arrow sizes on really short paths. This is super obvious on the partial retract travel moves. Could it be an idea to check line distance and use this to scale arrow size? Or maybe just drop it if the arrow size ends up being tiny? Also is it better to set the arrow in the middle of each vertical/lift move?
 
@@ -506,4 +506,31 @@ A take away so far in this project is how important control of ordering is. The 
 Implemented angle based infill. General gist of it is to rotate the diagonal line of a polygons bounding box and copy it at a given interval. I think this should cover most cases. For more documentation see the code. 
 
 Infill is missing some way of handling polygons within polygons. I can rely on the Clipper library to handle inner outer polygons.
+
+# 1905_2022
+
+Today I want to make the infill component sensitive to inside/outside polygons. Some quick testing with the already implemented boolean component in Vespidae basically yields what I'm after: 
+
+![](./img/infill_with_clipper_layer.png)
+
+So its just a matter of how I stack up the inputted polylines to the actual clipper pipeline. Shoot! On that note I first have to fix my offsetting function. I knew this was coming. Alright for now I can hack this and then fix real problem. The infill component will basically work like this: 
+
+	-> offset inputted polygons with inside/outside sensitivity \
+	//this part will break if there are two many layers in terms of inside/outside polygons\
+	-> perform cliping with infill lines as clipping subject \
+	-> loop through result (all clipped lines) and connect where possible\
+
+ok I ended up trying to fix offsetting. Recursion is hard. I'm close to a working solution but I have to keep at it for a while longer. I'm out of time for today but will try to wrap up later / tomorrow. I'm branching this implementation to keep the stable version running. 
+
+# 2005_2022
+
+Finally think I understand the pattern I'm looking for when offsetting: 
+
+	1,2,5,6,9,10,13,14... 
+
+Let's test this. Yes! Finally in business! Finally out of recursion-hell! Celebrating with image below.
+
+![offset function finally working across any polygon depth](./img/offset_working_layers.png)
+
+Ok back to my actual problem. I need to extract all the polygons of the *final offset* that the offset function computes. I think I will go for a separate version of the original function to do this. On final offset loop I will store the computed polygons in a separate data object.
 
