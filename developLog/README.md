@@ -534,5 +534,3 @@ Let's test this. Yes! Finally in business! Finally out of recursion-hell! Celebr
 
 Ok back to my actual problem. I need to extract all the polygons of the *final offset* that the offset function computes. I think I will go for a separate version of the original function to do this. On final offset loop I will store the computed polygons in a separate data object.
 
-# Brage vs the people
- 
