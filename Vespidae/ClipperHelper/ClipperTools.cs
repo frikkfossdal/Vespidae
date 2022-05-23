@@ -134,19 +134,96 @@ namespace ClipperHelper
             PolyTree polytree = new PolyTree();
             double delta = distance;
 
-            clipOfs.Execute(ref polytree, delta / tolerance);
 
             for (int i = 0; i < amount; i++)
             {
                 clipOfs.Execute(ref polytree, delta / tolerance);
-                output.AddRange(outerFunc(polytree,amount));
+                output.AddRange(flattenDictionary(outerFunc(polytree)));
                 delta += distance;
-            }   
+            }
 
             return output;
         }
 
-        public static List<Polyline> outerFunc(PolyNode n, int amount )
+        /// <summary>
+        /// Special offset operation for creating infill offsets. Stores "inner" polygons in a separate list
+        /// that is useful when computing infill patterns.
+        /// </summary>
+        /// <param name="polysToOffset"></param>
+        /// <param name="amount"></param>
+        /// <param name="pln"></param>
+        /// <param name="distance"></param>
+        /// <param name="tolerance"></param>
+        /// <param name="finalOffset"></param>
+        /// <returns></returns>
+        public static Dictionary<int, List<Polyline>> offsetForInfill(IEnumerable<Polyline> polysToOffset, int amount, Plane pln, double distance, double tolerance, List<Polyline> finalOffset)
+        {
+            /*
+                    How do we handle not-closed polygons?
+
+                    see: http://www.angusj.com/delphi/clipper/documentation/Docs/Units/ClipperLib/Types/EndType.htm
+
+                    etClosedPolygon: Ends are joined using the JoinType value and the path filled as a polygon
+                    etClosedLine: Ends are joined using the JoinType value and the path filled as a polyline
+                    etOpenSquare: Ends are squared off and extended delta units
+                    etOpenRound: Ends are rounded off and extended delta units
+                    etOpenButt: Ends are squared off with no extension
+            */
+
+            List<Polyline> output = new List<Polyline>();
+            var outputDict = new Dictionary<int, List<Polyline>>();
+            ClipperOffset clipOfs = new ClipperOffset();
+
+            //keep height hack. Needs better logic
+
+            foreach (Polyline poly in polysToOffset)
+            {
+                if (poly.IsClosed)
+                {
+                    clipOfs.AddPath(ToPath2d(poly, tolerance), JoinType.jtRound, EndType.etClosedLine);
+                }
+                else
+                {
+                    clipOfs.AddPath(ToPath2d(poly, tolerance), JoinType.jtRound, EndType.etOpenRound);
+                }
+            }
+
+            PolyTree polytree = new PolyTree();
+            double delta = distance;
+
+            clipOfs.Execute(ref polytree, delta / tolerance);
+
+
+            for (int i = 0; i < amount; i++)
+            {
+                clipOfs.Execute(ref polytree, delta / tolerance);
+
+                //special check to extract final layer
+                if (i == amount - 1)
+                {
+                    outputDict = outerFunc(polytree);
+                }
+                //output.AddRange(outerFunc(polytree));
+                delta += distance;
+            }
+
+            return outputDict;
+        }
+
+        private static List<Polyline> flattenDictionary(Dictionary<int, List<Polyline>> dict)
+        {
+            var flatList = new List<Polyline>();
+            foreach (var group in dict)
+            {
+                foreach (var poly in group.Value)
+                {
+                    flatList.Add(poly);
+                }
+            }
+            return flatList;
+        }
+
+        public static Dictionary<int, List<Polyline>> outerFunc(PolyNode n)
         {
             int index = 0;
             var flatSolution = new List<Polyline>();
@@ -155,21 +232,14 @@ namespace ClipperHelper
             /// on all "sub-childs"
             foreach (var cn in n.Childs)
             {
-                Rhino.RhinoApp.WriteLine($"new list: {index}");
                 solution[index] = new List<Polyline>();
 
                 iterate(cn, 0, solution[index], 1, false);
 
                 index++;
             }
-            foreach (var group in solution)
-            {
-                foreach (var poly in group.Value)
-                {
-                    flatSolution.Add(poly);
-                }
-            }
-            return flatSolution;
+
+            return solution;
         }
 
         /// <summary>
@@ -190,8 +260,9 @@ namespace ClipperHelper
                 {
                     goalDepth = depth + 3;
                 }
-                else {
-                    goalDepth = depth + 1; 
+                else
+                {
+                    goalDepth = depth + 1;
                 }
                 bigSmall = !bigSmall;
             }
@@ -199,7 +270,20 @@ namespace ClipperHelper
             foreach (var pn in n.Childs)
             {
                 Rhino.RhinoApp.WriteLine($"new level: {depth}");
-                iterate(pn, depth+1, lst, goalDepth, bigSmall);
+                iterate(pn, depth + 1, lst, goalDepth, bigSmall);
+            }
+        }
+
+        //borrowed from original grasshopper clipper lib 
+        public static IEnumerable<PolyNode> Iterate(this PolyNode node)
+        {
+            yield return node;
+            foreach (var childNode in node.Childs)
+            {
+                foreach (var childNodeItem in childNode.Iterate())
+                {
+                    yield return childNodeItem;
+                }
             }
         }
 
@@ -245,7 +329,6 @@ namespace ClipperHelper
     /// </summary>
     public static class Infill
     {
-
         static public List<Polyline> simpleInfill(Polyline pol, double gap)
         {
             var output = new List<Polyline>();
@@ -272,10 +355,10 @@ namespace ClipperHelper
         /// <param name="angle">direction angle in degrees of infill lines. </param>
         /// <param name="pln">output plane.</param>
         /// <returns></returns>
-        static public List<Polyline> contInfill(Polyline pol, double gap, double angle, Plane pln)
+        static public List<Polyline> contInfill(List<Polyline> polys, double gap, double angle, Plane pln)
         {
             var output = new List<Polyline>();
-            var bound = pol.BoundingBox;
+            var bound = geometryTools.listBoundingBox(polys, Plane.WorldXY);
 
             //convert from degree to radians
             double rad = RhinoMath.ToRadians(angle);
@@ -290,23 +373,18 @@ namespace ClipperHelper
             int dictIndex = 0;
             bool flip = true;
 
-            //iterate and create infill lines 
+
+            //create infill lines
+            var infillLines = new List<Polyline>();
             for (double i = -length / 2; i <= length + gap; i += gap)
             {
-                //create line
-                //var line = new Polyline();
-                //line.Add(i, min.Y, 0);
-                //line.Add(i, max.Y, 0);
-
                 var newLine = new Polyline();
                 newLine.Add(bound.Center.X + i, bound.Center.Y + length / 2, bound.Center.Z);
                 newLine.Add(bound.Center.X + i, bound.Center.Y - length / 2, bound.Center.Z);
                 var tr = Rhino.Geometry.Transform.Rotation(rad, bound.Center);
                 newLine.Transform(tr);
 
-
-                //check intersection
-                var intersectLines = ClipperTools.boolean(new List<Polyline> { newLine }, new List<Polyline> { pol }, pln, 0.001, 1);
+                var intersectLines = ClipperTools.boolean(new List<Polyline> { newLine }, polys, pln, 0.001, 1);
 
                 if (intersectLines.Count != numIntersections)
                 {
@@ -317,35 +395,20 @@ namespace ClipperHelper
                         solution2.Add(dictIndex++, new List<Polyline> { p });
                     }
                 }
-
                 else
                 {
                     int reverseIndex = numIntersections;
                     foreach (var p in intersectLines)
                     {
                         solution2[dictIndex - reverseIndex].Add(p);
-                        //if (flip) {
-
-                        //    //solution[dictIndex - reverseIndex].AddRange(p);
-
-                        //    flip = false; 
-                        //}
-                        //else {
-                        //    //solution[dictIndex - reverseIndex].AddRange(p);
-                        //    solution2[dictIndex - reverseIndex].Add(p);
-                        //    flip = true; 
-                        //}
-
                         reverseIndex--;
                     }
                 }
             }
 
-
-
             foreach (var s in solution2)
             {
-                var tempList = brepTools.flipInfillLines(s.Value);
+                var tempList = geometryTools.flipInfillLines(s.Value);
                 var path = new Polyline();
                 foreach (var p in s.Value)
                 {
@@ -357,11 +420,33 @@ namespace ClipperHelper
 
             return output;
         }
-
     }
 
-    public static class brepTools
+
+    public static class geometryTools
     {
+        /// <summary>
+        /// Gets bounding box from sets of polylines. 
+        /// </summary>
+        /// <param name="polys"></param>
+        /// <returns></returns>
+        public static BoundingBox listBoundingBox(List<Polyline> polys, Plane p)
+        {
+            double minX = 99999.9999;
+            double maxX = -99999.9999;
+            double minY = 99999.9999;
+            double maxY = -99999.9999;
+
+            foreach (var pol in polys)
+            {
+                var bb = pol.BoundingBox;
+                if (bb.Min.X < minX) minX = bb.Min.X;
+                if (bb.Min.Y < minY) minY = bb.Min.Y;
+                if (bb.Max.X > maxX) maxX = bb.Max.X;
+                if (bb.Max.Y > maxY) maxY = bb.Max.Y;
+            }
+            return new BoundingBox(new Point3d(minX, minY, 0), new Point3d(maxX, maxY, p.OriginZ));
+        }
 
         private static double checkAngle(Vector3d check, Vector3d refVector)
         {
@@ -412,3 +497,4 @@ namespace ClipperHelper
 
     }
 }
+
