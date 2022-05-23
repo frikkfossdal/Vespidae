@@ -132,22 +132,21 @@ namespace ClipperHelper
             }
 
             PolyTree polytree = new PolyTree();
-
-            Rhino.RhinoApp.WriteLine("STARTING");
             double delta = distance;
+
+            clipOfs.Execute(ref polytree, delta / tolerance);
+
             for (int i = 0; i < amount; i++)
             {
                 clipOfs.Execute(ref polytree, delta / tolerance);
-                //output.AddRange(extractSolution(polytree, pln, tolerance));
-                //iteratev2(polytree, 0);
-                output.AddRange(outerFunc(polytree));
+                output.AddRange(outerFunc(polytree,amount));
                 delta += distance;
-            }
+            }   
 
             return output;
         }
 
-        public static List<Polyline> outerFunc(PolyNode n)
+        public static List<Polyline> outerFunc(PolyNode n, int amount )
         {
             int index = 0;
             var flatSolution = new List<Polyline>();
@@ -158,7 +157,8 @@ namespace ClipperHelper
             {
                 Rhino.RhinoApp.WriteLine($"new list: {index}");
                 solution[index] = new List<Polyline>();
-                iteratev2(cn, 0, solution[index], true);
+
+                iteratev2(cn, 0, solution[index], 1, false);
                 index++;
             }
             foreach (var group in solution)
@@ -171,22 +171,26 @@ namespace ClipperHelper
             return flatSolution;
         }
 
-        public static void iteratev2(PolyNode n, int depth, List<Polyline> lst, bool interest)
+        public static void iteratev2(PolyNode n, int depth, List<Polyline> lst, int goalDepth, bool bigSmall)
         {
-            int n_depth = depth + 1;
-            bool n_interest = interest; 
-            RhinoApp.WriteLine($"open: {n.IsHole}");
-            if (n.IsHole == n_interest) {
+            if (depth == goalDepth)
+            {
                 lst.Add(ToPolyline(n.Contour, Plane.WorldXY, .001, true));
-                n_interest = false; 
+                if (bigSmall)
+                {
+                    goalDepth = depth + 3;
+                }
+                else {
+                    goalDepth = depth + 1; 
+                }
+                bigSmall = !bigSmall;
             }
-            
+
             foreach (var pn in n.Childs)
             {
                 Rhino.RhinoApp.WriteLine($"new level: {depth}");
-                iteratev2(pn, n_depth, lst, n_interest);
+                iteratev2(pn, depth+1, lst, goalDepth, bigSmall);
             }
-
         }
 
         //borrowed from original grasshopper clipper lib 
