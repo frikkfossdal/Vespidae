@@ -534,3 +534,13 @@ Let's test this. Yes! Finally in business! Finally out of recursion-hell! Celebr
 
 Ok back to my actual problem. I need to extract all the polygons of the *final offset* that the offset function computes. I think I will go for a separate version of the original function to do this. On final offset loop I will store the computed polygons in a separate data object.
 
+# 2305_2022
+
+Made some big moves to get the infill coponent to work with "layered" polygons (polygons with polygons inside). It should work and be possible to use in real scenarious now but there are a few quirks I need to iron out. 
+
+![](./img/infill_with_layers.webp)
+
+**Problems I know about:** 
+
+- there is something weird going on in how clipped polylines are grouped into continous paths. I need to debug the data structure in the infill function to work this out. 
+- Its currently missing the logic to select number of shells and add these to the output. I'm not sure if I want to keep this on a separte shell-function.  
