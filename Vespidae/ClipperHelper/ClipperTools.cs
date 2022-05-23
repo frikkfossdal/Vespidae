@@ -158,7 +158,8 @@ namespace ClipperHelper
                 Rhino.RhinoApp.WriteLine($"new list: {index}");
                 solution[index] = new List<Polyline>();
 
-                iteratev2(cn, 0, solution[index], 1, false);
+                iterate(cn, 0, solution[index], 1, false);
+
                 index++;
             }
             foreach (var group in solution)
@@ -171,7 +172,16 @@ namespace ClipperHelper
             return flatSolution;
         }
 
-        public static void iteratev2(PolyNode n, int depth, List<Polyline> lst, int goalDepth, bool bigSmall)
+        /// <summary>
+        /// iterates recursively through a clipper nodetree and extracts offseted polygons
+        /// by depth with respect to inside/outside.
+        /// </summary>
+        /// <param name="n">top polynode of tree.</param>
+        /// <param name="depth">top depth. Usually set to 0.</param>
+        /// <param name="lst">list to add extracted polygons to.</param>
+        /// <param name="goalDepth">next depth to target. Normally initialized to 1.</param>
+        /// <param name="bigSmall">next depth jump. Normally initialized to false.</param>
+        public static void iterate(PolyNode n, int depth, List<Polyline> lst, int goalDepth, bool bigSmall)
         {
             if (depth == goalDepth)
             {
@@ -189,55 +199,8 @@ namespace ClipperHelper
             foreach (var pn in n.Childs)
             {
                 Rhino.RhinoApp.WriteLine($"new level: {depth}");
-                iteratev2(pn, depth+1, lst, goalDepth, bigSmall);
+                iterate(pn, depth+1, lst, goalDepth, bigSmall);
             }
-        }
-
-        //borrowed from original grasshopper clipper lib 
-        public static IEnumerable<PolyNode> Iterate(this PolyNode node)
-        {
-            yield return node;
-            foreach (var childNode in node.Childs)
-            {
-                foreach (var childNodeItem in childNode.Iterate())
-                {
-                    yield return childNodeItem;
-                }
-            }
-        }
-
-
-
-        public static List<Polyline> f_iterate(PolyNode n, int depth, double tolerance, Plane pln)
-        {
-            Rhino.RhinoApp.WriteLine(depth.ToString());
-
-            var output = new List<Polyline>();
-
-            //Needs better logic to handle more depth 
-            if (depth == 2 || depth == 3)
-            {
-                var poly = ToPolyline(n.Contour, pln, tolerance, true);
-                if (poly.Length > 0)
-                {
-                    output.Add(poly);
-                }
-            }
-
-            foreach (var child in n.Childs)
-            {
-                output.AddRange(f_iterate(child, depth + 1, tolerance, pln));
-            }
-
-            return output;
-        }
-
-        //extracts polylines from a polytree. This should be sensitive to inside/outside ref slicerFriendliness 
-        private static List<Polyline> extractSolution(PolyTree sol, Plane pln, double tolerance)
-        {
-            List<Polyline> output = new List<Polyline>();
-
-            return f_iterate(sol, 0, tolerance, pln);
         }
 
         //converts list of Clipper Intpoints to Polylines
