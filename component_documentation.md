@@ -29,26 +29,27 @@ Currenty missing direction infill direction as a input .
 
 Sorts curves in first Y direction and then X direction. The sorting algorithm currently uses the first point of each polyline when sorting. 
 
-
 # 2. Actions
 
 _Actions-components converts sets of polylines into Vespidae-actions and tags them with relevant metadata. For example, the ExtrudeAction tags each polyline with an extrusion-parameter that sets the extrusion rate for each move. This metadata is applied by the solvers and visualizers in step 3._
 
 ## Action: Extrude
 
-*Extrusion Action.*  
+*input:*  
 
-| Name      | Nickname | Description                                                                            |   |   |
-|-----------|----------|----------------------------------------------------------------------------------------|---|---|
-| Curve     | crv      | input curves to create Extrude Actions from.                                           |   |   |
-| Extrusion | ex       | extrusion flowrate multiplier. Extrusion amount is calculated by: distance x 0.01 x ex |   |   |
-| Speed     | speed    | speed of move. Translates to ´F_speed´ in gcode.                                       |   |   |
-| Retract   | re       | how much to retract the filament between each operation. See notes for more detail.    |   |   |
+| Name      | Nickname | Description                                                                            |
+|-----------|----------|----------------------------------------------------------------------------------------|
+| Curve     | crv      | input curves to create Extrude Actions from.                                           |
+| Extrusion | ex       | extrusion flowrate multiplier. Extrusion amount is calculated by: distance x 0.01 x ex |
+| Speed     | speed    | speed of move. Translates to ´F_speed´ in gcode.                                       |
+| Retract   | re       | how much to retract the filament between each operation. See notes for more detail.    | 
 
-- **crv(curve):** input curves to create Extrude Actions from. 
-- **ex(extrusion)** extrusion flowrate multiplier. Extrusion amount is calculated by: `distance x 0.01 x ex`  
-- **speed (speed)** - speed of move. Translates to `F_speed_` in gcode. **temp(temperature)** - extruder temperature. Translates to `S_temperature` in gcode. 
-- **re (retract):** how much to retract the filament between each operation. See notes for more detail. 
+*output:*
+
+| Name                    | Nickname | Description |
+|-------------------------|----------|-------------|
+| Vespidae Extrude Action | Vobj     |             |
+
 
 ### Notes
 
