@@ -38,6 +38,13 @@ _Actions-components converts sets of polylines into Vespidae-actions and tags th
 
 *Extrusion Action.*  
 
+| Name      | Nickname | Description                                                                            |   |   |
+|-----------|----------|----------------------------------------------------------------------------------------|---|---|
+| Curve     | crv      | input curves to create Extrude Actions from.                                           |   |   |
+| Extrusion | ex       | extrusion flowrate multiplier. Extrusion amount is calculated by: distance x 0.01 x ex |   |   |
+| Speed     | speed    | speed of move. Translates to ´F_speed´ in gcode.                                       |   |   |
+| Retract   | re       | how much to retract the filament between each operation. See notes for more detail.    |   |   |
+
 - **crv(curve):** input curves to create Extrude Actions from. 
 - **ex(extrusion)** extrusion flowrate multiplier. Extrusion amount is calculated by: `distance x 0.01 x ex`  
 - **speed (speed)** - speed of move. Translates to `F_speed_` in gcode. **temp(temperature)** - extruder temperature. Translates to `S_temperature` in gcode. 
