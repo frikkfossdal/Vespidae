@@ -1,7 +1,7 @@
 # Vespidae Component Dictionary 
 
 # 1. Curve Tools
-*Tools for manipulating geometry in Rhino. This includes clipping tools and soon slicing tools and tools for filling / clearing pockets.*
+*Tools for manipulating geometry in Rhino. This includes clipping tools (using [Angus' Clipper Library](http://www.angusj.com/delphi/clipper/documentation/Docs/_Body.htm) and tools for filling / clearing pockets.*
 
 ## Boolean
 Performs boolean operations, or *Clipping*, on polygons using the ClipperLib. The operations include intersection, union, difference and xor. See [this](http://www.angusj.com/delphi/clipper/documentation/Docs/Units/ClipperLib/Types/ClipType.htm) for more documentation on the different operations. 
