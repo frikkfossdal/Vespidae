@@ -31,9 +31,9 @@ namespace Vespidae
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("curve", "crv", "Curve or curves to offset", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Distance", "dist", "Distance to offset", GH_ParamAccess.item, 1);
-            pManager.AddIntegerParameter("Amount", "amo", "Amount of times to offset curve. Default 1", GH_ParamAccess.item, 1);
-            pManager.AddBooleanParameter("Keep", "keep", "Keep original polygon in solution. Default True", GH_ParamAccess.item, true);
+            pManager.AddNumberParameter("Distance", "dist", "Distance to offset. Defaults to 1.", GH_ParamAccess.item, 1);
+            pManager.AddIntegerParameter("Amount", "amo", "Amount of times to offset curve. Defaults to  1", GH_ParamAccess.item, 1);
+            pManager.AddBooleanParameter("Keep", "keep", "Keep original polygon in solution. Defaults to  True", GH_ParamAccess.item, true);
             //pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, Plane.WorldXY);
         }
 
@@ -42,7 +42,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("result", "res", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("curve", "crv", "Computed offset curves as list of polylines.", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Vespidae
 
             //convert to polylines
             List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
-           
+
 
             output.AddRange(ClipperTools.offset(offsetPolylines, amount, pln, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance));
             if (keep) output.AddRange(offsetPolylines);
