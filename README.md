@@ -1,5 +1,6 @@
 # Vespidae
 
+**NOTE:** Vespidae is currently under heavy development and should be treated accordingly. Check you code before executing anything on your tool / machine. 
 
 ## What is it? 
 
