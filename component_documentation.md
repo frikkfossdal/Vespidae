@@ -1,58 +1,73 @@
 # Vespidae Component Dictionary 
 
+<style>
+    table {
+        width: 100%;
+    }
+</style>
+
 # 1. Curve Tools
-*Tools for manipulating geometry in Rhino. This includes clipping tools (using [Angus' Clipper Library](http://www.angusj.com/delphi/clipper/documentation/Docs/_Body.htm) and tools for filling / clearing pockets.*
+*Tools for manipulating geometry in Rhino. This includes clipping tools (using [Angus' Clipper Library](http://www.angusj.com/delphi/clipper/documentation/Docs/_Body.htm)) and tools for filling / clearing pockets.*
 
 ## Boolean
 Performs boolean operations, or *Clipping*, on polygons using the ClipperLib. The operations include intersection, union, difference and xor. See [this](http://www.angusj.com/delphi/clipper/documentation/Docs/Units/ClipperLib/Types/ClipType.htm) for more documentation on the different operations. 
 
+| Name | Nickname | Description |  
+|:--|:--|:--|:--|
+|***input***|||
+| Curves | crv | input curves. These must be closed polygons.  |  
+| Density | den | density of infill.  Default value is 1 units. |  
+| Offset | offset | infill offset. Default value is .2 units. |
+| ***output*** |||
+| Curves | crv | computed infill polylines |
+
 ## Offset
 Offsets polylines using the Clipper Library offset algorithm. Supports multiple offsets[^Only component] in same operation. Solution will be transformed to the XY plane of the first given polyline
+
+| Name | Nickname | Description |  
+|:--|:--|:--|:--|
+|***input***|||
+| Curves | crv | Curve or curves to offset |  
+| Density | den | Distance to offset. Defaults to 1|  
+| Amount | amo | Amount of times to offset curve. Defaults to 1 |
+|Keep|keep|Keep original polygon in solution. Defaults to  True|
+| ***output*** |||
+| Curve | crv | Computed offset curves as list of polylines. |
 
 ## Infill
 
 Generates infill/hatching inside closed polygons. The algorithm broadly works by generating a set of straight lines over the input polygon, clipping the lines using the input polygon, and finally grouping the clipped lines into sets of connected polygons. 
 
-**->add figure of how infill is generated<-**
-
-Currenty missing direction infill direction as a input . 
-
-*inputs:*
-- **crv**: input curve. This must be a closed polygon. 
-- **den**: density of infill.  Default value is 1 units. 
-- **offset:** infill offset. Default value is .2 units.
-
-*output*
-- **crv:** infill polylines represented as a List. 
- 
-## Sort Curves 
-
-Sorts curves in first Y direction and then X direction. The sorting algorithm currently uses the first point of each polyline when sorting. 
+| Name | Nickname | Description |  
+|:--|:--|:--|:--|
+|***input***|||
+| Curves | crv | input curves. These must be closed polygons.  |  
+| Density | den | density of infill.  Default value is 1 units. |  
+| Offset | offset | infill offset. Default value is .2 units. |
+|infillAngle|ang|direciion angle of infill lines in degrees. Default value: 0|
+|includeShells|shl|include outter shell polygons. Default value: false|
+| ***output*** |||
+| Curves | crv | computed infill polylines |
 
 # 2. Actions
 
 _Actions-components converts sets of polylines into Vespidae-actions and tags them with relevant metadata. For example, the ExtrudeAction tags each polyline with an extrusion-parameter that sets the extrusion rate for each move. This metadata is applied by the solvers and visualizers in step 3._
 
+![](./doc/Actions.png)
+
 ## Action: Extrude
 
-*input:*  
-
-| Name      | Nickname | Description                                                                            |
-|-----------|----------|----------------------------------------------------------------------------------------|
+| Name | Nickname | Description |  
+|:--|:--|:--|:--|
+|***input***:  |||
 | Curve     | crv      | input curves to create Extrude Actions from.                                           |
 | Extrusion | ex       | extrusion flowrate multiplier. Extrusion amount is calculated by: distance x 0.01 x ex |
 | Speed     | speed    | speed of move. Translates to ´F_speed´ in gcode.                                       |
 | Retract   | re       | how much to retract the filament between each operation. See notes for more detail.    | 
-
-*output:*
-
-| Name                    | Nickname | Description |
-|-------------------------|----------|-------------|
+|***output**:*|||
 | Vespidae Extrude Action | Vobj     |             |
 
-
 ### Notes
-
 Vespidae uses relative extrusion. Its important to "prepare" the filament of the relevant extruders before starting the actual programs. Specifically the filament position should be set to the same value as the retract value used in the Actions. Beeneth is a Extrude Action translated to gcode with *a retract value of 2*. 
 
 	;Action: extrusion
@@ -69,31 +84,30 @@ Vespidae uses relative extrusion. Its important to "prepare" the filament of the
 	
 
 ## Action: Generic Move
-*General purpose movement actions. Good starting point to get familiar withe Vespidae.* 
+*General purpose movement actions. Good starting point to get familiar with Vespidae.* 
 
-*inputs:*
-- **crv (curve):** input curves to create Move Actions from. 
-- **s(speed)**  - speed of move. Translates to `F_speed_` in gcode. <br> 
-- **to (tool_id)**  - tool number to execute move with. Translates to `T_toolId_` 
-- **gInj (gcodeInjection)** - injects gcode prior to the move. The gcode is added when the action is translated to gcode in step 3.
-
-*outputs:*
-- **vobj (vespidae actions):** Input
+| Name | Nickname | Description |  
+|:--|:--|:--|:--|
+|**input**:  |||
+| Curve     | crv      | input curves to create Move Actions from|
+| Speed     | speed    | speed of move. Translates to ´F_speed´ in gcode.|
+| Tool ID   | to | tool number to execute move with. Translates to `T_toolId_` | 
+| Gcode injection | gInj ||
+|***output**:*|||
+| Vespidae Move Action | Vobj     |  |
 
 ## Sort Actions 
 
 *Sorts action according to input criteria. So far this includes sorting by x-y and z-directions + by tool number*
 
-*input:*
-
-
-- **actions** - actions to be sorted. 
-- **sort (sort type)** - Sorting options: 0: x-direction, 1: y-direction, 2: z-direction. 
--  **flip**- flips the sorted list.| 
-
-*output:*
-
-- **vobj (Vespidae Actions):** sorted list of Actions. 
+| Name | Nickname | Description |  
+|:--|:--|:--|:--|
+|**input:**|||
+|Actions|Vobj| actions to be sorted. |
+|Sort type|sort|Sorting options: 0: x-direction, 1: y-direction, 2: z-direction. |
+|Flip|flip|flip sorting.|
+|**output:**|||
+|Vespidae Actions|vobj|sorted list of Vespidae Actions|
 
 # 3. Solve
 Solvers are used to compute and derive programs (sequence of actions) from sets of Actions. Specifically the solvers will loop through a sequence of Actions and generate Travel-Actions between each Actions. 
