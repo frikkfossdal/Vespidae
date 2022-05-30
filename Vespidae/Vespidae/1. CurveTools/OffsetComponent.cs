@@ -31,7 +31,7 @@ namespace Vespidae
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("curve", "crv", "Curve or curves to offset", GH_ParamAccess.list);
-            pManager.AddNumberParameter("Distance", "dist", "Distance to offset. Defaults to 1.", GH_ParamAccess.item, 1);
+            pManager.AddNumberParameter("Offset", "off", "Distance to offset. Defaults to 1.", GH_ParamAccess.item, 1);
             pManager.AddIntegerParameter("Amount", "amo", "Amount of times to offset curve. Defaults to  1", GH_ParamAccess.item, 1);
             pManager.AddBooleanParameter("Keep", "keep", "Keep original polygon in solution. Defaults to  True", GH_ParamAccess.item, true);
             //pManager.AddPlaneParameter("OutputPlane", "pln", "Plane to output solution to", GH_ParamAccess.item, Plane.WorldXY);
@@ -60,7 +60,7 @@ namespace Vespidae
             bool keep = true;
 
             if (!DA.GetDataList("curve", offsetCurves)) return;
-            DA.GetData("Distance", ref distance);
+            DA.GetData("Offset", ref distance);
             DA.GetData("Amount", ref amount);
             DA.GetData("Keep", ref keep);
             //DA.GetData("OutputPlane", ref pln);
