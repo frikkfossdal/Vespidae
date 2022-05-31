@@ -70,42 +70,33 @@ namespace Vespidae
             var newCurve = new List<Polyline>();
 
             var layerIndex = ClipperTools.createLayerLookup(inputCurves);
+            var solutionPlane = Plane.WorldXY;
 
-            //convert curves to polylines and remove open curves
-            var infillPolys = new List<Polyline>() ; 
-            foreach (var crv in inputCurves) {
-                Polyline pol;
-                Plane pln;
-                if (ClipperHelper.ClipperTools.ConvertCurveToPolyline(crv, out pol) && crv.TryGetPlane(out pln)) {
-                    infillPolys.Add(pol); 
-                } 
-            }
+                //needs check for non-closed polygons 
+                foreach (var layer in layerIndex)
+                {
+                    solutionPlane.OriginZ = layer.Key;
+                    var offsetPolygons = ClipperTools.offset(layer.Value, 1, solutionPlane, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+                    outputCurves.AddRange(Infill.contInfill(offsetPolygons, density, angle, solutionPlane));
+                }
 
-            //get dictionaries
-            var infillShapes = ClipperHelper.ClipperTools.offsetForInfill(infillPolys, 1, Plane.WorldXY, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance, newCurve);
-
-            foreach (var group in infillShapes) {
-                outputCurves.AddRange(ClipperHelper.Infill.contInfill(group.Value, density, angle, Plane.WorldXY)); 
-                //foreach (var polys in group.Value) {
-                //    outputCurves.Add(polys); 
-                //}
-            }
-
-            ///Should add more checks on input data. 
+            ////convert curves to polylines and remove open curves
+            //var infillPolys = new List<Polyline>() ; 
             //foreach (var crv in inputCurves) {
-            //    if (crv.IsClosed){
-
-            //        if(ClipperHelper.ClipperTools.ConvertCurveToPolyline(crv, out pol) && crv.TryGetPlane(out pln))
-            //        {
-            //            ///offset polygon shape.
-            //            var infillPol = ClipperHelper.ClipperTools.offsetForInfill(new List<Polyline> { pol }, 1, pln, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance,newCurve);
-
-            //            ///create infill lines.
-            //            ///This is feels hacky right now. Am I sure that infillPol[0] always exists? 
-            //            outputCurves.AddRange(ClipperHelper.Infill.contInfill(newCurve , density,angle, pln)); 
-            //        }  
-            //    }
+            //    Polyline pol;
+            //    Plane pln;
+            //    if (ClipperHelper.ClipperTools.ConvertCurveToPolyline(crv, out pol) && crv.TryGetPlane(out pln)) {
+            //        infillPolys.Add(pol); 
+            //    } 
             //}
+
+            ////get dictionaries
+            //var infillShapes = ClipperHelper.ClipperTools.offsetForInfill(infillPolys, 1, Plane.WorldXY, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance, newCurve);
+
+            //foreach (var group in infillShapes) {
+            //    outputCurves.AddRange(ClipperHelper.Infill.contInfill(group.Value, density, angle, Plane.WorldXY)); 
+            //}
+
             DA.SetDataList("curves", outputCurves); 
         }
 
