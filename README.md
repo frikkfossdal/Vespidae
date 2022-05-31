@@ -11,9 +11,9 @@ Vespidae is designed with an ethos to provide users with as much flexibility as 
 
 ## Why does this exist? 
 
-In the good ol' days CNC operators programmed their machines in raw commands (gcode). This off course took a fair amount of time to do and limited the complexity of what programs a machinist was able to make. However, it also kept the machinist close to what the machine was doing and gave the operator total control of each machine action. 
+In the good ol' days CNC operators programmed their machines in raw "goto-position" commands (gcode). This took a fair amount of time to do and limited the complexity of what programs a machinist was able to make. However, it also kept the machinist close to what the machine was doing and gave the operator total control of each machine action. 
 
-Todays CAM tools and slicer relieves the machinist of this complexity by automating the generation of toolpaths and gcode. This is all great and in many cases efficient and useful, but there are cases when you want to be more specific and have more control. In my world (read Frikk), where I build custom machines for different weird workflows, a proper CAM tool doesn't really exists. Vespidae positions itself as a sort of hybrid between these two paradigms. 
+Todays CAM tools and slicer relieves the machinist/maker of this complexity by automating the generation of toolpaths and gcode. This is all great and in many cases efficient and useful, but there are edge-cases when you want to be more specific and have more control. In my world, where I build custom machines for different weird workflows, a proper CAM tool doesn't really exists. Vespidae positions itself as a sort of hybrid between these two workflows. 
 
 ## How do I use it? 
 
