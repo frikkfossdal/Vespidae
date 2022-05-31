@@ -134,11 +134,10 @@ namespace ClipperHelper
             PolyTree polytree = new PolyTree();
             double delta = distance;
 
-
             for (int i = 0; i < amount; i++)
             {
                 clipOfs.Execute(ref polytree, delta / tolerance);
-                output.AddRange(flattenDictionary(outerFunc(polytree)));
+                output.AddRange(flattenDictionary(outerFunc(polytree,pln)));
                 delta += distance;
             }
 
@@ -201,7 +200,7 @@ namespace ClipperHelper
                 //special check to extract final layer
                 if (i == amount - 1)
                 {
-                    outputDict = outerFunc(polytree);
+                    outputDict = outerFunc(polytree,pln);
                 }
                 //output.AddRange(outerFunc(polytree));
                 delta += distance;
@@ -223,7 +222,7 @@ namespace ClipperHelper
             return flatList;
         }
 
-        public static Dictionary<int, List<Polyline>> outerFunc(PolyNode n)
+        public static Dictionary<int, List<Polyline>> outerFunc(PolyNode n, Plane pln)
         {
             int index = 0;
             var flatSolution = new List<Polyline>();
@@ -234,7 +233,7 @@ namespace ClipperHelper
             {
                 solution[index] = new List<Polyline>();
 
-                iterate(cn, 0, solution[index], 1, false);
+                iterate(cn, 0, solution[index], 1, false, pln);
 
                 index++;
             }
@@ -251,11 +250,11 @@ namespace ClipperHelper
         /// <param name="lst">list to add extracted polygons to.</param>
         /// <param name="goalDepth">next depth to target. Normally initialized to 1.</param>
         /// <param name="bigSmall">next depth jump. Normally initialized to false.</param>
-        public static void iterate(PolyNode n, int depth, List<Polyline> lst, int goalDepth, bool bigSmall)
+        public static void iterate(PolyNode n, int depth, List<Polyline> lst, int goalDepth, bool bigSmall, Plane pln)
         {
             if (depth == goalDepth)
             {
-                lst.Add(ToPolyline(n.Contour, Plane.WorldXY, .001, true));
+                lst.Add(ToPolyline(n.Contour, pln, .001, true));
                 if (bigSmall)
                 {
                     goalDepth = depth + 3;
@@ -270,7 +269,7 @@ namespace ClipperHelper
             foreach (var pn in n.Childs)
             {
                 Rhino.RhinoApp.WriteLine($"new level: {depth}");
-                iterate(pn, depth + 1, lst, goalDepth, bigSmall);
+                iterate(pn, depth + 1, lst, goalDepth, bigSmall,pln);
             }
         }
 
@@ -319,6 +318,32 @@ namespace ClipperHelper
         {
             var point = new IntPoint(((long)(pt.X / tolerance)), ((long)(pt.Y / tolerance)));
             return point;
+        }
+        /// <summary>
+        /// Populates a sorted dictionary with polylines with layerHeight as index.
+        /// NB: Will ignore input curves that are non-planar or not possible to convert
+        /// to polylines. 
+        /// </summary>
+        /// <param name="curves"></param>
+        /// <returns></returns>
+        public static SortedDictionary<double, List<Polyline>> createLayerLookup(List<Curve> curves) {
+            var outputDictionary = new SortedDictionary<double, List<Polyline>>();
+            var pln = new Plane();
+            var poly = new Polyline();
+
+            //ignores curve if it is non-planar or cannot be converted to poly
+            foreach (var crv in curves) {
+                if (crv.TryGetPlane(out pln)&&ConvertCurveToPolyline(crv, out poly)){
+                    if (outputDictionary.ContainsKey(pln.OriginZ))
+                    {
+                        outputDictionary[pln.OriginZ].Add(poly);  
+                    }
+                    else {
+                        outputDictionary.Add(pln.OriginZ, new List<Polyline> {poly});
+                    }
+                } 
+            }
+            return outputDictionary;
         }
     }
 
@@ -373,9 +398,9 @@ namespace ClipperHelper
             int dictIndex = 0;
             bool flip = true;
 
-
             //create infill lines
             var infillLines = new List<Polyline>();
+
             for (double i = -length / 2; i <= length + gap; i += gap)
             {
                 var newLine = new Polyline();
