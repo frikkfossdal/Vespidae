@@ -52,7 +52,6 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-
             List<Curve> offsetCurves = new List<Curve>();
             double distance = 0;
             int amount = 0;
@@ -70,8 +69,15 @@ namespace Vespidae
             //convert to polylines
             List<Polyline> offsetPolylines = ClipperTools.ConvertCurvesToPolylines(offsetCurves);
 
+            var solutionPlane = Plane.WorldXY;
 
-            output.AddRange(ClipperTools.offset(offsetPolylines, amount, pln, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance));
+            var layerIndex = ClipperTools.createLayerLookup(offsetCurves);
+
+            foreach (var layer in layerIndex) {
+                solutionPlane.OriginZ = layer.Key; 
+                output.AddRange(ClipperTools.offset(layer.Value, amount, solutionPlane, distance, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance));
+            }
+
             if (keep) output.AddRange(offsetPolylines);
 
             DA.SetDataList(0, output);
