@@ -5,7 +5,7 @@ using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino; 
 using Rhino.Geometry;
-using SlicerTool; 
+using ClipperHelper;
 
 namespace Vespidae
 {
@@ -34,7 +34,6 @@ namespace Vespidae
             pManager.AddNumberParameter("density", "den", "infill density. Hard limit on 0.05", GH_ParamAccess.item, 1.0);
             pManager.AddNumberParameter("offset", "off", "infill offset", GH_ParamAccess.item, 0.2);
             pManager.AddNumberParameter("infillAngle", "ang", "direciion angle of infill lines. Default value: 0", GH_ParamAccess.item,0);
-            pManager.AddBooleanParameter("includeShells", "shl", "include shells. Default value: false", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -69,6 +68,8 @@ namespace Vespidae
 
             var outputCurves = new List<Polyline>();
             var newCurve = new List<Polyline>();
+
+            var layerIndex = ClipperTools.createLayerLookup(inputCurves);
 
             //convert curves to polylines and remove open curves
             var infillPolys = new List<Polyline>() ; 
