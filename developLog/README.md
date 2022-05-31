@@ -544,3 +544,11 @@ Made some big moves to get the infill coponent to work with "layered" polygons (
 
 - there is something weird going on in how clipped polylines are grouped into continous paths. I need to debug the data structure in the infill function to work this out. 
 - Its currently missing the logic to select number of shells and add these to the output. I'm not sure if I want to keep this on a separte shell-function.  
+
+# 3105_2022
+
+I have to make some philosophical decissions about Vespidae should treat input data on multiple layers. For example the way offsetting is set up now it will add all inputed polygons into one list and run the offset function **one time** with that list as input. The way things are set up now the solution will be outputted on one single plane which is no good when we have multi-layer. 
+
+I did a couple of prototypes and I think this could make sense. I made a function that sorts inputted curves to a list which uses the layer height (z-height) as index. Then I can loop over the list and do clipper operations for each layer. This will work both on inputs with only single layers or on multi-layer input. I could add a booleaen input that selects weather it should be sensitive for this (for speed), but I dont really think there is to much to gain from this. 
+
+Ok I got this working for infill. This is actually a pretty smooth workflow. I'll try to add layer-sensitivity to infill component now. 
