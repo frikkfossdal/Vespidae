@@ -33,7 +33,8 @@ namespace Vespidae.Ops
             pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
             pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
             pManager.AddIntegerParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, 0);
-            pManager.AddTextParameter("GcodeInjection", "gInj", "gcode to inject before operation", GH_ParamAccess.list, ""); 
+            pManager.AddTextParameter("GcodeInjection", "gInj", "gcode to inject before operation", GH_ParamAccess.list, "");
+            pManager.AddTextParameter("GcodePostInjection", "gPost", "gcode to inject after operation", GH_ParamAccess.list, "");
         }
 
         /// <summary>
@@ -53,6 +54,7 @@ namespace Vespidae.Ops
         {
             List<Curve> crv = new List<Curve>();
             List<String> gInj = new List<string>();
+            List<String> gPost = new List<string>();
 
             int speed = 0;
             double temp = 0;
@@ -62,11 +64,12 @@ namespace Vespidae.Ops
 
             DA.GetData("Speed", ref speed);
             DA.GetData("ToolId", ref tool);
-            DA.GetDataList("GcodeInjection", gInj); 
+            DA.GetDataList("GcodeInjection", gInj);
+            DA.GetDataList("GcodePostInjection", gPost);
 
             var pol = ClipperTools.ConvertCurvesToPolylines(crv);
 
-            var actions = VespidaeTools.Operation.createMoveOps(pol, speed, tool, gInj);
+            var actions = VespidaeTools.Operation.createMoveOps(pol, speed, tool, gInj, gPost);
 
             DA.SetDataList("VespObj", actions);
             //ops.createActions();

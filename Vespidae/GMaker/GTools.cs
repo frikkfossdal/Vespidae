@@ -181,12 +181,12 @@ namespace VespidaeTools
             return actions;
         }
 
-        public static List<Action> createMoveOps(List<Polyline> paths, int speed, int tool, List<string> injection)
+        public static List<Action> createMoveOps(List<Polyline> paths, int speed, int tool, List<string> injection, List<string> postInjection)
         {
             List<Action> actions = new List<Action>();
             foreach (var p in paths)
             {
-                actions.Add(new Move(p, speed, tool, injection));
+                actions.Add(new Move(p, speed, tool, injection, postInjection));
             }
             return actions;
         }
@@ -456,6 +456,7 @@ namespace VespidaeTools
         public int speed;
         public opTypes actionType;
         public List<string> injection;
+        public List<string> postInjection;
         public Action() { }
         public int tool;
         public bool toolCh;
@@ -514,13 +515,14 @@ namespace VespidaeTools
     /// </summary>
     public class Move : Action
     {
-        public Move(Polyline p, int s, int to, List<string> inj)
+        public Move(Polyline p, int s, int to, List<string> inj, List<string> injPost)
         {
             path = p;
             speed = s;
             actionType = opTypes.move;
             tool = to;
             injection = inj;
+            postInjection = injPost;
             toolCh = true;
         }
 
@@ -542,6 +544,14 @@ namespace VespidaeTools
             foreach (var p in path)
             {
                 translation.Add(p.toGcode());
+            }
+
+            //gcode injection after
+            if (postInjection.Count > 0 && postInjection.First().Length != 0)
+            {
+                translation.Add(";>>>>injected gcode start<<<<");
+                translation.AddRange(postInjection);
+                translation.Add(";>>>>injected gcode end<<<<");
             }
 
             return translation;
