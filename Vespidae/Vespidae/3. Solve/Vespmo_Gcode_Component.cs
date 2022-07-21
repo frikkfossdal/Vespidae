@@ -58,6 +58,8 @@ namespace Vespidae
             DA.GetDataList("header", header);
             DA.GetDataList("footer", footer);
 
+            gcode.Add($"; GCode");
+
             if (header.Count > 0) {
                 gcode.AddRange(header);
             }

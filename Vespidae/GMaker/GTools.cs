@@ -29,6 +29,15 @@ namespace VespidaeTools
 
             return $"G0 X{x} Y{y} Z{z}";
         }
+
+        public static string toAB(this Point3d p)
+        {
+            double x = Math.Round(p.X, 3);
+            double y = Math.Round(p.Y, 3);
+            double z = Math.Round(p.Z, 3);
+
+            return $"LINEAR X{x} Y{y} Z{z}";
+        }
     }
 
     /// <summary>
@@ -218,6 +227,26 @@ namespace VespidaeTools
             foreach (var ac in actions)
             {
                 output.AddRange(ac.translate());
+            }
+            return output;
+        }
+
+        public static List<string> translateToAerobasic(List<Action> actions)
+        {
+            var output = new List<string>();
+
+            output.Add(";Vespidae made this program");
+
+            //check if program contains Extruder actions
+            if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0)
+            {
+                output.AddRange(new List<string>() { ";program contains extrusion actions, not supported ATM", ";setting relative extrusion", ";M83" });
+            }
+
+            var currentPos = new Point3d();
+            foreach (var ac in actions)
+            {
+                output.AddRange(ac.translateAB());
             }
             return output;
         }
@@ -463,6 +492,7 @@ namespace VespidaeTools
         public int retractHeight;
 
         public abstract List<string> translate();
+        public abstract List<string> translateAB();
     }
 
     public class Travel : Action
@@ -508,6 +538,38 @@ namespace VespidaeTools
 
             return translation;
         }
+
+        public override List<string> translateAB()
+        {
+            var translation = new List<string>();
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
+
+            if (toolCh)
+            {
+                translation.Add(";executing toolChange");
+                translation.Add($"LINEAR Z{retractHeight} F{speed}");
+                translation.Add($"CALL ResetTool");
+                translation.Add($"CALL ToolChange T {tool} X XOff{tool} Y YOff{tool} Z ZOff{tool}");
+                translation.Add($"LINEAR Z{retractHeight} F{speed}");
+                translation.Add(path.Last.toAB());
+
+                //go to retract height
+                //go to last point on path
+                //lower 
+            }
+            else
+            {
+                translation.Add($"LINEAR F{speed}");
+                foreach (var p in path)
+                {
+                    translation.Add(p.toAB());
+                }
+            }
+
+
+            return translation;
+        }
     }
 
     /// <summary>
@@ -544,6 +606,37 @@ namespace VespidaeTools
             foreach (var p in path)
             {
                 translation.Add(p.toGcode());
+            }
+
+            //gcode injection after
+            if (postInjection.Count > 0 && postInjection.First().Length != 0)
+            {
+                translation.Add(";>>>>injected gcode start<<<<");
+                translation.AddRange(postInjection);
+                translation.Add(";>>>>injected gcode end<<<<");
+            }
+
+            return translation;
+        }
+
+        public override List<string> translateAB()
+        {
+            var translation = new List<string>();
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
+            translation.Add($"LINEAR F{speed}");
+
+            //gcode injection 
+            if (injection.Count > 0 && injection.First().Length != 0)
+            {
+                translation.Add(";>>>>injected gcode start<<<<");
+                translation.AddRange(injection);
+                translation.Add(";>>>>injected gcode end<<<<");
+            }
+
+            foreach (var p in path)
+            {
+                translation.Add(p.toAB());
             }
 
             //gcode injection after
@@ -626,6 +719,12 @@ namespace VespidaeTools
 
             return translation;
         }
+
+        public override List<string> translateAB()
+        {
+            // currently unsupported
+            return null;
+        }
     }
 
     //main difference from extrude is that we disconnect extrude amount from move speed
@@ -671,6 +770,11 @@ namespace VespidaeTools
             return new List<string>();
         }
 
+        public override List<string> translateAB()
+        {
+            // currently unsupported
+            return null;
+        }
     }
 }
 
