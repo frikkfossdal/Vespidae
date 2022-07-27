@@ -11,7 +11,8 @@ namespace VespidaeTools
         travel,
         move,
         extrusion,
-        zPin
+        zPin,
+        nonPlanarSyringe
     }
 
     public enum extrudeTypes {
@@ -30,6 +31,15 @@ namespace VespidaeTools
             return $"G0 X{x} Y{y} Z{z}";
         }
 
+        public static string toGcode(this Point3d p, double angleA, double speed)
+        {
+            double x = Math.Round(p.X, 3);
+            double y = Math.Round(p.Y, 3);
+            double z = Math.Round(p.Z, 3);
+
+            return $"G0 X{x} Y{y} Z{z} A{Math.Round(angleA, 4)} F{Math.Round(speed)}";
+        }
+
         public static string toAB(this Point3d p)
         {
             double x = Math.Round(p.X, 3);
@@ -37,6 +47,15 @@ namespace VespidaeTools
             double z = Math.Round(p.Z, 3);
 
             return $"LINEAR X{x} Y{y} Z{z}";
+        }
+
+        public static string toAB(this Point3d p, double angleA, double speed)
+        {
+            double x = Math.Round(p.X, 3);
+            double y = Math.Round(p.Y, 3);
+            double z = Math.Round(p.Z, 3);
+
+            return $"LINEAR X{x} Y{y} Z{z} A{Math.Round(angleA,4)} F{Math.Round(speed,4)}";
         }
     }
 
@@ -206,7 +225,20 @@ namespace VespidaeTools
 
             foreach (var p in paths)
             {
-                actions.Add(new zPin(p, temp, amount, tool));
+                actions.Add(new ZPin(p, temp, amount, tool));
+            }
+            return actions;
+        }
+
+        public static List<Action> createNonPlanarSyringeOps(List<Polyline> paths, int tool, int s, 
+            List<double[]> sFactor, List<double[]> angleA, List<double[]> angleC)
+        {
+            List<Action> actions = new List<Action>();
+
+            for (int i = 0; i < paths.Count; i++)
+            {
+                actions.Add(new NonPlanarSyringe(paths[i], tool, s, sFactor[i], angleA[i]));
+                Rhino.Runtime.HostUtils.DebugString($"Elements in paths[{i}]: {paths[i].Length}, sFactor{sFactor[i].Length}, angleA: {angleA[i].Length}");
             }
             return actions;
         }
@@ -731,13 +763,13 @@ namespace VespidaeTools
     //and that we work
     //future could also include some type of oscillation and maybe also smearing on
     //top layer 
-    public class zPin : Action
+    public class ZPin : Action
     {
 
         public double amount;
         public double temperature;
 
-        public zPin(Polyline p, double t, double a, int to)
+        public ZPin(Polyline p, double t, double a, int to)
         {
             path = p;
             amount = a;
@@ -774,6 +806,80 @@ namespace VespidaeTools
         {
             // currently unsupported
             return null;
+        }
+    }
+
+    // nonplanar syringe prints
+    public class NonPlanarSyringe : Action
+    {
+        public double[] speedFactor, angleA;
+
+        public NonPlanarSyringe(Polyline p, int to, int s, double[] sFactor,  double[] angles)
+        {
+            path = p;
+            tool = to;
+            speed = s;
+            speedFactor = sFactor;
+            List<double> placeholder = new List<double>();
+            placeholder.Add(speedFactor[0]);
+            placeholder.AddRange(speedFactor.ToList());
+            speedFactor = placeholder.ToArray();
+            angleA = angles;
+
+            Rhino.Runtime.HostUtils.DebugString($"CREATION \n Length of polyline coords:{path.Count}, angles:{angleA.Length}, sFactor:{speedFactor.Length}");
+
+            actionType = opTypes.nonPlanarSyringe;
+        }
+
+        public override List<string> translate()
+        {
+            var translation = new List<string>();
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
+            translation.Add($"G0 F{speed}");
+
+            //turn on M Code 
+            translation.Add(";Insert syringe on here");
+            translation.Add($"M42 P{tool} S0.5");
+
+            var pointsAndAngles = path.Zip(angleA, (p,a) => new {Point = p, Angle = a});
+
+            for (int i = 0; i < path.Count; i++)
+            {
+                translation.Add(path[i].toGcode(angleA[i], speed * speedFactor[i]));
+            }
+
+            // turn off MCode
+            translation.Add(";Insert syringe off here");
+            translation.Add($"M42 P{tool} S0.0");
+
+            return translation;
+        }
+
+        public override List<string> translateAB()
+        {
+            var translation = new List<string>();
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
+            translation.Add($"LINEAR F{speed}");
+
+            // turn on syringe
+            translation.Add(";Insert syringe on here");
+            translation.Add($"DO[{tool}.X = 1");
+            translation.Add("DWELL 0.1");
+
+            Rhino.Runtime.HostUtils.DebugString($"Length of path: {path.Count}, angleA:{angleA.Length}, speed: {speedFactor.Length}");
+
+            for (int i = 0; i < path.Count; i++)
+            {
+                translation.Add(path[i].toAB(angleA[i], speed * speedFactor[i]));
+            }
+
+            // turn off syringe
+            translation.Add(";Insert syringe off here");
+            translation.Add($"DO[{tool}.X = 0");
+
+            return translation;
         }
     }
 }

@@ -76,6 +76,9 @@ namespace Vespidae
                 aerobasic.AddRange(header);
             }
 
+            Rhino.Runtime.HostUtils.DebugString($"Input into translation: {actions}");
+            string debug = DebugActions(actions);
+            Rhino.Runtime.HostUtils.DebugString(debug);
             List<string> body = VespidaeTools.Operation.translateToAerobasic(actions);
             if (!absMove)
             {
@@ -89,6 +92,17 @@ namespace Vespidae
             }
             DA.SetDataList("aerobasic", aerobasic);
             DA.SetDataList("test", test);
+        }
+
+        protected string DebugActions(List<VespidaeTools.Action> actions)
+        {
+            string debug = "";
+            foreach (var ac in actions)
+            {
+                debug += $"\n This actions has {ac.path.Count} polyline points";
+                //debug += $"\n This actions has {ac.path.Count} polyline points, {ac.angleA.Length} angles, {ac.speedFactor.Length} speed factors";
+            }
+            return debug;
         }
 
         protected (List<string>, List<string>) AbsoluteToRelative(List<string> toolpaths, bool invertZ)

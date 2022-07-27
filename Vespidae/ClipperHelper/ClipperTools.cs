@@ -30,6 +30,26 @@ namespace ClipperHelper
             return pl.IsValid && !(pl.Length < RhinoMath.ZeroTolerance);
         }
 
+        public static bool ConvertCurveToPolyline(Curve crv, out Polyline pl, double tol)
+        {
+            if (crv.TryGetPolyline(out pl))
+            {
+                return true;
+            }
+
+            var polylineCurve = crv.ToPolyline(0, 0, 0.1, 0, 0, tol, 0, 0, true);
+            if (polylineCurve == null)
+            {
+                return false;
+            }
+            if (!polylineCurve.TryGetPolyline(out pl))
+            {
+                return false;
+            }
+
+            return pl.IsValid && !(pl.Length < RhinoMath.ZeroTolerance);
+        }
+
         //Converts collection of curves to polylines
         //return can be changed to IEnumerable and use yield??
         public static List<Polyline> ConvertCurvesToPolylines(IEnumerable<Curve> crvs)
@@ -40,6 +60,21 @@ namespace ClipperHelper
             {
                 Polyline poly;
                 if (ConvertCurveToPolyline(c, out poly))
+                {
+                    polys.Add(poly);
+                }
+            }
+            return polys;
+        }
+
+        public static List<Polyline> ConvertCurvesToPolylines(IEnumerable<Curve> crvs, double tol)
+        {
+            var polys = new List<Polyline>();
+
+            foreach (var c in crvs)
+            {
+                Polyline poly;
+                if (ConvertCurveToPolyline(c, out poly, tol))
                 {
                     polys.Add(poly);
                 }
