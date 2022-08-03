@@ -5,6 +5,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using VespidaeTools;
 using ClipperHelper;
+using System.Linq;
 
 namespace Vespidae.Ops
 {
@@ -76,8 +77,13 @@ namespace Vespidae.Ops
             DA.GetData("Projection", ref pro);
             DA.GetData("PathTolerance", ref tol);
             DA.GetData("LayerOffset", ref offset);
-            
-            List<Curve> proj = projectCurves(crv, srf);
+
+            var actions = VespidaeTools.Operation.createNonPlanarSyringeOps(crv, ref srf, tool, speed,
+                length, pro, tol, offset);
+
+            /*
+            List<double> crvHeight = new List<double>();
+            List<Curve> proj = projectCurves(crv, srf, ref crvHeight);
 
             var pol = ClipperTools.ConvertCurvesToPolylines(proj, tol);
 
@@ -96,23 +102,25 @@ namespace Vespidae.Ops
             Rhino.Runtime.HostUtils.DebugString($"Elements in angleA:{angleA[0].Length}, angleC:{angleC[0].Length} \n" +
                 $"tooltipCoords:{tooltipCoords[0].Length} machineCoords{machineCoords[0].Length}");
 
-            var actions = VespidaeTools.Operation.createNonPlanarSyringeOps(machineLines, tool, speed, sFactor, angleA, angleC);
-
-            //List<string> test = new List<string>();
-            //var actions = VespidaeTools.Operation.createMoveOps(machineLines, speed, tool, test, test);
+            var actions = VespidaeTools.Operation.createNonPlanarSyringeOps(machineLines, ref srf, tool, speed, 
+                sFactor, angleA, angleC, crvHeight);
+            */
 
             DA.SetDataList("VespObj", actions);
             DA.SetData("PrintSurface", srf);
         }
 
         // helper functions
-        protected List<Curve> projectCurves(List<Curve> crv, Brep srf)
+        protected List<Curve> projectCurves(List<Curve> crv, Brep srf, ref List<double> crvHeight)
         {
             Vector3d unitZ = new Vector3d(0, 0, 1);
 
             List<Curve> proj = new List<Curve>();
             foreach (Curve c in crv)
             {
+                // saves height information of crvs for future layer information
+                crvHeight.Add(c.PointAtStart.Z);
+
                 // it will project onto all surfaces of Brep
                 Curve[] projections = Rhino.Geometry.Curve.ProjectToBrep(c, srf, unitZ, 0.01);
                 // need to figure out how to take the tallest curve, since that's what I'll be printing on
@@ -123,6 +131,18 @@ namespace Vespidae.Ops
                 proj.Add(highest);
             }
 
+            double min = crvHeight.Min();
+            for (int i = 0; i < crvHeight.Count; i++)
+            {
+                crvHeight[i] = crvHeight[i] - min;
+            }
+
+            // takes projections and moves them up based on their original layer height
+            for (int i = 0; i < proj.Count; i++)
+            {
+                Vector3d translation = new Vector3d(0, 0, crvHeight[i]);
+                proj[i].Translate(translation);
+            }
             return proj;
         }
         protected void calcInvKinematics(List<Polyline> paths, Brep srf, double offset, 

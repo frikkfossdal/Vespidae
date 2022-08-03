@@ -43,7 +43,8 @@ namespace Vespidae
             pManager.AddGenericParameter("moves", "mv", "Vespidae generic actions", GH_ParamAccess.list);
             pManager.AddGenericParameter("extrude", "ext", "Vespidae extrude actions", GH_ParamAccess.list);
             pManager.AddGenericParameter("travel", "trv", "Vespidae travel actions", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Arrows", "ar", "direction arrows", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("syringe", "syr", "Vespidae syringe actions", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Arrows", "ar", "direction arrows", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -53,7 +54,6 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-
             //output
             var actions = new List<VespidaeTools.Action>();
 
@@ -67,9 +67,10 @@ namespace Vespidae
             DA.GetData("arrowDensity", ref density); 
 
             //sort out actions 
-            var travelActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.travel).ToList();
+            var travelActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.travel || act.actionType ==VespidaeTools.opTypes.nonplanarTravel).ToList();
             var moveActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.move).ToList();
             var extrudeActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.extrusion).ToList();
+            var syringeActions = actions.Where(act => act.actionType == VespidaeTools.opTypes.nonplanarSyringe).ToList();
 
             //get paths from sorted actions
 
@@ -77,11 +78,13 @@ namespace Vespidae
             var travelPaths = convertActionsToPaths(travelActions);
             var movePaths = convertActionsToPaths(moveActions);
             var extrudePaths = convertActionsToPaths(extrudeActions);
+            var syringePaths = convertActionsToPaths(syringeActions);
 
             DA.SetDataList("allMoves", allPaths);
             DA.SetDataList("moves", movePaths);
             DA.SetDataList("extrude", extrudePaths);
             DA.SetDataList("travel", travelPaths); 
+            DA.SetDataList("syringe", syringePaths);
         }
 
         //temp function for converting Actions into polylines 

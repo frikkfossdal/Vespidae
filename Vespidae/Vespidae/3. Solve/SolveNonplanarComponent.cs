@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using VespidaeTools;
+
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
+using VespidaeTools;
 
 namespace Vespidae.Solve
 {
-    public class AdditiveSolver : GH_Component
+    public class SolveNonplanarComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -16,9 +17,9 @@ namespace Vespidae.Solve
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public AdditiveSolver()
-          : base("AdditiveSolver", "AdditiveSolver",
-            "Solver for additive operations. Sorts actions in ascending order based on z height",
+        public SolveNonplanarComponent()
+          : base("SolveNonplanarComponent", "Solve",
+            "SolveNonplanarComponent description",
             "Vespidae", "3.Solver")
         {
         }
@@ -29,11 +30,10 @@ namespace Vespidae.Solve
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Actions", "VObj", "Actions to be solved", GH_ParamAccess.list);
-            pManager.AddBooleanParameter("ExtrudeOnly", "ex", "Solve only extrude objects?", GH_ParamAccess.item, true);
+            pManager.AddBrepParameter("Surface", "Surface", "Nonplanar surface to solve travel", GH_ParamAccess.item);
             pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
             pManager.AddIntegerParameter("TravelSpeed", "ts", "travel speed between moves", GH_ParamAccess.item, 5000);
             pManager.AddBooleanParameter("PartialRetract", "pr", "partial retract when possible", GH_ParamAccess.item, false);
-            pManager.AddIntegerParameter("SortCriteria", "sort", "layer sort criteria. 0: x-direction, 1: y-direction, 2: by tool. Default x", GH_ParamAccess.item, 0); 
         }
 
         /// <summary>
@@ -54,18 +54,17 @@ namespace Vespidae.Solve
             List<VespidaeTools.Action> actions = new List<VespidaeTools.Action>();
             int rh = 0;
             int ts = 0;
-            int srt = 0; 
             bool pr = false;
-            bool ex = true;
+            Brep srf = new Brep();
 
             if (!DA.GetDataList("Actions", actions)) return;
-            DA.GetData("ExtrudeOnly", ref ex);
+            DA.GetData("Surface", ref srf);
             DA.GetData("RetractHeight", ref rh);
             DA.GetData("TravelSpeed", ref ts);
             DA.GetData("PartialRetract", ref pr);
-            DA.GetData("SortCriteria", ref srt);
 
-            var output = VespidaeTools.Solve.AdditiveSolver(actions, rh, ts, pr, ex, srt);
+            var output = VespidaeTools.Solve.NonPlanarSolver(actions, srf, rh, ts, pr);
+
             DA.SetDataList("OutputActions", output);
         }
 
@@ -79,7 +78,7 @@ namespace Vespidae.Solve
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return null;
+                return Resources.Resources.solve;
             }
         }
 
@@ -90,7 +89,7 @@ namespace Vespidae.Solve
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("8b3e2417-5e4c-44e8-8f59-8c21691c1050"); }
+            get { return new Guid("EBE20A24-B0D6-4E6F-A59E-8A798A8E54C3"); }
         }
     }
 }

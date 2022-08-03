@@ -113,6 +113,7 @@ namespace Vespidae
             List<double> x = new List<double>();
             List<double> y = new List<double>();
             List<double> z = new List<double>();
+            List<double> a = new List<double>();
             List<double> f = new List<double>();
             List<String> relToolpaths = new List<string>();
 
@@ -159,6 +160,16 @@ namespace Vespidae
                     else
                         z.Add(z.Last());
 
+                    // " A" instead of "A" to avoid hitting on "LINEAR"
+                    if (toolpaths[i].Contains(" A"))
+                    {
+                        a.Add(Convert.ToDouble(toolpath.FindLast(q => q.Contains("A")).Substring(1)));
+                    }
+                    else if (a.Count() == 0)
+                        a.Add(0);
+                    else
+                        a.Add(a.Last());
+
                     if (toolpaths[i].Contains("F"))
                     {
                         f.Add(Convert.ToDouble(toolpath.Find(q => q.Contains("F")).Substring(1)));
@@ -176,13 +187,15 @@ namespace Vespidae
                 test.Add($"X{x[index]}, Y{y[index]}, Z{z[index]}, F{f[index]}");
                 if (index == 0)
                 {
-                    relToolpaths[indices[index]] = relCommand(new Point3d(x[index], y[index], z[index]), 
-                        x[index], y[index], z[index], f[index], gCode, invertZ);
+                    Point3d prev = new Point3d(x[index], y[index], z[index]);
+                    relToolpaths[indices[index]] = relCommand(prev, a[index],
+                        x[index], y[index], z[index], a[index], f[index], gCode, invertZ);
                 }
                 else
                 {
-                    relToolpaths[indices[index]] = relCommand(new Point3d(x[index - 1], y[index - 1], z[index - 1]), 
-                        x[index], y[index], z[index], f[index], gCode, invertZ);
+                    Point3d prev = new Point3d(x[index - 1], y[index - 1], z[index - 1]);
+                    relToolpaths[indices[index]] = relCommand(prev, a[index-1],
+                        x[index], y[index], z[index], a[index], f[index], gCode, invertZ);
                 }
             }
             
@@ -196,11 +209,12 @@ namespace Vespidae
             return split;
         }
 
-        protected string relCommand(Point3d prev, double x, double y, double z, double f, bool gcode, bool invert)
+        protected string relCommand(Point3d prev, double prevA, double x, double y, double z, double a, double f, bool gcode, bool invert)
         {
             double relX = Math.Round(x - prev.X, 3);
             double relY = Math.Round(y - prev.Y, 3);
             double relZ = Math.Round(z - prev.Z, 3);
+            double relA = Math.Round(a - prevA, 3);
             if (invert)
                 relZ = -relZ;
             string command = "";
@@ -211,6 +225,8 @@ namespace Vespidae
                 command += $" Y{relY}";
             if (relZ != 0)
                 command += $" Z{relZ}";
+            if (relZ != 0)
+                command += $" A{relA}";
             if (f != 0)
                 command += $" F{f}";
 
