@@ -202,22 +202,24 @@ namespace VespidaeTools
             return actions;
         }
 
-        public static List<string> translateToGcode(List<Action> actions)
+        public static List<string> translateToGcode(List<Action> actions, bool abs)
         {
             var output = new List<string>();
-
+            double curExt = 0; 
             output.Add(";Vespidae made this program");
 
             //check if program contains Extruder actions
             if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0)
             {
-                output.AddRange(new List<string>() { ";program contains extrusion actions", ";setting relative extrusion", "M83" });
+                output.Add(";program contains extrusion actions");
+                if (!abs) {
+                    output.AddRange(new List<string>() { ";setting extrusion to relative", "M83" });
+                }
             }
 
-            var currentPos = new Point3d();
             foreach (var ac in actions)
             {
-                output.AddRange(ac.translate());
+                output.AddRange(ac.translate(abs, ref curExt));
             }
             return output;
         }
@@ -461,7 +463,7 @@ namespace VespidaeTools
         public bool toolCh;
         public int retractHeight;
 
-        public abstract List<string> translate();
+        public abstract List<string> translate(bool abs, ref double curExt);
     }
 
     public class Travel : Action
@@ -476,7 +478,7 @@ namespace VespidaeTools
             retractHeight = rh;
         }
 
-        public override List<string> translate()
+        public override List<string> translate(bool abs, ref double curExt)
         {
             var translation = new List<string>();
             translation.Add("");
@@ -524,7 +526,7 @@ namespace VespidaeTools
             toolCh = true;
         }
 
-        public override List<string> translate()
+        public override List<string> translate(bool abs, ref double curExt)
         {
             var translation = new List<string>();
             translation.Add("");
@@ -546,6 +548,7 @@ namespace VespidaeTools
 
             return translation;
         }
+
     }
     /// <summary>
     /// Creates Action object for extrusion operations. 
@@ -572,7 +575,7 @@ namespace VespidaeTools
             extType = _extType; 
         }
 
-        public override List<string> translate()
+        public override List<string> translate(bool abs, ref double curExt)
         {
             var translation = new List<string>();
 
@@ -598,7 +601,13 @@ namespace VespidaeTools
             //set previous point to first point of path. 
             Point3d prev = path.First;
 
-            translation.Add($"G0 E{retract}");
+            if (abs)
+            {
+                translation.Add($"G0 E{curExt+= retract}");
+            }
+            else {
+                translation.Add($"G0 E{retract}");
+            }
 
             foreach (var p in path)
             {
@@ -606,13 +615,28 @@ namespace VespidaeTools
 
                 //0.01 is experimental value. Check cura / slicer for scale 
                 double extrude = distToPrev * .01 * ext;
-
-                translation.Add(p.toGcode() + $" E{Math.Round(extrude, 5)}");
+                if (abs)
+                {
+                    curExt += extrude;
+                    translation.Add(p.toGcode() + $" E{Math.Round(curExt, 5)}");
+                }
+                else {
+                    translation.Add(p.toGcode() + $" E{Math.Round(extrude, 5)}");
+                }
+             
+                
                 prev = p;
             }
 
-            //retract filement 
-            translation.Add($"G0 E{-retract}");
+            //retract filement
+            if (abs)
+            {
+                translation.Add($"G0 E{curExt -= retract}");
+            }
+            else
+            {
+                translation.Add($"G0 E{-retract}");
+            }
 
             return translation;
         }
@@ -643,7 +667,7 @@ namespace VespidaeTools
             return 1;
         }
 
-        public override List<string> translate()
+        public override List<string> translate(bool abs, ref double curExt)
         {
             var translation = new List<string>();
 
