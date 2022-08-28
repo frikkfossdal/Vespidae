@@ -330,69 +330,93 @@ namespace VespidaeTools
             var prevAct = actions.First();
             double partial_rh = 0.2; //partial retract height
 
-            //add sorting?
-            //when do we add moves between actions. We can add tons of checks here
-            //should we check for planar vs non-planar? 
+            //STEP 1: Sort actions into dictionary with layer height as lookup index.
+            //Note: currently uses first point of each actions path as referance value
+            //move to separate function?
+            SortedDictionary<double, List<Action>> layerLookup = new SortedDictionary<double, List<Action>>();
 
-            bool first = true;
-            bool toolChange = true;
-            bool partial = false;
-
-            foreach (var act in actions)
+            foreach (var action in actions)
             {
-                //first move
-                if (first)
+                double index = action.path.First.Z;
+                if (layerLookup.ContainsKey(index))
                 {
-                    var fm = new Travel(sp, true, rh);
-
-                    //pick up first action's tool
-                    fm.tool = act.tool;
-
-                    //go to position of first action 
-                    fm.path.Add(act.path.First.X, act.path.First.Y, rh);
-                    fm.path.Add(act.path.First);
-                    newProgram.Add(fm);
-
-                    first = false;
+                    layerLookup[index].Add(action);
                 }
-                //perform check if we are doing full or partial retraction  
-                //1. sameStartingPoint check. if yes dont full retract
-                //2. same z height. if yes partial retract.
-
-                //Check if last z height is not same as current z or partial is false
-                //full retract
                 else
                 {
-                    //check if we need new tool
-                    if (act.tool != prevAct.tool) toolChange = true;
+                    layerLookup.Add(index, new List<Action> { action });
+                }
+            }
 
-                    //check if next is same z-height
-                    //if (act.path.First.Z != prevAct.path.Last.Z || pr == false) partial = false;
-                    //else partial = true;
+            //STEP 2: flatten dictionary and generate complete program
 
-                    if (!toolChange)
+            bool firstLayerFlag = true;
+            bool layerChangeFlag = false;
+
+            var prevAction = layerLookup.First().Value.First();
+
+
+            foreach (var layer in layerLookup)
+            {
+                ///first sort layer by tool then by x then by y
+                var sortedLayer = layer.Value.OrderBy(l => l.tool).ThenBy(x => x.path.First.X).ThenBy(y => y.path.First.Y); 
+
+                if (firstLayerFlag)
+                {
+                    //move to first point in layer.
+                    var firstPoint = sortedLayer.First().path.First;
+                    var trvMove = new Travel(sp, true, rh);
+                    trvMove.tool = sortedLayer.First().tool;
+                    trvMove.path.Add(new Point3d(firstPoint.X, firstPoint.Y, rh));
+                    trvMove.path.Add(firstPoint);
+                    newProgram.Add(trvMove);
+                }
+
+                if (layerChangeFlag)
+                {
+                    //move between layers. Last action to first action on new layer
+                    if (prevAction.tool != sortedLayer.First().tool)
                     {
-                        Travel m = moveBetweenActions(prevAct, act, rh, partial_rh, sp, false);
-                        newProgram.Add(m);
+                        //perform toolchange
+                        newProgram.Add(makeToolchange(prevAction, sortedLayer.First(), rh, sp));
                     }
                     else
                     {
-                        var tm = makeToolchange(prevAct, act, rh, sp);
-                        newProgram.Add(tm);
+                        newProgram.Add(moveBetweenActions(prevAction, sortedLayer.First(), rh, partial_rh, sp, false));
                     }
-                    //m.tool = act.tool;
                 }
 
-                //then add action
-                newProgram.Add(act);
-                prevAct = act;
-                toolChange = false;
+                //execute all actions on layer with partial retract height 
+                foreach (var action in sortedLayer)
+                {
+                    if (firstLayerFlag)
+                    {
+                        firstLayerFlag = false;
+                    }
+                    else if (layerChangeFlag)
+                    {
+                        layerChangeFlag = false;
+                    }
+
+                    else
+                    {
+                        if (prevAction.tool != action.tool) newProgram.Add(makeToolchange(prevAction, action, rh, sp));
+                        else newProgram.Add(moveBetweenActions(prevAction, action, rh, .5, sp, true));
+                    }
+
+                    newProgram.Add(action);
+                    prevAction = action;
+                }
+
+                //flag layer to layer move next round
+                layerChangeFlag = true;
             }
+            //final move of operation. Park tools?
 
             //exit move
             var lm = new Travel(6000, false, rh);
             lm.path.Add(prevAct.path.Last);
-            lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, rh);
+            lm.path.Add(prevAct.path.Last.X, prevAct.path.Last.Y, prevAct.path.Last.Z + rh);
             newProgram.Add(lm);
 
             return newProgram;
@@ -611,15 +635,15 @@ namespace VespidaeTools
             if (partial)
             {
                 newMove.path.Add(prev.path.Last);
-                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, cur.path.First.Z + part_rh);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, prev.path.First.Z + part_rh);
                 newMove.path.Add(cur.path.First.X, cur.path.First.Y, cur.path.First.Z + part_rh);
                 newMove.path.Add(cur.path.First);
             }
             else
             {
                 newMove.path.Add(prev.path.Last);
-                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, full_rh);
-                newMove.path.Add(cur.path.First.X, cur.path.First.Y, full_rh);
+                newMove.path.Add(prev.path.Last.X, prev.path.Last.Y, prev.path.Last.Z + full_rh);
+                newMove.path.Add(cur.path.First.X, cur.path.First.Y, cur.path.First.Z + full_rh);
                 newMove.path.Add(cur.path.First);
             }
             return newMove;

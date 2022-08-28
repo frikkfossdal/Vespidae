@@ -225,7 +225,7 @@ namespace Vespidae
                 command += $" Y{relY}";
             if (relZ != 0)
                 command += $" Z{relZ}";
-            if (relZ != 0)
+            if (relA != 0)
                 command += $" A{relA}";
             if (f != 0)
                 command += $" F{f}";

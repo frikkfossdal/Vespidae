@@ -303,7 +303,7 @@ namespace ClipperHelper
 
             foreach (var pn in n.Childs)
             {
-                Rhino.RhinoApp.WriteLine($"new level: {depth}");
+                //Rhino.RhinoApp.WriteLine($"new level: {depth}");
                 iterate(pn, depth + 1, lst, goalDepth, bigSmall,pln);
             }
         }
