@@ -24,7 +24,7 @@ namespace Vespidae.Coms
         public LoadGcodeComponent()
           : base("LoadGcodeComponent", "UploadGcode",
             "UNDER DEVELOPMENT",
-            "Vespidae", "4.Coms")
+            "Vespidae", "4.Export")
         {
             
             BaseWorker = new PrimeCalculatorWorker();

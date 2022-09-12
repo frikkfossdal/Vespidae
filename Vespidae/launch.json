@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Rhinoceros",
+            "type": "rhino",
+            "request": "launch",
+            "runtimeExecutable": "/Applications/Rhinoceros.app/Contents/MacOS/Rhinoceros",
+            "passDebugOptionsViaEnvironmentVariable": true,
+            "env": {
+                // optional: register your plugin(s) to load
+                "RHINO_PLUGIN_PATH": "${workspaceFolder}/Path/To/MyPlugin.rhp",
+                "GRASSHOPPER_PLUGINS": "${workspaceFolder}/Path/To/MyGHPlugin.gha"
+            }
+        }
+    ]
+}

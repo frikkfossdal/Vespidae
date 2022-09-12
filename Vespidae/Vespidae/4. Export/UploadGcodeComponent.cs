@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using System.Linq; 
+using Coms;
+using System.Threading.Tasks; 
 
-namespace Vespidae.CurveTools
+namespace Vespidae.Coms
 {
-    public class SortCurveComponent : GH_Component
+    public class UploadGcodeComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -17,10 +18,10 @@ namespace Vespidae.CurveTools
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public SortCurveComponent()
-          : base("SortCurveComponent", "Sort Curves",
-            "Sorts curves. Sorts curve. Currenly kind of a hack. ",
-            "Vespidae", "1.CurveTools")
+        public UploadGcodeComponent()
+          : base("UploadGcodeComponent", "Upload Gcode",
+            "UploadGcodeComponent description",
+            "Vespidae", "4.Export")
         {
         }
 
@@ -29,7 +30,10 @@ namespace Vespidae.CurveTools
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curves", "c", "curves to be sorted", GH_ParamAccess.list); 
+            pManager.AddTextParameter("gcode", "gcode", "gcode to be sent to controller. File will be located under /Vespidae", GH_ParamAccess.list,"default");
+            pManager.AddTextParameter("filename", "fn", "filename on the controller, /Vespidae/<filename>.gcode", GH_ParamAccess.item, "protomolecule"); 
+            pManager.AddTextParameter("ip", "ip", "ip adress of controller", GH_ParamAccess.item, "127.0.0.1"); 
+            pManager.AddBooleanParameter("sendCode", "snd", "description", GH_ParamAccess.item, false); 
         }
 
         /// <summary>
@@ -37,7 +41,7 @@ namespace Vespidae.CurveTools
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddCurveParameter("sortedCurves", "srtC", "sorted curves", GH_ParamAccess.list); 
+            pManager.AddTextParameter("response", "res", "controller response", GH_ParamAccess.item); 
         }
 
         /// <summary>
@@ -47,14 +51,21 @@ namespace Vespidae.CurveTools
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Curve> crvs = new List<Curve>();    
-            if(!DA.GetDataList("Curves", crvs)) return ;
+            bool send = false;
+            var gcode = new List<string>(); 
+            string filename = "";
+            string ip = ""; 
 
-            //first we sort in X
-            var sortX = crvs.OrderBy(p => p.PointAtStart.X);
-            //then we sort in Y
-            var sortY = sortX.OrderBy(p => p.PointAtStart.Y); 
-            DA.SetDataList("sortedCurves", sortY); 
+            DA.GetDataList("gcode", gcode);
+            DA.GetData("filename", ref filename);
+            DA.GetData("ip", ref ip);
+            DA.GetData("sendCode", ref send);
+
+            if (send) {
+                var comsTask = Task.Run(() => httpComs.sendGcodeTask(gcode,filename,ip));
+                comsTask.Wait();
+            }
+            
         }
 
         /// <summary>
@@ -67,7 +78,7 @@ namespace Vespidae.CurveTools
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return Resources.Resources.sortCurves;
+                return Resources.Resources.uploadG;
             }
         }
 
@@ -78,7 +89,7 @@ namespace Vespidae.CurveTools
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("2b17fcbb-6d5f-44b8-a599-ddc497cc4631"); }
+            get { return new Guid("4e823ccb-aee6-42f4-a363-39d82e0e7758"); }
         }
     }
 }

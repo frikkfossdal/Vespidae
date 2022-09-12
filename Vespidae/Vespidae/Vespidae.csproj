@@ -32,21 +32,17 @@
     <None Remove="Resources\" />
     <None Remove="Resources\brain.png" />
     <None Remove="Curve\" />
-    <None Remove="4.Coms\" />
     <None Remove="WebSocketSharp-netstandard" />
     <None Remove="System.Text.Json" />
     <None Remove="Newtonsoft.Json" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="2. Ops\" />
-    <Folder Include="3. Solve\" />
     <Folder Include="Resources\" />
-    <Folder Include="1. CurveTools\" />
-    <Folder Include="4.Coms\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ZPinning.cs" />
     <Compile Remove="1. CurveTools\SlicerComponent.cs" />
+    <Compile Remove="1. CurveTools\SortCurveComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\brain.png" />

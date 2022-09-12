@@ -1,14 +1,14 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
+
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using ClipperHelper;
-using SlicerTool;
+using VespidaeTools; 
 
 namespace Vespidae
 {
-    public class SlicerComponent : GH_Component
+    public class Vespmo_Gcode_Component : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -17,10 +17,10 @@ namespace Vespidae
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public SlicerComponent()
-          : base("SlicerComponent", "Slice",
-            "SlicerComponent description",
-            "Vespidae", "1.CurveTools")
+        public Vespmo_Gcode_Component()
+          : base("VespidaeGcode", "Vespidae_to_Gcode",
+            "Converts Vespidae Actions to Gcode",
+            "Vespidae", "4.Export")
         {
         }
 
@@ -29,8 +29,10 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddBrepParameter("Brep", "G", "Brep geometry to be sliced", GH_ParamAccess.item);
-            pManager.AddNumberParameter("LayerHeight", "LH", "Slicing layer height", GH_ParamAccess.item,1);
+            pManager.AddGenericParameter("actions", "VObj", "Vespidae action objects", GH_ParamAccess.list);
+            pManager.AddTextParameter("header", "h", "optional gcode header", GH_ParamAccess.list, "");
+            pManager.AddTextParameter("footer", "f", "optional gcode footer", GH_ParamAccess.list, "");
+            pManager.AddBooleanParameter("absolute", "abs", "absolute or relative extrusion", GH_ParamAccess.item, false); 
         }
 
         /// <summary>
@@ -38,9 +40,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Vespidae_Object_out", "VESPO", "Prior Vespidae operations", GH_ParamAccess.item);
-            pManager.AddGenericParameter("SlicedPolys", "P", "sliced polys as list", GH_ParamAccess.list);
-            pManager.AddGenericParameter("SlicingPlanes", "pln", "slicing planes", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("gcode", "Gcode", "output gcode", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -50,33 +50,28 @@ namespace Vespidae
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Slicer slc = new Slicer();
+            List<VespidaeTools.Action> actions = new List<VespidaeTools.Action>();
+            List<String> gcode = new List<string>();
+            List<String> header = new List<string>();
+            List<String> footer = new List<string>();
+            bool abs = false; 
 
-            Brep geo = new Brep();
-            Plane pl = new Plane();
-            double lh = 0.4;
+            if (!DA.GetDataList("actions", actions)) return;
+            DA.GetDataList("header", header);
+            DA.GetDataList("footer", footer);
+            DA.GetData("absolute", ref abs); 
 
-            if (!DA.GetData("Brep", ref geo)) return;
-            DA.GetData("LayerHeight", ref lh);
+            if (header.Count > 0) {
+                gcode.AddRange(header);
+            }
+
             
-            List<Curve> lst = new List<Curve>();
-            lst.AddRange(Brep.CreateContourCurves(geo, new Point3d(0, 0, 0), new Point3d(0, 0, 30), 1));
+            gcode.AddRange(VespidaeTools.Operation.translateToGcode(actions,abs));
 
-            //List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(lst);
-
-            var bound = geo.GetBoundingBox(true);
-
-            var infill = brepTools.createInfillLines(geo, 0.3);
-
-            infill = brepTools.sortPolys(infill);
-
-            slc.layerHeight = lh;
-            slc.model = geo;
-            slc.slice();
-
-            DA.SetData("Vespidae_Object_out", slc);
-            DA.SetDataList("SlicedPolys", slc.exposeShells());
-            //DA.SetDataList("SlicingPlanes", slc.exposePlanes());
+            if (footer.Count > 0) {
+                gcode.AddRange(footer); 
+            }
+            DA.SetDataList("gcode", gcode);
         }
 
         /// <summary>
@@ -89,7 +84,7 @@ namespace Vespidae
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return Resources.Resources.slice;
+                return Resources.Resources.gcode;
             }
         }
 
@@ -100,7 +95,7 @@ namespace Vespidae
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("30c8db20-681c-472d-90a0-845347998b8e"); }
+            get { return new Guid("7b2fa908-e881-4bf6-96bd-68d5ef549b09"); }
         }
     }
 }

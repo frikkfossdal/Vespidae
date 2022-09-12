@@ -21,7 +21,7 @@ namespace Vespidae
         public OffsetComponent()
           : base("SlicerFriendlyOffset", "SlicerOffset",
             "Offsets polylines",
-            "Vespidae", "1.CurveTools")
+            "Vespidae", "1.Toolpath")
         {
         }
 

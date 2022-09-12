@@ -21,7 +21,7 @@ namespace Vespidae
         public BooleanComponent()
           : base("Boolean", "VespBoolean",
             "Test of clipper library",
-            "Vespidae", "1.CurveTools")
+            "Vespidae", "1.Toolpath")
         {
         }
 
@@ -41,7 +41,7 @@ namespace Vespidae
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("result1", "r1", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("result1", "crvs", "", GH_ParamAccess.list);
         }
 
         /// <summary>
