@@ -13,10 +13,6 @@
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="7.15.22039.13001" IncludeAssets="compile;build" />
-    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
-    <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
-    <PackageReference Include="System.Text.Json" Version="6.0.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
   
   <ItemGroup>
@@ -70,7 +66,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType></DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\Build</OutputPath>
+    <OutputPath>..\..\..\..\Library\Application Support\McNeel\Rhinoceros\7.0\Plug-ins\Grasshopper %28b45a29b1-4343-4035-989e-044e8580d9cf%29\Libraries\Vespidae</OutputPath>
     <DefineConstants></DefineConstants>
     <WarningLevel>4</WarningLevel>
     <IntermediateOutputPath>obj\Release\net48\net48\net48\net48\net48</IntermediateOutputPath>

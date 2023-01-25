@@ -25,6 +25,9 @@
     <OutputPath>..\..\Build</OutputPath>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>..\..\..\..\Library\Application Support\McNeel\Rhinoceros\7.0\Plug-ins\Grasshopper %28b45a29b1-4343-4035-989e-044e8580d9cf%29\Libraries\Vespidae</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Eto">
