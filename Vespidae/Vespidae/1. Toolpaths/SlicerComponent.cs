@@ -64,8 +64,6 @@ namespace Vespidae
             //List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(lst);
 
             var bound = geo.GetBoundingBox(true);
-
-            
             //var infill = brepTools.createInfillLines(geo, 0.3);
 
             //infill = brepTools.sortPolys(infill);
@@ -76,7 +74,7 @@ namespace Vespidae
 
             //DA.SetData("Vespidae_Object_out", slc);
             DA.SetDataList("SlicedPolys", slc.exposeShells());
-            DA.SetDataList("SlicingPlanes", slc.exposePlanes());
+            //DA.SetDataList("SlicingPlanes", slc.exposePlanes());
         }
 
         /// <summary>
