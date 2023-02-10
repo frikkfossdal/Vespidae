@@ -552,3 +552,7 @@ I have to make some philosophical decissions about Vespidae should treat input d
 I did a couple of prototypes and I think this could make sense. I made a function that sorts inputted curves to a list which uses the layer height (z-height) as index. Then I can loop over the list and do clipper operations for each layer. This will work both on inputs with only single layers or on multi-layer input. I could add a booleaen input that selects weather it should be sensitive for this (for speed), but I dont really think there is to much to gain from this. 
 
 Ok I got this working for infill. This is actually a pretty smooth workflow. I'll try to add layer-sensitivity to infill component now. 
+
+# 1511_2022 
+
+Getting back into this. First thing I want to tackle is extrusion. I found a good reference from the Slic3r developers [here](https://manual.slic3r.org/advanced/flow-math). I'll be working on this sporadically over the comming weeks. 
