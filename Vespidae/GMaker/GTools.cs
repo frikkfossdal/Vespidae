@@ -241,7 +241,7 @@ namespace VespidaeTools
         /// <param name="sp">travel speed</param>
         /// <param name="pr">enable partial retract where possible</param>
         /// <returns></returns>
-        public static List<Action> GenericSolver(List<Action> actions, int rh, int sp, bool pr)
+        public static List<Action> SimpleSolver(List<Action> actions, int rh, int sp, bool pr)
         {
             var newProgram = new List<Action>();
 
