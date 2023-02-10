@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Rhino.Geometry;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace VespidaeTools
 {
@@ -179,6 +180,16 @@ namespace VespidaeTools
                 actions.Add(new Extrude(p, temp, ext, speed, retract, tool, tp,  injection));
             }
             return actions;
+        }
+
+        public static List<Action> createPulseExtrude(List<Polyline> paths, int speed, double retract, double pulseSize, double temp, int tool,  List<string> injection) {
+            List<Action> actions = new List<Action>();
+
+            foreach (var p in paths) {
+                actions.Add(new PulseExtrude(p,temp,pulseSize,speed,retract,tool,injection));
+            }
+
+            return actions; 
         }
 
         public static List<Action> createMoveOps(List<Polyline> paths, int speed, int tool, List<string> injection, List<string> postInjection)
@@ -673,6 +684,68 @@ namespace VespidaeTools
 
             return translation;
         }
+    }
+    /// <summary>
+    /// Action Class for pulse Extruding on a filament printer
+    /// </summary>
+    public class PulseExtrude : Action {
+
+        public double temperature;
+        public double retract;
+        public double pulseSize; 
+
+        public PulseExtrude(Polyline p, double t, double psize, int s, double r, int to, List<string> inj) {
+            path = p;
+            pulseSize = psize;
+            temperature = t;
+            tool = to;
+            speed = s;
+            retract = r;
+            injection = inj;
+            toolCh = true;
+        }
+
+        public override List<string> translate(bool abs, ref double curExt)
+        {
+
+            Point3d prevPoint = path.First();
+
+            var translation = new List<string>();
+
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
+            translation.Add($"M109 {temperature}");
+            translation.Add($"G0 F{speed}");
+
+            foreach (var point in path) {
+
+                //compute distance
+                double distToPrev = point.DistanceTo(prevPoint);
+
+                //compute extrusion
+                double extrude = distToPrev * .01 * pulseSize;
+
+                //relative vs absolute extrusion
+                if (abs)
+                {
+                    curExt += extrude;
+                    //absolute pulse
+                    translation.Add($"G0 E{curExt}");
+                }
+                else
+                {
+                    //relative
+                    translation.Add($"G0 E{extrude}");
+                }
+
+        
+                //move
+                translation.Add(point.toGcode());
+                prevPoint = point; 
+            }
+            return translation; 
+        }
+
     }
 
     //main difference from extrude is that we disconnect extrude amount from move speed

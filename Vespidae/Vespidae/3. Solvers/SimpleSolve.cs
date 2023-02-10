@@ -33,6 +33,7 @@ namespace Vespidae.Solve
             pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
             pManager.AddIntegerParameter("TravelSpeed", "ts", "travel speed between moves", GH_ParamAccess.item, 5000);
             pManager.AddBooleanParameter("PartialRetract", "pr", "partial retract when possible", GH_ParamAccess.item, false);
+            pManager.AddIntegerParameter("SortCriteria", "sort", "layer sort criteria. 0: x-direction, 1: y-direction, 2: by tool. Default x", GH_ParamAccess.item, 0);
         }
 
         /// <summary>
