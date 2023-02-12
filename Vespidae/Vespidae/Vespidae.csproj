@@ -31,6 +31,20 @@
     <None Remove="WebSocketSharp-netstandard" />
     <None Remove="System.Text.Json" />
     <None Remove="Newtonsoft.Json" />
+    <None Remove="Resources\visualize.png" />
+    <None Remove="Resources\uploadG.png" />
+    <None Remove="Resources\sortCurves.png" />
+    <None Remove="Resources\solve.png" />
+    <None Remove="Resources\slice.png" />
+    <None Remove="Resources\pulse_extrude.png" />
+    <None Remove="Resources\path.png" />
+    <None Remove="Resources\offset.png" />
+    <None Remove="Resources\move.png" />
+    <None Remove="Resources\infill.png" />
+    <None Remove="Resources\gcode.png" />
+    <None Remove="Resources\extrude.png" />
+    <None Remove="Resources\cut.png" />
+    <None Remove="Resources\boolean.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
@@ -42,6 +56,20 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\brain.png" />
+    <EmbeddedResource Include="Resources\visualize.png" />
+    <EmbeddedResource Include="Resources\uploadG.png" />
+    <EmbeddedResource Include="Resources\sortCurves.png" />
+    <EmbeddedResource Include="Resources\solve.png" />
+    <EmbeddedResource Include="Resources\slice.png" />
+    <EmbeddedResource Include="Resources\pulse_extrude.png" />
+    <EmbeddedResource Include="Resources\path.png" />
+    <EmbeddedResource Include="Resources\offset.png" />
+    <EmbeddedResource Include="Resources\move.png" />
+    <EmbeddedResource Include="Resources\infill.png" />
+    <EmbeddedResource Include="Resources\gcode.png" />
+    <EmbeddedResource Include="Resources\extrude.png" />
+    <EmbeddedResource Include="Resources\cut.png" />
+    <EmbeddedResource Include="Resources\boolean.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Resources\Resources.resx">
