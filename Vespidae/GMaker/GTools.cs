@@ -12,7 +12,8 @@ namespace VespidaeTools
         travel,
         move,
         extrusion,
-        zPin
+        zPin,
+        cut
     }
 
     public enum extrudeTypes {
@@ -191,6 +192,18 @@ namespace VespidaeTools
 
             return actions; 
         }
+
+        public static List<Action> createCutOps(List<Polyline> paths, int speed, double retract, double pulseSize, double temp, int tool, List<string> injection) {
+            List<Action> actions = new List<Action>();
+
+            foreach (var p in paths)
+            {
+                actions.Add(new Cut(p, speed, tool, injection, injection)); 
+            }
+
+            return actions;
+        }
+    
 
         public static List<Action> createMoveOps(List<Polyline> paths, int speed, int tool, List<string> injection, List<string> postInjection)
         {
@@ -792,5 +805,51 @@ namespace VespidaeTools
         }
 
     }
+    public class Cut : Action
+    {
+        public Cut(Polyline p, int s, int to, List<string> inj, List<string> injPost)
+        {
+            path = p;
+            speed = s;
+            actionType = opTypes.cut;
+            tool = to;
+            injection = inj;
+            postInjection = injPost;
+            toolCh = true;
+        }
+
+        public override List<string> translate(bool abs, ref double curExt)
+        {
+            var translation = new List<string>();
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
+            translation.Add($"G0 F{speed} S12000");
+
+            //gcode injection 
+            if (injection.Count > 0 && injection.First().Length != 0)
+            {
+                translation.Add(";>>>>injected gcode start<<<<");
+                translation.AddRange(injection);
+                translation.Add(";>>>>injected gcode end<<<<");
+            }
+
+            foreach (var p in path)
+            {
+                translation.Add(p.toGcode());
+            }
+
+            //gcode injection after
+            if (postInjection.Count > 0 && postInjection.First().Length != 0)
+            {
+                translation.Add(";>>>>injected gcode start<<<<");
+                translation.AddRange(postInjection);
+                translation.Add(";>>>>injected gcode end<<<<");
+            }
+
+            return translation;
+        }
+
+    }
 }
+
 
