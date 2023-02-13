@@ -55,25 +55,24 @@ namespace Vespidae.Actions
             List<Curve> crv = new List<Curve>();
             List<String> gInj = new List<string>();
 
-            int speed = 0;
+            int spindleSpeed = 0;
+            int feedrate = 0; 
             double ext = 0;
             double temp = 0;
-            double retract = 0;
             int tool = 0;
-            int extType = 0;
 
             if (!DA.GetDataList("Curve", crv)) return;
 
-            DA.GetData("Extrusion", ref ext);
-            DA.GetData("Feedrate", ref speed);
+            DA.GetData("Feedrate", ref feedrate);
+            DA.GetData("SpindleSpeed", ref spindleSpeed);
             DA.GetData("ToolId", ref tool);
-            DA.GetData("Retract", ref retract);
+
             DA.GetDataList("GcodeInjection", gInj);
 
 
             var pol = ClipperTools.ConvertCurvesToPolylines(crv);
 
-            var actions = VespidaeTools.Operation.createCutOps(pol, speed, ext, temp, tool, extType, gInj);
+            var actions = VespidaeTools.Operation.createCutOps(pol, feedrate, spindleSpeed, tool, gInj);
 
             DA.SetDataList("VespObj", actions);
             //ops.createActions();

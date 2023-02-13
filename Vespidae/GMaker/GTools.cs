@@ -193,12 +193,12 @@ namespace VespidaeTools
             return actions; 
         }
 
-        public static List<Action> createCutOps(List<Polyline> paths, int speed, double retract, double pulseSize, double temp, int tool, List<string> injection) {
+        public static List<Action> createCutOps(List<Polyline> paths, int feedrate, int spindleSpeed,  int tool, List<string> injection) {
             List<Action> actions = new List<Action>();
 
             foreach (var p in paths)
             {
-                actions.Add(new Cut(p, speed, tool, injection, injection)); 
+                actions.Add(new Cut(p, spindleSpeed, tool, injection, injection)); 
             }
 
             return actions;
