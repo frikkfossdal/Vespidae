@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{F51D5898-19EC-41DE-AE56-1AE9604DA01D}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>GMaker</RootNamespace>
+    <RootNamespace>VespidaeTools</RootNamespace>
     <AssemblyName>GMaker</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <RhinoPluginType>none</RhinoPluginType>

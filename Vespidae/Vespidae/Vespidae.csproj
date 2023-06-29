@@ -16,8 +16,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\ClipperHelper\ClipperHelper.csproj" />
-    <ProjectReference Include="..\GMaker\GMaker.csproj" />
+    <ProjectReference Include="..\VespidaeTools\VespidaeTools.csproj" />
     <ProjectReference Include="..\SlicerTool\SlicerTool.csproj" />
     <ProjectReference Include="..\Coms\Coms.csproj" />
   </ItemGroup>

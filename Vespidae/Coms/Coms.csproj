@@ -64,9 +64,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GMaker\GMaker.csproj">
+    <ProjectReference Include="..\VespidaeTools\VespidaeTools.csproj">
       <Project>{F51D5898-19EC-41DE-AE56-1AE9604DA01D}</Project>
-      <Name>GMaker</Name>
+      <Name>VespidaeTools</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
