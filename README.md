@@ -2,7 +2,7 @@
 
 **NOTE:** Vespidae is currently under heavy development and should be treated accordingly. Check you code before executing anything on your tool / machine. 
 
-Installation instructions are located [here](#installation-instructions-how-do-i-use-it).
+**Installation instructions** are located [here](#installation-instructions-how-do-i-use-it).
 
 ## What is it? 
 
@@ -19,7 +19,7 @@ Todays CAM tools and slicer relieves the machinist/maker of this complexity by a
 ## Installation Instructions: How do I use it? 
 
 1. Open the Build folder from repository. 
-![1. Open the Build folder from repository.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/build.png?raw=true)
+<img src="img/Installation/build.png" width="48">
 2. Copy all of the files from the Build folder.
 ![2. Copy all of the files from the Build folder.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/copy.png?raw=true)
 3. Open the Grasshopper Component Folder (Open Grasshopper, then File -> Special Folders -> Component Folder).
