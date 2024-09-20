@@ -19,15 +19,15 @@ Todays CAM tools and slicer relieves the machinist/maker of this complexity by a
 ## Installation Instructions: How do I use it? 
 
 1. Open the Build folder from repository. 
-![1. Open the Build folder from repository.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/build.png?raw=true)
+![1. Open the Build folder from repository.](img/Installation/build.png?raw=true)
 2. Copy all of the files from the Build folder.
-![2. Copy all of the files from the Build folder.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/copy.png?raw=true)
+![2. Copy all of the files from the Build folder.](img/Installation/copy.png?raw=true)
 3. Open the Grasshopper Component Folder (Open Grasshopper, then File -> Special Folders -> Component Folder).
-![3. Open Grasshopper.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/open_grasshopper.png?raw=true)
+![3. Open Grasshopper.](img/Installation/open_grasshopper.png?raw=true)
 4. Paste all copied Build files into the Component Folder.
-![4. Paste Build files into Component Folder.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/paste.png?raw=true)
+![4. Paste Build files into Component Folder.](img/Installation/paste.png?raw=true)
 5. Restart Rhino and you should see Vespidae as a submenu in your Grasshopper workspace. 
-![5. Restart Rhino.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/installed.png?raw=true)
+![5. Restart Rhino.](img/Installation/installed.png?raw=true)
 6. Have a look in the example folder or the component documentation to familiarize yourself more with the different components of Vespidae. 
-![6. Look at examples.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/examples.png?raw=true)
+![6. Look at examples.](img/Installation/examples.png?raw=true)
 
