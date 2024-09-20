@@ -2,8 +2,9 @@
 
 **NOTE:** Vespidae is currently under heavy development and should be treated accordingly. Check you code before executing anything on your tool / machine. 
 
-## What is it? 
+Installation instructions are located [here](#installation-instructions-how-do-i-use-it).
 
+## What is it? 
 
 Vespidae is a framework for prototyping and creating toolpaths for computer controlled motion systems (e.g 3D printers, laser cutters, CNC milling machines). At its core, Vespidae includes tools for manipulating and generating toolpaths as curves in Rhino, tools that tags these curves with process specific metadata, and finally tools that converts these actions to executable programs. Vespidae also includes tools for communitation between grasshopper and a machine controller. 
 
@@ -15,10 +16,18 @@ In the good ol' days CNC operators programmed their machines in raw "goto-positi
 
 Todays CAM tools and slicer relieves the machinist/maker of this complexity by automating the generation of toolpaths and gcode. This is all great and in many cases efficient and useful, but there are edge-cases when you want to be more specific and have more control. In my world, where I build custom machines for different weird workflows, a proper CAM tool doesn't really exists. Vespidae positions itself as a sort of hybrid between these two workflows. 
 
-## How do I use it? 
+## Installation Instructions: How do I use it? 
 
-1. Download Build folder from repository. 
-3. Move files from Build folder to Grasshopper Component Folder (Open Grasshopper, then File -> Special Folders -> Component Folder).
-4. Restart Rhino and you should see Vespidae as a submenu in your Grasshopper workspace. 
-5. Have a look in the example folder or the component documentation to familiarize yourself more with the different components of Vespidae. 
+1. Open the Build folder from repository. 
+![1. Open the Build folder from repository.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/build.png?raw=true)
+2. Copy all of the files from the Build folder.
+![2. Copy all of the files from the Build folder.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/copy.png?raw=true)
+3. Open the Grasshopper Component Folder (Open Grasshopper, then File -> Special Folders -> Component Folder).
+![3. Open Grasshopper.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/open_grasshopper.png?raw=true)
+4. Paste all copied Build files into the Component Folder.
+![4. Paste Build files into Component Folder.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/paste.png?raw=true)
+5. Restart Rhino and you should see Vespidae as a submenu in your Grasshopper workspace. 
+![5. Restart Rhino.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/installed.png?raw=true)
+6. Have a look in the example folder or the component documentation to familiarize yourself more with the different components of Vespidae. 
+![6. Look at examples.](https://github.com/frikkfossdal/Vespidae/tree/main/img/Installation/examples.png?raw=true)
 
