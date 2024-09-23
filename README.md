@@ -19,7 +19,7 @@ Todays CAM tools and slicer relieves the machinist/maker of this complexity by a
 ## Installation Instructions: How do I use it? 
 
 1. Open the Build folder from repository. 
-<img src="img/Installation/build.png" width="48">
+![2. Copy all of the files from the Build folder.](img/Installation/build.png?raw=true)
 2. Copy all of the files from the Build folder.
 ![2. Copy all of the files from the Build folder.](img/Installation/copy.png?raw=true)
 3. Open the Grasshopper Component Folder (Open Grasshopper, then File -> Special Folders -> Component Folder).
