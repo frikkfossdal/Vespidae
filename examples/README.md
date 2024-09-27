@@ -19,10 +19,13 @@ This example explores how we can work with curves when they are in multiple laye
 In this example, we move on to generating Extrude components. This lets us start assigning parameters so that we can start printing!
 This still builds on using multiple layers and multiple tools from the previous example, but you can also just use one layer for simplicity.
 
+![Example 3, with the Rhino model on the left and the printed example on the right](img/Example03.png?raw=true)
+
 ## Example 04 - Pulse Extrusion with Parameterized Spiral
 
 This example walks through how to directly generate custom curve geometries through Grasshopper. Since all curves are generated in Rhino, an accompanying Rhino file is not needed, unlike previous examples. We also walk through the Pulse Extrude component, and how it is different from the Extrude component.
 
+![Example 4, with the Rhino model on the left, a printed example using a pulse extrude factor of 2 in the middle, and a printed example using a pulse extrude factor of 3 on the right. The print in the middle is ridged, with some gaps throughout the print. The print on the right is ridged and much more solid, with minimal gaps. ](img/Example04.png?raw=true)
 
 ## In-Progress Examples 
 

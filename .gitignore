@@ -405,3 +405,6 @@ ASALocalRun/
 .localhistory/
 examples/files/example_02/example_02.3dm.rhl
 examples/files/example_02/example_02.3dm.rhl
+
+# also the testlog
+Vespidae_TestLog/
