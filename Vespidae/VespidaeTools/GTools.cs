@@ -127,6 +127,60 @@ namespace VespidaeTools
     /// </summary>
     public static class Sort
     {
+        public static List<Action> SortByString(List<Action> actions, List<char> chars, List<bool> flips)
+        {
+            IOrderedQueryable<Action> sorted;
+            //IOrderedQueryable<Action> ordered_actions = (IOrderedQueryable<Action>) actions;
+
+            // sets the first sort by option based on the first character
+            if (chars[0] == 'X')
+            {
+                if (!flips[0]) sorted = actions.AsQueryable().OrderBy(act => act.path.First().X);
+                else sorted = actions.AsQueryable().OrderByDescending(act => act.path.First().X);
+            }
+            else if (chars[0] == 'Y')
+            {
+                if (!flips[1]) sorted = actions.AsQueryable().OrderBy(act => act.path.First().Y);
+                else sorted = actions.AsQueryable().OrderByDescending(act => act.path.First().Y);
+            }
+            else if (chars[0] == 'Z')
+            {
+                if (!flips[2]) sorted = actions.AsQueryable().OrderBy(act => act.path.First().Z);
+                else sorted = actions.AsQueryable().OrderByDescending(act => act.path.First().Z);
+            }
+            else
+            {
+                if (!flips[3]) sorted = actions.AsQueryable().OrderBy(act => act.tool);
+                else sorted = actions.AsQueryable().OrderByDescending(act => act.tool);
+            }
+
+            // sorts by the next characters using ThenBy to preserve order
+            for (int i = 1; i < chars.Count; i++)
+            {
+                if (chars[i] == 'X')
+                {
+                    if (!flips[0]) sorted = sorted.ThenBy(act => act.path.First().X);
+                    else sorted = sorted.ThenByDescending(act => act.path.First().X);
+                }
+                else if (chars[i] == 'Y')
+                {
+                    if (!flips[1]) sorted = sorted.ThenBy(act => act.path.First().Y);
+                    else sorted = sorted.ThenByDescending(act => act.path.First().Y);
+                }
+                else if (chars[i] == 'Z')
+                {
+                    if (!flips[2]) sorted = sorted.ThenBy(act => act.path.First().Z);
+                    else sorted = sorted.ThenByDescending(act => act.path.First().Z);
+                }
+                else 
+                {
+                    if (!flips[3]) sorted = sorted.ThenBy(act => act.tool);
+                    else sorted = sorted.ThenByDescending(act => act.tool);
+                }
+            }
+            return sorted.ToList();
+        }
+
         public static List<Action> sortByX(List<Action> actions, bool f)
         {
             actions = actions.OrderBy(act => act.path.First().X).ToList();
@@ -256,7 +310,7 @@ namespace VespidaeTools
     public static class Solve
     {
         /// <summary>
-        /// Generic solves for any sequence of Actions. Takes user defined sequences of Actions
+        /// Generic solves for any sequence of Actions without organization. Takes user defined sequences of Actions
         /// and creates a complete Vespidae program with Travel Actions between each Action.
         /// The solver does not sort or change the input sequence of Actions. 
         /// </summary>
@@ -265,7 +319,56 @@ namespace VespidaeTools
         /// <param name="sp">travel speed</param>
         /// <param name="pr">enable partial retract where possible</param>
         /// <returns></returns>
-        public static List<Action> SimpleSolver(List<Action> actions, int rh, int sp, bool pr)
+        public static List<Action> BasicSolver(List<Action> actions, int rh, int sp, bool pr)
+        {
+            var newProgram = new List<Action>();
+
+            var prevAct = actions.First();
+            double partial_rh = 0.5; //partial retract height
+
+            // first sets the first action and sets flag to true
+            bool firstActionFlag = true;
+            var prevAction = actions.First();
+
+            // cycles through each action. First action will get the first travel and set new tool. 
+            foreach (var action in actions)
+            {
+                if (firstActionFlag)
+                {
+                    //move to first point in layer. The travel includes a toolchange. 
+                    var firstPoint = action.path.First;
+                    var trvMove = new Travel(sp, true, rh);
+                    trvMove.tool = action.tool;
+                    trvMove.path.Add(new Point3d(firstPoint.X, firstPoint.Y, firstPoint.Z + rh));
+                    trvMove.path.Add(firstPoint);
+                    newProgram.Add(trvMove);
+                    newProgram.Add(action);
+                    firstActionFlag = false;
+                }
+                else
+                {
+                    if (prevAction.tool != action.tool)
+                    {
+                        newProgram.Add(makeToolchange(prevAction, action, rh, sp));
+                    }
+                    else newProgram.Add(moveBetweenActions(prevAction, action, rh, partial_rh, sp, pr));
+                    newProgram.Add(action);
+                    prevAction = action;
+                }
+            }
+            return newProgram;
+        }
+
+        /// <summary>
+        /// Generic solves for any sequence of Actions, organized by layer height. Takes user defined sequences of Actions
+        /// and creates a complete Vespidae program with Travel Actions between each Action.
+        /// </summary>
+        /// <param name="actions">actions to put in program</param>
+        /// <param name="rh">retract height </param>
+        /// <param name="sp">travel speed</param>
+        /// <param name="pr">enable partial retract where possible</param>
+        /// <returns></returns>
+        public static List<Action> LayerSolver(List<Action> actions, int rh, int sp, bool pr)
         {
             var newProgram = new List<Action>();
 
@@ -303,10 +406,13 @@ namespace VespidaeTools
             {
                 Rhino.Runtime.HostUtils.SendDebugToCommandLine = false;
                 Rhino.Runtime.HostUtils.DebugString($"Layer Height:{layer.Key}");
+                // shouldn't sort anymore becuase it's already sorted
                 ///first sort layer by tool
-                var sortedLayer = layer.Value.OrderBy(l => l.tool);
+                //var sortedLayer = layer.Value.OrderBy(l => l.tool);
 
                 //sort by x y
+
+                var sortedLayer = layer.Value;
 
                 if (firstLayerFlag)
                 {
@@ -329,7 +435,7 @@ namespace VespidaeTools
                     }
                     else
                     {
-                        newProgram.Add(moveBetweenActions(prevAction, sortedLayer.First(), rh, partial_rh, sp, false));
+                        newProgram.Add(moveBetweenActions(prevAction, sortedLayer.First(), rh, partial_rh, sp, pr));
                     }
                 }
 
@@ -348,7 +454,7 @@ namespace VespidaeTools
                     else
                     {
                         if (prevAction.tool != action.tool) newProgram.Add(makeToolchange(prevAction, action, rh, sp));
-                        else newProgram.Add(moveBetweenActions(prevAction, action, rh, .5, sp, true));
+                        else newProgram.Add(moveBetweenActions(prevAction, action, rh, .5, sp, pr));
                     }
 
                     newProgram.Add(action);

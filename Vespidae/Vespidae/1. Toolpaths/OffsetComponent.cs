@@ -55,7 +55,7 @@ namespace Vespidae
             List<Curve> offsetCurves = new List<Curve>();
             double distance = 0;
             int amount = 0;
-            var pln = new Plane();
+            // var pln = new Plane();
             bool keep = true;
 
             if (!DA.GetDataList("curve", offsetCurves)) return;

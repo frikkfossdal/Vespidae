@@ -57,8 +57,6 @@ namespace Vespidae.Actions
 
             int spindleSpeed = 0;
             int feedrate = 0; 
-            double ext = 0;
-            double temp = 0;
             int tool = 0;
 
             if (!DA.GetDataList("Curve", crv)) return;

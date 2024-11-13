@@ -32,7 +32,7 @@ namespace Vespidae
         {
             pManager.AddGenericParameter("curve", "crv", "closed polygon to be filled", GH_ParamAccess.list);
             pManager.AddNumberParameter("density", "den", "infill density. Hard limit on 0.05", GH_ParamAccess.item, 1.0);
-            pManager.AddNumberParameter("offset", "off", "infill offset", GH_ParamAccess.item, 0.2);
+            pManager.AddNumberParameter("offset", "offset", "infill offset", GH_ParamAccess.item, 0.2);
             pManager.AddNumberParameter("infillAngle", "ang", "direciion angle of infill lines. Default value: 0", GH_ParamAccess.item,0);
         }
 
@@ -72,11 +72,13 @@ namespace Vespidae
             var layerIndex = ClipperTools.createLayerLookup(inputCurves);
             var solutionPlane = Plane.WorldXY;
 
+            var offsetPolygons = new List<Polyline>();
+
                 //needs check for non-closed polygons 
                 foreach (var layer in layerIndex)
                 {
                     solutionPlane.OriginZ = layer.Key;
-                    var offsetPolygons = ClipperTools.offset(layer.Value, 1, solutionPlane, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+                    offsetPolygons = ClipperTools.offset(layer.Value, 1, solutionPlane, offset, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
                     outputCurves.AddRange(Infill.contInfill(offsetPolygons, density, angle, solutionPlane));
                 }
 

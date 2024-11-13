@@ -52,18 +52,18 @@ namespace Vespidae
             Slicer slc = new Slicer();
 
             Brep geo = new Brep();
-            Plane pl = new Plane();
+            // Plane pl = new Plane();
             double lh = 0.4;
 
             if (!DA.GetData("Brep", ref geo)) return;
             DA.GetData("LayerHeight", ref lh);
             
-            List<Curve> lst = new List<Curve>();
-            lst.AddRange(Brep.CreateContourCurves(geo, new Point3d(0, 0, 0), new Point3d(0, 0, 30), 1));
+           // List<Curve> lst = new List<Curve>();
+            //lst.AddRange(Brep.CreateContourCurves(geo, new Point3d(0, 0, 0), new Point3d(0, 0, 30), 1));
 
             //List<Polyline> polys = ClipperTools.ConvertCurvesToPolylines(lst);
 
-            var bound = geo.GetBoundingBox(true);
+            //var bound = geo.GetBoundingBox(true);
             //var infill = brepTools.createInfillLines(geo, 0.3);
 
             //infill = brepTools.sortPolys(infill);

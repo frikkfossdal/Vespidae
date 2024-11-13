@@ -1,11 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.810.16
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipperHelper", "ClipperHelper\ClipperHelper.csproj", "{A50B43FC-E21D-4E82-8BED-783DDD0FA2BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vespidae", "Vespidae\Vespidae.csproj", "{D1C317D9-18F4-4240-83BB-FBA5CE03D636}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vespidae", "Vespidae\Vespidae.csproj", "{D1C317D9-18F4-4240-83BB-FBA5CE03D636}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A50B43FC-E21D-4E82-8BED-783DDD0FA2BD} = {A50B43FC-E21D-4E82-8BED-783DDD0FA2BD}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlicerTool", "SlicerTool\SlicerTool.csproj", "{6D04FD31-31A1-4F84-B3CC-1BB22390DABE}"
 EndProject

@@ -1,15 +1,14 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
 
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
-using VespidaeTools;
-using ClipperHelper; 
+using VespidaeTools; 
 
-namespace Vespidae.Ops
+namespace Vespidae.Solve
 {
-    public class MoveComponent : GH_Component
+    public class BasicSolverComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -18,10 +17,10 @@ namespace Vespidae.Ops
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public MoveComponent()
-          : base("MoveComponent", "VespMove",
-            "Create Move Actions",
-            "Vespidae", "2.Actions")
+        public BasicSolverComponent()
+          : base("BasicSolverComponent", "Solve",
+            "Solves actions without any sorting. All sorting & action arrangement must be done before inputting actions into this component.",
+            "Vespidae", "3.Solver")
         {
         }
 
@@ -30,11 +29,10 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddCurveParameter("Curve", "c", "curves to extrude", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("Speed", "s", "speed of move in mm/min", GH_ParamAccess.item, 1000);
-            pManager.AddIntegerParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, 0);
-            pManager.AddTextParameter("GcodeInjection", "gInj", "gcode to inject before operation", GH_ParamAccess.list, "");
-            pManager.AddTextParameter("GcodePostInjection", "gPost", "gcode to inject after operation", GH_ParamAccess.list, "");
+            pManager.AddGenericParameter("Actions", "VObj", "Actions to be solved", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
+            pManager.AddIntegerParameter("TravelSpeed", "ts", "travel speed between moves", GH_ParamAccess.item, 5000);
+            pManager.AddBooleanParameter("PartialRetract", "pr", "partial retract when possible", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -42,7 +40,7 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("VespObj", "VObj", "Vespidae action objects", GH_ParamAccess.list);
+            pManager.AddGenericParameter("OutputActions", "VObj", "New list of actions", GH_ParamAccess.list); 
         }
 
         /// <summary>
@@ -52,26 +50,19 @@ namespace Vespidae.Ops
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<Curve> crv = new List<Curve>();
-            List<String> gInj = new List<string>();
-            List<String> gPost = new List<string>();
+            List<VespidaeTools.Action> actions = new List<VespidaeTools.Action>();
+            int rh = 0;
+            int ts = 0;
+            bool pr = false; 
 
-            int speed = 0;
-            int tool = 0;
+            if (!DA.GetDataList("Actions", actions))return ;
+            DA.GetData("RetractHeight", ref rh);
+            DA.GetData("TravelSpeed", ref ts);
+            DA.GetData("PartialRetract", ref pr); 
 
-            if (!DA.GetDataList("Curve", crv)) return;
+            var output = VespidaeTools.Solve.BasicSolver(actions, rh, ts, pr);
 
-            DA.GetData("Speed", ref speed);
-            DA.GetData("ToolId", ref tool);
-            DA.GetDataList("GcodeInjection", gInj);
-            DA.GetDataList("GcodePostInjection", gPost);
-
-            var pol = ClipperTools.ConvertCurvesToPolylines(crv);
-
-            var actions = VespidaeTools.Operation.createMoveOps(pol, speed, tool, gInj, gPost);
-
-            DA.SetDataList("VespObj", actions);
-            //ops.createActions();
+            DA.SetDataList("OutputActions", output); 
         }
 
         /// <summary>
@@ -83,8 +74,8 @@ namespace Vespidae.Ops
             get
             {
                 // You can add image files to your project resources and access them like this:
-                return Resources.Resources.move;
-         
+                //return Resources.IconForThisComponent;
+                return Resources.Resources.solve;
             }
         }
 
@@ -95,7 +86,7 @@ namespace Vespidae.Ops
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("fa5a23d1-bf97-4576-ac33-2c4b3e6e28c2"); }
+            get { return new Guid("9E2BDB1E-1454-4BAE-BA47-86F73BC0214C"); }
         }
     }
 }

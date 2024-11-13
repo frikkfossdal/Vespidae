@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
@@ -30,8 +30,13 @@ namespace Vespidae.Ops
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Actions", "actions", "actions to sort", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("SortType", "sort", "Sorting options. 0: x-direction, 1: y-direction, 2: z-direction, 3: by tool", GH_ParamAccess.item, 0);
-            pManager.AddBooleanParameter("Flip", "flip", "Flips direction of list of acitons. Default false", GH_ParamAccess.item, false); 
+            pManager.AddGenericParameter("Sort", "sort_string", "Sort options: X, Y, Z, T(ool). Write the order that you'd like to sort by. " +
+                "Any variables left unwritten will be sorted by default order: TZXY", GH_ParamAccess.item);
+            //pManager.AddIntegerParameter("SortType", "sort", "Sorting options. 0: x-direction, 1: y-direction, 2: z-direction, 3: by tool", GH_ParamAccess.item, 0);
+            pManager.AddBooleanParameter("FlipX", "flipX", "Flips X direction of list of acitons. Default false", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("FlipY", "flipY", "Flips Y direction of list of acitons. Default false", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("FlipZ", "flipZ", "Flips Z direction of list of acitons. Default false", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("FlipT", "flipT", "Flips tool order of list of acitons. Default false", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -39,7 +44,7 @@ namespace Vespidae.Ops
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("SortedActions", "actions", "sorted actions", GH_ParamAccess.list); 
+            pManager.AddGenericParameter("SortedActions", "actions", "sorted actions", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -50,38 +55,57 @@ namespace Vespidae.Ops
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             var actions = new List<VespidaeTools.Action>();
-            int option = 0;
-            bool flip = false; 
+            string sort_order = "TZXY";
+            //int option = 0;
+            bool flipX = false;
+            bool flipY = false;
+            bool flipZ = false;
+            bool flipT = false;
 
-            if(!DA.GetDataList("Actions", actions))return;
-            DA.GetData("SortType", ref option);
-            DA.GetData("Flip", ref flip); 
+            if (!DA.GetDataList("Actions", actions)) return;
+            DA.GetData("Sort", ref sort_order);
+            //DA.GetData("SortType", ref option);
+            DA.GetData("FlipX", ref flipX);
+            DA.GetData("FlipY", ref flipY);
+            DA.GetData("FlipZ", ref flipZ);
+            DA.GetData("FlipT", ref flipT);
 
-            switch (option) {
-                
-                case 0:
-                    //sort in x direction
-                    actions = VespidaeTools.Sort.sortByX(actions,flip); 
-                    break;
+            List<bool> flips = new List<bool> { flipX, flipY, flipZ, flipT };
 
-                case 1:
-                    //sort in y direction
-                    actions = VespidaeTools.Sort.sortByY(actions,flip);
-                    break;
-
-                case 2:
-                    //sort in z direction
-                    actions = VespidaeTools.Sort.sortByZ(actions,flip);
-                    break;
-                case 3:
-                    //sort by tool
-                    actions = VespidaeTools.Sort.sortByTool(actions, flip);
-                    break;
-
-                default:
-                    //no sorting
-                    break; 
+            List<char> order = sort_order.ToCharArray().ToList();
+            if (!sort_order.Contains("X") || !sort_order.Contains("Y") || !sort_order.Contains("Z") || 
+                !sort_order.Contains("T") || order.Count != 4)
+            {
+                throw new ArgumentException("Sort order must contain X,Y,Z, and T exactly once each. Cannot use other characters.");
             }
+
+            actions = VespidaeTools.Sort.SortByString(actions, order, flips);
+
+            //switch (option) {
+                
+            //    case 0:
+            //        //sort in x direction
+            //        actions = VespidaeTools.Sort.sortByX(actions,flip); 
+            //        break;
+
+            //    case 1:
+            //        //sort in y direction
+            //        actions = VespidaeTools.Sort.sortByY(actions,flip);
+            //        break;
+
+            //    case 2:
+            //        //sort in z direction
+            //        actions = VespidaeTools.Sort.sortByZ(actions,flip);
+            //        break;
+            //    case 3:
+            //        //sort by tool
+            //        actions = VespidaeTools.Sort.sortByTool(actions, flip);
+            //        break;
+
+            //    default:
+            //        //no sorting
+            //        break; 
+            //}
             DA.SetDataList("SortedActions", actions); 
         }
 
@@ -95,7 +119,7 @@ namespace Vespidae.Ops
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return null;
+                return Resources.Resources.sortActions;
             }
         }
 

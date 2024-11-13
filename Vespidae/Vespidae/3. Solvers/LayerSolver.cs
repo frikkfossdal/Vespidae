@@ -8,7 +8,7 @@ using VespidaeTools;
 
 namespace Vespidae.Solve
 {
-    public class SolveActionsComponent : GH_Component
+    public class LayerSolverComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -17,9 +17,9 @@ namespace Vespidae.Solve
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public SolveActionsComponent()
-          : base("SolveActionsComponent", "Solve",
-            "SolveActionsComponent description",
+        public LayerSolverComponent()
+          : base("LayerSolverComponent", "Solve",
+            "Solver Component that arranges the actions by layer (Z-axis). No other sorting is applied.",
             "Vespidae", "3.Solver")
         {
         }
@@ -33,7 +33,6 @@ namespace Vespidae.Solve
             pManager.AddIntegerParameter("RetractHeight", "rh", "retract height between moves", GH_ParamAccess.item, 15);
             pManager.AddIntegerParameter("TravelSpeed", "ts", "travel speed between moves", GH_ParamAccess.item, 5000);
             pManager.AddBooleanParameter("PartialRetract", "pr", "partial retract when possible", GH_ParamAccess.item, false);
-            pManager.AddIntegerParameter("SortCriteria", "sort", "layer sort criteria. 0: x-direction, 1: y-direction, 2: by tool. Default x", GH_ParamAccess.item, 0);
         }
 
         /// <summary>
@@ -61,7 +60,7 @@ namespace Vespidae.Solve
             DA.GetData("TravelSpeed", ref ts);
             DA.GetData("PartialRetract", ref pr); 
 
-            var output = VespidaeTools.Solve.SimpleSolver(actions, rh, ts, pr);
+            var output = VespidaeTools.Solve.LayerSolver(actions, rh, ts, pr);
 
             DA.SetDataList("OutputActions", output); 
         }
@@ -76,7 +75,7 @@ namespace Vespidae.Solve
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return Resources.Resources.solve;
+                return Resources.Resources.layer_solver;
             }
         }
 

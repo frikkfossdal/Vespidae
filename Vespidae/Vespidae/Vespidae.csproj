@@ -19,6 +19,7 @@
     <ProjectReference Include="..\VespidaeTools\VespidaeTools.csproj" />
     <ProjectReference Include="..\SlicerTool\SlicerTool.csproj" />
     <ProjectReference Include="..\Coms\Coms.csproj" />
+	<ProjectReference Include="..\ClipperHelper\ClipperHelper.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="GrasshopperAsyncComponent" />
@@ -50,8 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ZPinning.cs" />
-    <Compile Remove="1. CurveTools\SlicerComponent.cs" />
-    <Compile Remove="1. CurveTools\SortCurveComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\brain.png" />
@@ -79,6 +78,8 @@
   <ItemGroup>
     <Compile Update="Resources\Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">

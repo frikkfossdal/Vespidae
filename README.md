@@ -26,8 +26,10 @@ Todays CAM tools and slicer relieves the machinist/maker of this complexity by a
 ![3. Open Grasshopper.](img/Installation/open_grasshopper.png?raw=true)
 4. Paste all copied Build files into the Component Folder.
 ![4. Paste Build files into Component Folder.](img/Installation/paste.png?raw=true)
-5. Restart Rhino and you should see Vespidae as a submenu in your Grasshopper workspace. 
-![5. Restart Rhino.](img/Installation/installed.png?raw=true)
-6. Have a look in the example folder or the component documentation to familiarize yourself more with the different components of Vespidae. 
-![6. Look at examples.](img/Installation/examples.png?raw=true)
+5. Right-click Vespidae.gha and open Properties. If there is a security warning on the bottom, unblock it. If there is no unblock option, then you should be all set.
+![5. Right-click Vespidae.gha and open Properties. If there is a security warning on the bottom, unblock it.](img/Installation/unblock.png?raw=true)
+6. Restart Rhino and you should see Vespidae as a submenu in your Grasshopper workspace. 
+![6. Restart Rhino.](img/Installation/installed.png?raw=true)
+7. Have a look in the example folder or the component documentation to familiarize yourself more with the different components of Vespidae. 
+![7. Look at examples.](img/Installation/examples.png?raw=true)
 

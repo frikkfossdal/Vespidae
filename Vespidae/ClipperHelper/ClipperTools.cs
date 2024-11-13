@@ -268,7 +268,7 @@ namespace ClipperHelper
 
             foreach (var pn in n.Childs)
             {
-                Rhino.RhinoApp.WriteLine($"new level: {depth}");
+                // Rhino.RhinoApp.WriteLine($"new level: {depth}");
                 iterate(pn, depth + 1, lst, goalDepth, bigSmall,pln);
             }
         }
@@ -396,7 +396,7 @@ namespace ClipperHelper
             var solution2 = new SortedDictionary<int, List<Polyline>>();
             int numIntersections = -10;
             int dictIndex = 0;
-            bool flip = true;
+            // bool flip = true;
 
             //create infill lines
             var infillLines = new List<Polyline>();

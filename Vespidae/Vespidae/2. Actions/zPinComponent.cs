@@ -53,7 +53,7 @@ namespace Vespidae.Ops
             List<Curve> crv = new List<Curve>();
             int speed = 0;
             double amount = 0;
-            int rh = 0;
+            // int rh = 0;
             double temp = 0;
             int tool = 0;
 
@@ -80,7 +80,7 @@ namespace Vespidae.Ops
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return null;
+                return Resources.Resources.zpin;
             }
         }
 
