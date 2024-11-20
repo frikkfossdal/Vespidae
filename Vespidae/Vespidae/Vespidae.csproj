@@ -70,6 +70,9 @@
     <EmbeddedResource Include="Resources\boolean.png" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Update="Resources\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
