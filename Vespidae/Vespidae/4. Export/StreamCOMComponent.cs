@@ -99,6 +99,7 @@ namespace Vespidae.Coms
             DA.GetData("sendCode", ref send);
             com = this.comPort;
 
+            Debug.WriteLine("com = " + comPort);
             List<string> availablePorts = SerialPort.GetPortNames().ToList();
             Debug.WriteLine(availablePorts);
             if (send) {

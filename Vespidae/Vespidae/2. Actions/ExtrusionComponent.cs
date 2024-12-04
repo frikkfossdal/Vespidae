@@ -36,6 +36,9 @@ namespace Vespidae.Ops
             pManager.AddIntegerParameter("ToolId", "to", "tool id that performs operation. Defaults to t0", GH_ParamAccess.item, 0);
             pManager.AddIntegerParameter("extType", "extType", "Extrusion type. Used for sorting by solvers. 0: shell (default), 1: infill", GH_ParamAccess.item, 0); 
             pManager.AddTextParameter("GcodeInjection", "gInj", "gcode to inject before operation", GH_ParamAccess.list, "");
+            pManager.AddNumberParameter("Layer Height", "lh", "layer height. Default 0.1mm", GH_ParamAccess.item, 0.1);
+            pManager.AddNumberParameter("Nozzle Diameter", "dNoz", "nozzle diameter. Default 0.4mm", GH_ParamAccess.item, 0.4);
+            pManager.AddNumberParameter("Filament Diameter", "dFil", "filament diameter. Default 1.75mm", GH_ParamAccess.item, 1.75);
         }
 
         /// <summary>
@@ -61,7 +64,10 @@ namespace Vespidae.Ops
             double temp = 0;
             double retract = 0; 
             int tool = 0;
-            int extType = 0; 
+            int extType = 0;
+            double lh = 0;
+            double dNoz = 0;
+            double dFil = 0;
 
             if (!DA.GetDataList("Curve", crv)) return;
 
@@ -72,11 +78,14 @@ namespace Vespidae.Ops
             DA.GetData("Retract", ref retract);
             DA.GetData("extType", ref extType); 
             DA.GetDataList("GcodeInjection", gInj);
-            
+            DA.GetData("Layer Height", ref lh);
+            DA.GetData("Nozzle Diameter", ref dNoz);
+            DA.GetData("Filament Diameter", ref dFil);
+
 
             var pol = ClipperTools.ConvertCurvesToPolylines(crv);
 
-            var actions = VespidaeTools.Operation.createExtrudeOps(pol, speed,retract, ext, temp, tool, extType, gInj);
+            var actions = VespidaeTools.Operation.createExtrudeOps(pol, speed, retract, ext, lh, dNoz, dFil, temp, tool, extType, gInj);
 
             DA.SetDataList("VespObj", actions); 
             //ops.createActions();

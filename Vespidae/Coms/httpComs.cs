@@ -44,7 +44,8 @@ namespace Coms
             while (print && i < code.Count)
             {
                 if (i == 0) Debug.WriteLine("Print Starting");
-                port.Write(code[i]);
+                Debug.WriteLine(code[i]);
+                port.WriteLine(code[i]);
                 i++;
             }
             Debug.WriteLine("Print Finished");

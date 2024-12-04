@@ -217,7 +217,26 @@ namespace VespidaeTools
     public static class Operation
     {
         //static function for creating simple extrusion operation. Could be modified with enumeration of tool 
-        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, int extType,  List<string> injection)
+        //public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double temp, int tool, int extType,  List<string> injection)
+        //{
+        //    List<Action> actions = new List<Action>();
+
+        //    extrudeTypes tp;
+        //    if (extType == 0)
+        //    {
+        //        tp = extrudeTypes.shell;
+        //    }
+        //    else {
+        //        tp = extrudeTypes.infill; 
+        //    }
+
+        //    foreach (var p in paths)
+        //    {
+        //        actions.Add(new Extrude(p, temp, ext, speed, retract, tool, tp,  injection));
+        //    }
+        //    return actions;
+        //}
+        public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double lh, double dNoz, double dFil, double temp, int tool, int extType, List<string> injection)
         {
             List<Action> actions = new List<Action>();
 
@@ -226,13 +245,14 @@ namespace VespidaeTools
             {
                 tp = extrudeTypes.shell;
             }
-            else {
-                tp = extrudeTypes.infill; 
+            else
+            {
+                tp = extrudeTypes.infill;
             }
 
             foreach (var p in paths)
             {
-                actions.Add(new Extrude(p, temp, ext, speed, retract, tool, tp,  injection));
+                actions.Add(new Extrude(p, temp, ext, lh, dNoz, dFil, speed, retract, tool, tp, injection));
             }
             return actions;
         }
@@ -280,11 +300,20 @@ namespace VespidaeTools
             return actions;
         }
 
-        public static List<string> translateToGcode(List<Action> actions, bool abs)
+        public static List<string> translateToGcode(List<Action> actions, bool abs, bool tc)
         {
             var output = new List<string>();
             double curExt = 0; 
             output.Add(";Vespidae made this program");
+
+            // if there's no toolchanging enables, set all toolchanging to false
+            //if (!tc)
+            //{
+            //    for (int i = 0; i < actions.Count; i++)
+            //    {
+            //        printActions[i].toolCh = false;
+            //    }
+            //}
 
             //check if program contains Extruder actions
             if (actions.Where(act => act.actionType == opTypes.extrusion).ToList().Count > 0)
@@ -297,7 +326,13 @@ namespace VespidaeTools
 
             foreach (var ac in actions)
             {
+                bool actualState = ac.toolCh;
+                if (!tc)
+                {
+                    ac.toolCh = false;
+                }
                 output.AddRange(ac.translate(abs, ref curExt));
+                ac.toolCh = actualState;
             }
             return output;
         }
@@ -721,7 +756,10 @@ namespace VespidaeTools
         public double ext;
         public double temperature;
         public double retract;
-        public extrudeTypes extType; 
+        public extrudeTypes extType;
+        public double layerHeight;
+        public double dNoz;
+        public double dFil;
 
         public Extrude(Polyline p, double t, double e, int s, double r, int to, extrudeTypes _extType, List<string> inj)
         {
@@ -736,6 +774,25 @@ namespace VespidaeTools
 
             actionType = opTypes.extrusion;
             extType = _extType; 
+        }
+
+        public Extrude(Polyline p, double t, double e, double lh, double dn, double df, int s, double r, int to, extrudeTypes _extType, List<string> inj)
+        {
+            path = p;
+            ext = e;
+            temperature = t;
+            tool = to;
+            speed = s;
+            retract = r;
+            injection = inj;
+            toolCh = true;
+
+            actionType = opTypes.extrusion;
+            extType = _extType;
+
+            layerHeight = lh;
+            dNoz = dn;
+            dFil = df;
         }
 
         public override List<string> translate(bool abs, ref double curExt)
@@ -776,18 +833,17 @@ namespace VespidaeTools
             {
                 double distToPrev = p.DistanceTo(prev);
 
-                //0.01 is experimental value. Check cura / slicer for scale 
-                double extrude = distToPrev * .01 * ext;
+                // ext used to calibrate extrusion rates after print characterization 
+                double extrude = calculateExtrusion(distToPrev) * ext;
                 if (abs)
                 {
                     curExt += extrude;
-                    translation.Add(p.toGcode() + $" E{Math.Round(curExt, 5)}");
+                    translation.Add(p.toGcode() + $" E{Math.Round(curExt, 5):F5}");
                 }
-                else {
-                    translation.Add(p.toGcode() + $" E{Math.Round(extrude, 5)}");
+                else
+                {
+                    translation.Add(p.toGcode() + $" E{Math.Round(extrude, 5):F5}");
                 }
-             
-                
                 prev = p;
             }
 
@@ -802,6 +858,13 @@ namespace VespidaeTools
             }
 
             return translation;
+        }
+        private double calculateExtrusion(double dist)
+        {
+            /* filament length = path length * cross sectional area
+            of deposited material / cross sectional area of filament 
+            (conservation of mass) */
+            return dist * (dNoz * layerHeight) / (Math.PI * Math.Pow(dFil / 2, 2));
         }
     }
     /// <summary>
