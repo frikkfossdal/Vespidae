@@ -63,7 +63,8 @@ namespace Vespidae.Export
 
             if (send)
             {
-                httpComs.streamActions(actions);
+                IPComs com = new IPComs("http://localhost:8080/fromClient");
+                com.streamActions(actions);
             }
         }
 

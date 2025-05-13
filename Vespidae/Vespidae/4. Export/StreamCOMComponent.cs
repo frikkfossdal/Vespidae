@@ -40,7 +40,8 @@ namespace Vespidae.Coms
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddTextParameter("gcode", "gcode", "GCode to be sent to the printer", GH_ParamAccess.list,"default");
-            pManager.AddBooleanParameter("sendCode", "snd", "description", GH_ParamAccess.item, false); 
+            pManager.AddBooleanParameter("sendCode", "snd", "description", GH_ParamAccess.item, false);
+            //pManager.AddBooleanParameter("interrupt", "interrupt", "Sends a command to interrupt streaming", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -91,20 +92,34 @@ namespace Vespidae.Coms
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             bool send = false;
+            //bool interrupt = false;
             var gcode = new List<string>();
             string com = "6";
+            HttpComs port = new HttpComs();
             
 
             DA.GetDataList("gcode", gcode);
             DA.GetData("sendCode", ref send);
+            //DA.GetData("interrupt", ref interrupt);
             com = this.comPort;
 
             Debug.WriteLine("com = " + comPort);
             List<string> availablePorts = SerialPort.GetPortNames().ToList();
-            Debug.WriteLine(availablePorts);
             if (send) {
-                httpComs.streamGcodeCOM(gcode, com, send);
+                Debug.WriteLine("Send command received");
+                var streamer = new COMStreamer(com, 115200);
+                streamer.Connect();
+                Debug.WriteLine("Finished connecting");
+                streamer.Print(gcode);
             }
+
+            // This is currently not useful because Grasshopper is a single thread operation.
+            // Will need to look into how this can be multi-threaded to look for inputs (not happy with Thread, but maybe Parallel?)
+            //if (interrupt)
+            //{
+            //    var streamer = new COMStreamer(com, 115200);
+            //    streamer.Disconnect();
+            //}
             
         }
 

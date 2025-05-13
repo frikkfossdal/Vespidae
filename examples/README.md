@@ -27,19 +27,8 @@ This example walks through how to directly generate custom curve geometries thro
 
 ![Example 4, with the Rhino model on the left, a printed example using a pulse extrude factor of 2 in the middle, and a printed example using a pulse extrude factor of 3 on the right. The print in the middle is ridged, with some gaps throughout the print. The print on the right is ridged and much more solid, with minimal gaps. ](img/Example04.png?raw=true)
 
-## In-Progress Examples 
+## Example 05 - Nonplanar Vase Printing
 
-Spiral Vase with texture (In Progress)
+This example walks through how to play around with Vespidae to create some unique shapes with nonplanar printing. The curve is generated in Grasshopper, so no accompanying Rhino file is needed. In this example, we define a custom script that allows users to play around with the shape of a vase with varying nonplanar ridges at the lip of the vase. 
 
-I made a simple script that uses the uv-coordinates to wrap a spiral around a surface in Rhino. The script is attached in [the repo](add link).
-
-Next challenge is calculating extrusion rate. Main train of though coming into this is that I need to check the length between each point that is translated to gcode and use this to determine how much material that should be extruded between these two points. 
-
-This experiment is performed on the Ultimaker 3. Ultimaker uses a flavor of Griffin as gcode. Important note here is that the CuraEngine(?) relies on a custom header in the gcode. Without this header, and without this header being correct, the ultimaker will flat-out refuse your gcode. I had a frustrating time figuring this out (turned out I used the wrong object-envelope in the header). The header is documented-ish [here](https://community.ultimaker.com/topic/15555-inside-the-ultimaker-3-day-1-gcode/). 
-
-
-Probing script on Clank 
-
-Microscope Scan on Clank 
-
-Pen-plotting on Clank 
+![Example 5, a vase with nonplanar ridges at the lip printed using Vespidae.](img/Example05.png?raw=true)

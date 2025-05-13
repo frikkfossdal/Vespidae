@@ -50,6 +50,7 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="2. Actions\zPinComponent.cs" />
     <Compile Remove="ZPinning.cs" />
   </ItemGroup>
   <ItemGroup>

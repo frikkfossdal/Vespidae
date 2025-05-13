@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Rhino.Geometry;
 using System.Linq;
 using static System.Net.Mime.MediaTypeNames;
+using System.Security.AccessControl;
 
 namespace VespidaeTools
 {
@@ -236,6 +237,19 @@ namespace VespidaeTools
         //    }
         //    return actions;
         //}
+
+        public static List<Action> createExampleOps(List<Polyline> paths, int speed)
+        {
+            List<Action> actions = new List<Action>();
+
+            foreach (var p in paths)
+            {
+                actions.Add(new Example(p, speed));
+            }
+
+            return actions;
+        }
+
         public static List<Action> createExtrudeOps(List<Polyline> paths, int speed, double retract, double ext, double lh, double dNoz, double dFil, double temp, int tool, int extType, List<string> injection)
         {
             List<Action> actions = new List<Action>();
@@ -653,6 +667,31 @@ namespace VespidaeTools
         public int retractHeight;
 
         public abstract List<string> translate(bool abs, ref double curExt);
+    }
+
+    public class Example : Action
+    {
+        public Example(Polyline p, int s)
+        {
+            path = p;
+            speed = s;
+        }
+
+        public override List<string> translate(bool abs, ref double curExt)
+        {
+            var translation = new List<string>();
+
+            translation.Add("");
+            translation.Add($";Action: {actionType}");
+            translation.Add($"G0 F{speed}");
+
+            foreach (var p in path)
+            {
+                translation.Add(p.toGcode());
+            }
+
+            return translation;
+        }
     }
 
     public class Travel : Action

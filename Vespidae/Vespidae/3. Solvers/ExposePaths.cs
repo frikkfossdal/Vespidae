@@ -40,7 +40,7 @@ namespace Vespidae
         {
             pManager.AddGenericParameter("actions", "VObj", "Vespidae action objects", GH_ParamAccess.list);
             pManager.AddNumberParameter("arrowScl", "scl", "scale of viz arrows", GH_ParamAccess.item,1.0);
-            pManager.AddIntegerParameter("arrowDensity", "dens", "density of viz arrows", GH_ParamAccess.item, 1);
+            //pManager.AddIntegerParameter("arrowDensity", "dens", "density of viz arrows", GH_ParamAccess.item, 1);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Vespidae
             pManager.AddGenericParameter("moves", "mv", "Vespidae generic actions", GH_ParamAccess.list);
             pManager.AddGenericParameter("extrude", "ext", "Vespidae extrude actions", GH_ParamAccess.list);
             pManager.AddGenericParameter("travel", "trv", "Vespidae travel actions", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Arrows", "ar", "direction arrows", GH_ParamAccess.list); 
+            //pManager.AddGenericParameter("Arrows", "ar", "direction arrows", GH_ParamAccess.list); 
         }
 
         void SetPrivate()
@@ -76,14 +76,14 @@ namespace Vespidae
 
             var arrows = new List<Mesh>();
             double scl = 0;
-            int density = 0;
+            //int density = 0;
 
             
 
             if (!DA.GetDataList("actions", actions)) return;
 
             DA.GetData("arrowScl", ref scl);
-            DA.GetData("arrowDensity", ref density);
+            //DA.GetData("arrowDensity", ref density);
 
             _scale = scl;
 

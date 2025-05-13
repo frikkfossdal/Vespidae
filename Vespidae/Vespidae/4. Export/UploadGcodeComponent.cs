@@ -34,7 +34,8 @@ namespace Vespidae.Coms
             pManager.AddTextParameter("filename", "fn", "filename on the controller, /Vespidae/<filename>.gcode", GH_ParamAccess.item, "protomolecule"); 
             pManager.AddTextParameter("ip", "ip", "ip adress of controller", GH_ParamAccess.item, "127.0.0.1");
             pManager.AddTextParameter("dir", "dir", "directory to place files. Defaults to standard duet 3 location", GH_ParamAccess.item, "machine/file/gcodes/Vespidae/");
-            pManager.AddBooleanParameter("sendCode", "snd", "description", GH_ParamAccess.item, false); 
+            pManager.AddBooleanParameter("sendCode", "snd", "description", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("testDirectory", "testDir", "Finds directory of ip address", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -57,16 +58,26 @@ namespace Vespidae.Coms
             string filename = "";
             string ip = "";
             string dir = "";
+            bool test = false;
 
             DA.GetDataList("gcode", gcode);
             DA.GetData("filename", ref filename);
             DA.GetData("ip", ref ip);
             DA.GetData("dir", ref dir);
             DA.GetData("sendCode", ref send);
+            DA.GetData("testDirectory", ref test);
 
             if (send) {
-                var comsTask = Task.Run(() => httpComs.sendGcodeTask(gcode, dir, filename,ip));
+                IPComs com = new IPComs(ip);
+                var comsTask = Task.Run(() => com.sendGcodeTask(gcode, dir, filename,ip));
                 comsTask.Wait();
+            }
+
+            if (test)
+            {
+                IPComs testing = new IPComs(ip);
+                string response = testing.GetDirectoryListingRegexForUrl(ip);
+                DA.SetData("response", response);
             }
             
         }
